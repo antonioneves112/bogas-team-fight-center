@@ -1,0 +1,20 @@
+{
+  "name": "Bogas Team Fight Center",
+  "short_name": "Bogas Team",
+  "start_url": "./gateway.html",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "icons": [
+    {
+      "src": "/branco_com_fundo_preto_resized.jpeg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "/branco_com_fundo_preto_resized.jpeg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}

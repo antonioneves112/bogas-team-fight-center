@@ -1,0 +1,397 @@
+/* =========================
+   BASE E LIMPEZA
+========================= */
+.page-merch {
+  background: var(--bg);
+  color: var(--text);
+}
+
+.page-merch,
+.page-merch * {
+  box-sizing: border-box;
+}
+
+.page-merch img {
+  display: block;
+  max-width: 100%;
+}
+
+.page-merch input,
+.page-merch select {
+  font: inherit;
+  color: inherit;
+}
+
+.page-merch .merch {
+  padding-bottom: 70px;
+}
+
+.page-merch .merch-shell {
+  width: min(var(--max), 100%);
+  margin: 0 auto;
+  padding: 0 var(--pad-x);
+}
+
+/* =========================
+   HERO
+========================= */
+.page-merch .merch-hero {
+  text-align: center;
+  margin: 0 auto 10px;
+}
+
+.page-merch .merch-subtitle {
+  font-family: "Montserrat", sans-serif;
+  color: var(--muted);
+  max-width: 78ch;
+  margin: 0 auto 6px;
+  line-height: 1.6;
+}
+
+/* =========================
+   FILTERS
+========================= */
+.page-merch .filters {
+  margin-top: 35px;
+  display: grid;
+  gap: 20px;
+  justify-items: center;
+  width: 100%;
+}
+
+.page-merch .filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+}
+
+/* =========================
+   TOOLS (SEARCH + SORT)
+========================= */
+.page-merch .tools {
+  width: min(920px, 100%);
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 14px;
+  align-items: center;
+  justify-content: center;
+}
+
+.page-merch .tools label.search,
+.page-merch .tools label.sort {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  border-radius: 8px;
+  background: rgba(15, 15, 15, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.page-merch .tools label.search:hover,
+.page-merch .tools label.sort:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.page-merch .tools label.search:focus-within,
+.page-merch .tools label.sort:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 15px rgba(156, 230, 156, 0.15);
+}
+
+.page-merch .tools i {
+  font-size: 1.2rem;
+  color: var(--accent);
+}
+
+.page-merch #searchInput {
+  width: 100%;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font-family: "Montserrat", sans-serif;
+  font-size: 0.95rem;
+  color: #fff;
+}
+
+.page-merch #searchInput::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.page-merch #sortSelect {
+  width: 100%;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font-family: "Montserrat", sans-serif;
+  font-size: 0.95rem;
+  color: #fff;
+  padding-right: 26px;
+  cursor: pointer;
+  appearance: none;
+}
+
+.page-merch .tools label.sort {
+  position: relative;
+}
+
+.page-merch .tools label.sort::after {
+  content: "";
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid rgba(255, 255, 255, 0.4);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.4);
+  transform: translateY(-60%) rotate(45deg);
+  pointer-events: none;
+}
+
+.page-merch #sortSelect option {
+  background: #111;
+  color: #fff;
+}
+
+.page-merch .filter-empty {
+  margin: 18px auto 0;
+  text-align: center;
+  font-family: "Montserrat", sans-serif;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.page-merch .filter-empty.is-hidden {
+  display: none;
+}
+
+/* =========================
+   GRID E CARTÕES
+========================= */
+.page-merch .merch-grid {
+  margin-top: 60px !important;
+  display: grid;
+  gap: 30px;
+  grid-template-columns: repeat(4, 1fr);
+  justify-content: center;
+  align-items: start;
+}
+
+.page-merch .product-card.is-hidden {
+  display: none;
+}
+
+.page-merch .product-card {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  min-height: auto;
+  border-radius: 8px;
+  border: 1px solid rgba(156, 230, 156, 0.15);
+  background: rgba(10, 10, 10, 0.6);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.page-merch .product-card:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(156, 230, 156, 0.2);
+}
+
+.page-merch .product-card img {
+  width: 100%;
+  height: 180px;
+  object-fit: contain;
+  object-position: center;
+  padding: 16px;
+  filter: blur(8px);
+  opacity: 0.95;
+  transition:
+    filter var(--t),
+    opacity var(--t),
+    transform var(--t);
+}
+
+.page-merch .product-card img.loaded {
+  filter: blur(0);
+  opacity: 1;
+}
+
+.page-merch .product-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0));
+  pointer-events: none;
+  z-index: 1;
+}
+
+.page-merch .product-badge {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  z-index: 2;
+  padding: 7px 12px;
+  border-radius: 4px;
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.86rem;
+  letter-spacing: 0.6px;
+  line-height: 1;
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(192, 192, 192, 0.3);
+  color: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(6px);
+}
+
+.page-merch .product-badge.is-best {
+  border-color: rgba(156, 230, 156, 0.6);
+  color: rgba(156, 230, 156, 0.95);
+}
+
+.page-merch .product-badge.is-soldout {
+  border-color: rgba(255, 92, 92, 0.6);
+  color: var(--danger);
+}
+
+.page-merch .product-meta {
+  padding: 12px 16px 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.35));
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+  text-align: center;
+}
+
+.page-merch .product-name {
+  margin: 0;
+  font-family: "Orbitron", sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  color: #fff;
+  font-size: 0.95rem;
+}
+
+.page-merch .product-price {
+  margin: 0;
+  font-family: "Orbitron", sans-serif;
+  letter-spacing: 0.8px;
+  color: var(--accent);
+  font-size: 1rem;
+}
+
+.page-merch .product-cta {
+  margin: 10px 16px 14px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-family: "Orbitron", sans-serif;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.02);
+  color: rgba(255, 255, 255, 0.7);
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.page-merch .product-cta:hover {
+  transform: translateY(-2px);
+  background: rgba(156, 230, 156, 0.1);
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+.page-merch .product-card.is-soldout {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.page-merch .product-card.is-soldout .product-cta {
+  border-color: rgba(255, 92, 92, 0.3);
+  background: rgba(255, 92, 92, 0.05);
+  color: rgba(255, 180, 180, 0.7);
+}
+
+.page-merch .product-card.is-soldout:hover {
+  transform: none;
+  border-color: rgba(156, 230, 156, 0.15);
+}
+
+.page-merch .product-card.is-soldout .product-cta:hover {
+  transform: none;
+  background: rgba(255, 92, 92, 0.05);
+  box-shadow: none;
+  color: rgba(255, 180, 180, 0.7);
+  border-color: rgba(255, 92, 92, 0.3);
+}
+
+body.no-scroll {
+  overflow: hidden;
+}
+
+/* =========================================================
+   RESPONSIVIDADE TÁTICA (MOBILE & TABLET)
+========================================================= */
+@media (max-width: 1024px) {
+  .page-merch .merch-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .page-merch .merch-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-top: 40px !important;
+  }
+
+  .page-merch .page-hero h1 {
+    font-size: clamp(2rem, 6vw, 2.5rem);
+  }
+
+  .page-merch .tools {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .page-merch .search,
+  .page-merch .sort {
+    width: 100%;
+  }
+}
+
+@media (max-width: 520px) {
+  .page-merch .merch-shell {
+    padding: 0 15px;
+  }
+
+  .page-merch .merch-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .page-merch .filter-row {
+    gap: 10px;
+  }
+
+  .page-merch .btn-tatico.js-filter {
+    flex: 1 1 calc(50% - 10px);
+    padding: 14px 10px;
+    font-size: 0.8rem;
+    text-align: center;
+  }
+
+  .page-merch .tools {
+    margin-top: 10px;
+  }
+}

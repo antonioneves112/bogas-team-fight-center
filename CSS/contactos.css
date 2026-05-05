@@ -1,0 +1,215 @@
+/* ==================================================
+   CONTACTOS — MASTER DESIGN (Simetria & Alinhamento)
+   ================================================== */
+
+.page-contactos {
+  background:
+    radial-gradient(
+      1200px 600px at 50% 0%,
+      rgba(255, 255, 255, 0.08),
+      rgba(0, 0, 0, 0) 55%
+    ),
+    linear-gradient(rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0.9)),
+    url("../img/PRETO.jpg") no-repeat center/cover;
+
+  color: var(--text);
+  min-height: 100vh;
+}
+
+.page-contactos .main-content {
+  padding: 60px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ====== HERO ====== */
+.page-contactos .page-hero {
+  text-align: center;
+  margin-bottom: 20px;
+  animation: fadeIn 0.8s ease-out;
+}
+
+.page-contactos .page-hero h1 {
+  font-family: "Orbitron", sans-serif;
+  font-size: clamp(2.2rem, 5vw, 3rem);
+  letter-spacing: 4px;
+  margin-bottom: 5px;
+  color: #fff;
+}
+
+.page-contactos .page-hero p {
+  font-family: "Montserrat", sans-serif;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.95rem;
+  margin-bottom: 0;
+}
+
+/* ====== GRID ====== */
+.page-contactos .contactos-grid {
+  display: grid;
+  gap: 30px;
+  width: 100%;
+  max-width: 1200px;
+  margin-top: 0;
+}
+
+@media (min-width: 980px) {
+  .page-contactos .contactos-grid {
+    grid-template-columns: 1.2fr 1fr;
+    align-items: stretch;
+  }
+}
+
+/* ====== CARDS ====== */
+.page-contactos .map-card,
+.page-contactos .info-card {
+  background: rgba(10, 10, 10, 0.8);
+  border: 1px solid rgba(156, 230, 156, 0.15);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+/* ====== MAPA ====== */
+.page-contactos .map-card {
+  height: 100%;
+}
+
+.page-contactos .map-frame {
+  flex-grow: 1;
+  min-height: 400px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.page-contactos .map-frame iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  filter: invert(90%) hue-rotate(180deg) brightness(0.95) contrast(1.05)
+    saturate(0.8);
+}
+
+.page-contactos .map-actions {
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+/* ====== INFO CARD ====== */
+.page-contactos .info-card {
+  padding: 35px;
+  justify-content: space-between;
+}
+
+.page-contactos .info-list {
+  display: grid;
+  gap: 18px;
+  margin-bottom: 30px;
+}
+
+.page-contactos .info-row {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.page-contactos .info-row i {
+  font-size: 1.5rem;
+  color: var(--accent);
+}
+
+.page-contactos .label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-bottom: 5px;
+}
+
+.page-contactos .value {
+  font-family: "Orbitron", sans-serif;
+  font-size: 1.1rem;
+}
+
+.page-contactos .stack {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.page-contactos .link {
+  text-decoration: none;
+  color: inherit;
+  transition: color 0.3s;
+}
+
+.page-contactos .link:hover {
+  color: var(--accent);
+}
+
+/* ====== BOTÕES CTA (Grelha) ====== */
+.page-contactos .cta-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  margin-top: auto;
+  width: 100%;
+}
+
+.page-contactos .cta-row .btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 28px 15px;
+  min-height: 110px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(156, 230, 156, 0.15);
+  border-radius: 12px;
+  color: #fff;
+  text-decoration: none;
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.page-contactos .cta-row .btn i {
+  font-size: 1.6rem;
+  color: var(--accent);
+  transition: transform 0.3s ease;
+}
+
+.page-contactos .cta-row .btn:hover {
+  background: rgba(156, 230, 156, 0.08);
+  border-color: var(--accent);
+  box-shadow: 0 0 20px rgba(156, 230, 156, 0.1);
+}
+
+.page-contactos .cta-row .btn:hover i {
+  text-shadow: 0 0 10px rgba(156, 230, 156, 0.5);
+}
+
+/* ====== RESPONSIVO ====== */
+@media (max-width: 700px) {
+  .page-contactos .cta-row {
+    grid-template-columns: 1fr;
+  }
+  .page-contactos .cta-row .btn {
+    flex-direction: row;
+    padding: 20px;
+    min-height: auto;
+    justify-content: flex-start;
+    padding-left: 30px;
+    font-size: 0.9rem;
+  }
+}

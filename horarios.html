@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description"
+    content="Consulta o mapa de aulas e horários da Bogas Team Kickboxing. Treinos pós-laboral. Encontra o horário ideal para a tua rotina!">
+  <title>Horários | Bogas Team Fight Center</title>
+  <link rel="icon" href="../img/favicon.ico" />
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="../CSS/theme.css" />
+  <link rel="stylesheet" href="../CSS/horarios.css" />
+  <link rel="stylesheet" href="../CSS/menu.css" />
+</head>
+
+<body class="page-horarios">
+  <header class="site-header">
+    <a href="./index.html" class="site-logo">Bogas Team Fight Center</a>
+    <button class="menu-toggle"><i class="bx bx-menu"></i></button>
+    <nav class="site-nav" id="site-nav">
+      <a href="./index.html">Home</a>
+      <a href="./espaco.html">Espaço</a>
+            <a href="equipa.html">Staff</a>
+      <a href="./horarios.html" class="active">Horários</a>
+
+      <div class="dropdown">
+        <button class="dropdown-trigger">Eventos <i class='bx bx-chevron-down'></i></button>
+        <div class="dropdown-menu">
+          <a href="./graduacoes.html">Graduações</a>
+        </div>
+      </div>
+      <a href="./merchandising.html">Store</a>
+      <a href="./patrocinadores.html">Patrocinadores</a>
+      <a href="./contactos.html">Contactos</a>
+    </nav>
+  </header>
+  <div class="site-nav-overlay"></div>
+
+  <main class="main-content">
+    <section class="schedule">
+      <header class="page-hero">
+        <h1>HORÁRIOS DE TREINO</h1>
+        <p class="schedule-subtitle">Selecione uma modalidade abaixo para visualizar os horários disponíveis.</p>
+
+        <div class="filters">
+          <div class="filter-row">
+            <button class="btn-tatico js-filter" data-filter="kickboxing">Kickboxing</button>
+            <button class="btn-tatico js-filter" data-filter="boxe">Boxe</button>
+          </div>
+          <p class="filter-count" id="filterCount"></p>
+        </div>
+
+
+      </header>
+
+      <div id="days-container" class="days-grid is-hidden"></div>
+    </section>
+
+    <section id="journeySection" class="journey-section glass-panel is-hidden">
+      <header class="section-head">
+        <h2>INICIA A JORNADA</h2>
+        <p>Sem filtros. Sem julgamentos. Apenas foco.</p>
+      </header>
+
+      <div class="journey-grid">
+        <article class="card">
+          <i class="bx bx-closet"></i>
+          <h3>O Essencial</h3>
+          <p>Traz roupa confortável, água e vontade de aprender. O equipamento técnico? Nós aconselhamos o melhor para
+            ti no
+            local.</p>
+        </article>
+
+        <article class="card">
+          <i class="bx bx-shield-x"></i>
+          <h3>Segurança Primeiro</h3>
+          <p>O combate (sparring) é uma escolha, não uma obrigação. A tua integridade física é a nossa prioridade
+            absoluta.
+          </p>
+        </article>
+
+        <article class="card">
+          <i class="bx bx-group"></i>
+          <h3>Mentoria</h3>
+          <p>Nunca estarás sozinho. A nossa equipa guia cada movimento teu, garantindo que evoluis ao teu ritmo, sem
+            pressão.</p>
+        </article>
+      </div>
+
+      <div class="schedule-cta" id="scheduleCta">
+        <button type="button" id="backToSchedule" class="btn-back">
+          <i class="bx bx-left-arrow-alt"></i> Escolher outro horário
+        </button>
+
+        <p class="schedule-selected" id="selectedInfo"></p>
+
+        <button class="btn-tatico is-active" id="scheduleCtaBtn">
+          Confirmar
+        </button>
+      </div>
+
+    </section>
+  </main>
+
+  <script src="../JS/menu.js" defer></script>
+  <script src="../JS/horarios.js" defer></script>
+</body>
+
+</html>

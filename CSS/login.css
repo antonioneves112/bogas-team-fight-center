@@ -1,0 +1,155 @@
+/* CSS/login.css - Estética Tática para a Área Restrita */
+
+.page-login {
+  /* Centra o painel no meio do ecrã perfeitamente */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.login-wrapper {
+  width: 100%;
+  max-width: 420px;
+  position: relative;
+  animation: fadeIn 0.8s ease-out;
+}
+
+/* Botão subtil para voltar ao site público */
+.btn-back-home {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  color: rgba(255, 255, 255, 0.5);
+  font-family: "Montserrat", sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.btn-back-home:hover {
+  color: #fff;
+  transform: translateX(-5px);
+}
+
+.btn-back-home i {
+  font-size: 1.2rem;
+}
+
+/* O Cartão Central */
+.login-panel {
+  padding: 40px 30px !important;
+  margin-top: 0 !important;
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 35px;
+}
+
+.login-header i {
+  font-size: 3rem;
+  color: var(--accent);
+  margin-bottom: 10px;
+  text-shadow: 0 0 20px rgba(156, 230, 156, 0.3);
+}
+
+.login-header h1 {
+  font-family: "Orbitron", sans-serif;
+  font-size: 1.5rem;
+  color: #fff;
+  letter-spacing: 2px;
+  margin: 0 0 8px;
+}
+
+.login-header p {
+  color: var(--muted);
+  font-family: "Montserrat", sans-serif;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+/* O Formulário e Inputs */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.8);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* O ícone dentro do input */
+.input-wrapper i {
+  position: absolute;
+  left: 15px;
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 1.2rem;
+  transition: all 0.3s ease;
+}
+
+/* O campo de texto em si */
+.input-wrapper input {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 14px 15px 14px 45px; /* Espaço à esquerda para o ícone */
+  color: #fff;
+  font-family: "Montserrat", sans-serif;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.input-wrapper input::placeholder {
+  color: rgba(255, 255, 255, 0.2);
+}
+
+/* O estado "Hover" e "Focus" (Quando clicas para escrever) */
+.input-wrapper input:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.input-wrapper input:focus {
+  border-color: var(--accent);
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 0 15px rgba(156, 230, 156, 0.15);
+}
+
+/* Pinta o ícone de verde neon quando o input está focado */
+.input-wrapper input:focus ~ i {
+  color: var(--accent);
+  text-shadow: 0 0 8px rgba(156, 230, 156, 0.4);
+}
+
+/* Ajustes no botão final */
+.login-btn {
+  margin-top: 10px;
+  width: 100%;
+  height: 52px;
+  font-size: 0.95rem;
+}

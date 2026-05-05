@@ -1,0 +1,65 @@
+/* CSS/combates.css */
+.page-combates {
+  background:
+    radial-gradient(
+      1100px 600px at 50% 0%,
+      rgba(255, 255, 255, 0.06),
+      rgba(0, 0, 0, 0) 60%
+    ),
+    var(--bg);
+  min-height: 100vh;
+}
+
+.page-combates .combates-grid {
+  margin-top: 18px;
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.page-combates .item {
+  width: 100%;
+  padding: 0;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  /* O resto do estilo vem da classe .card no theme.css */
+}
+
+.page-combates .item img {
+  width: 100%;
+  height: 260px;
+  object-fit: cover;
+  background: rgba(0, 0, 0, 0.35);
+  transition: transform 0.4s ease;
+}
+
+.page-combates .item:hover img {
+  transform: scale(1.05); /* Zoom suave na imagem */
+}
+
+.page-combates .descricao {
+  font-family: "Orbitron", sans-serif;
+  letter-spacing: 0.7px;
+  font-size: 1rem;
+  padding: 12px 14px;
+  background: rgba(0, 0, 0, 0.6);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  z-index: 2;
+  position: relative;
+}
+
+@media (max-width: 980px) {
+  .page-combates .combates-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 560px) {
+  .page-combates .combates-grid {
+    grid-template-columns: 1fr;
+  }
+  .page-combates .item img {
+    height: 220px;
+  }
+}

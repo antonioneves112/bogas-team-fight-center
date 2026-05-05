@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description"
+    content="Conhece as instalações da Bogas Team Kickboxing. Um espaço totalmente equipado com tatami e sacos profissionais para garantires a tua melhor performance.">
+  <title>Espaço | Bogas Team Fight Center</title>
+
+  <link rel="icon" href="../img/favicon.ico" type="image/x-icon" />
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+
+  <link rel="stylesheet" href="../CSS/theme.css" />
+  <link rel="stylesheet" href="../CSS/menu.css" />
+  <link rel="stylesheet" href="../CSS/espaco.css" />
+</head>
+
+<body class="page-espaco">
+
+  <header class="site-header" role="banner">
+    <a href="/index.html" class="site-logo">Bogas Team Fight Center</a>
+    <button class="menu-toggle" aria-label="Abrir Menu"><i class="bx bx-menu"></i></button>
+
+    <nav class="site-nav" id="site-nav">
+      <a href="./index.html">Home</a>
+      <a href="./espaco.html" class="active">Espaço</a>
+            <a href="equipa.html">Staff</a>
+      <a href="./horarios.html">Horários</a>
+
+      <div class="dropdown">
+        <button class="dropdown-trigger">Eventos <i class='bx bx-chevron-down'></i></button>
+        <div class="dropdown-menu">
+          <a href="./graduacoes.html">Graduações</a>
+          <!-- <a href="./combates.html">Combates</a>
+          <a href="./treinadores.html#muaythai">Convívios</a> -->
+        </div>
+      </div>
+
+      <a href="./merchandising.html">Store</a>
+      <a href="./patrocinadores.html">Patrocinadores</a>
+      <a href="./contactos.html">Contactos</a>
+    </nav>
+  </header>
+  <div class="site-nav-overlay"></div>
+
+  <main class="main-content">
+    <div class="espaco-shell">
+      <section class="page-hero">
+        <h1>Instalações</h1>
+        <p>Um ambiente desenhado para o foco e disciplina. Entra numa zona dedicada
+          exclusivamente à
+          tua superação. No Bogas Team Fight Center, cada detalhe do espaço foi pensado para elevar a tua técnica e
+          condição
+          física, num ambiente onde o respeito e a dedicação falam mais alto.</p>
+      </section>
+
+      <section class="gallery-trigger-section">
+        <button class="gallery-card js-open-gallery" type="button">
+          <div class="gallery-media">
+            <img src="../img/espaco.webp" alt="Tatami Principal" />
+            <div class="overlay-glow"></div>
+          </div>
+          <div class="gallery-content">
+            <i class='bx bx-images'></i>
+            <span>Explorar Instalações</span>
+          </div>
+        </button>
+      </section>
+
+      <section class="amenities-section glass-panel">
+        <div class="amenities-grid">
+          <article class="card">
+            <i class="bx bx-layer"></i>
+            <h3>Tatami Profissional</h3>
+            <p>Área ampla com absorção de impacto para segurança total.</p>
+          </article>
+
+          <article class="card amenity-card">
+            <i class="bx bx-dumbbell"></i>
+            <h3>Equipamento</h3>
+            <p>Pesos livres e equipamento funcional. Porque a técnica precisa de um motor forte para funcionar.</p>
+          </article>
+
+          <article class="card amenity-card">
+            <i class="bx bx-target-lock"></i>
+            <h3>Sacos & Pads</h3>
+            <p>Material de impacto de alta qualidade para afiares a precisão e a potência dos teus golpes.</p>
+          </article>
+
+          <article class="card amenity-card">
+            <i class="bx bx-water"></i>
+            <h3>Balneário</h3>
+            <p>Moderno, funcional e focado no teu conforto. O cuidado com o atleta está presente em cada detalhe.
+            </p>
+          </article>
+
+
+        </div>
+      </section>
+
+
+
+
+    </div>
+  </main>
+
+  <section class="slider-section" id="gym-modal">
+    <button class="close-slider btn-tatico" onclick="closePremiumModal()">
+      <i class='bx bx-x'></i>
+    </button>
+
+    <div class="slider-wrapper">
+      <div class="slider-stage">
+        <img id="modal-main-img" src="" alt="Galeria Bogas Team">
+      </div>
+
+      <button class="slider-btn prev btn-tatico" onclick="changeImage(-1)">
+        <i class='bx bx-chevron-left'></i>
+      </button>
+      <button class="slider-btn next btn-tatico" onclick="changeImage(1)">
+        <i class='bx bx-chevron-right'></i>
+      </button>
+
+      <div class="slider-caption" id="modal-caption"></div>
+    </div>
+  </section>
+
+  <script src="../JS/menu.js" defer></script>
+  <script src="../JS/gallery.js" defer></script>
+  <script src="../JS/espaco.js" defer></script>
+</body>
+
+</html>

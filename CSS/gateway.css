@@ -1,0 +1,196 @@
+/* CSS/gateway.css - Layout Premium para o Hub de Comando */
+* {
+  -webkit-tap-highlight-color: transparent; /* Remove o azul do Android ao tocar */
+  outline: none; /* Remove bordas de seleção amareladas/azuis */
+}
+
+.page-gateway {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* =========================================================
+   AJUSTE DE POSIÇÃO (PUXAR O CONTEÚDO PARA CIMA)
+   ========================================================= */
+/* Corta o espaço de 72px que estava reservado para o menu normal do site */
+.page-gateway .main-content {
+  padding-top: 50px !important;
+}
+
+/* Reduz o espaço acima do logo para o encostar mais ao topo */
+.page-gateway .page-hero {
+  padding-top: 0 !important;
+}
+
+.gateway-logo {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.gateway-logo img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  box-shadow: 0 0 20px rgba(74, 222, 128, 0.2);
+}
+
+/* Corta o espaço extra debaixo do texto "Selecione o seu portal..." */
+.page-gateway .page-hero p {
+  margin-bottom: 5px !important;
+}
+
+.gateway-shell {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 5px 0 20px 0; /* O topo bem encostado */
+  gap: 30px;
+}
+
+/* =========================================================
+   GRELHA E CARTÕES (LARGURA MÁXIMA PARA MOBILE)
+   ========================================================= */
+.gateway-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px; /* Cartões mais próximos no telemóvel */
+  width: 100%;
+  max-width: 500px;
+  padding: 0 8px; /* Cartões mais largos a aproveitar o ecrã */
+}
+
+/* =========================================================
+   🥊 UPGRADE UI/UX - EFEITOS E CORES PREMIUM
+   ========================================================= */
+.gateway-card {
+  background: rgba(15, 15, 15, 0.75) !important; /* Fundo mais escuro */
+  backdrop-filter: blur(12px); /* Desfoca a imagem do crânio por trás */
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08); /* Borda muito suave */
+  padding: 40px 15px !important; /* Espaço equilibrado para telemóvel */
+  border-radius: 18px;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  text-decoration: none; /* Remove o sublinhado padrão */
+}
+
+/* Efeitos de Hover (PC) e Focus */
+.gateway-card:hover {
+  border-color: var(--accent); /* Acende com a cor verde */
+  transform: translateY(-8px); /* Salto tático */
+  box-shadow: 0 15px 35px rgba(74, 222, 128, 0.15); /* Brilho suave Bogas Team */
+}
+
+.gateway-card i {
+  font-size: 3.5rem; /* Ícone imponente */
+  margin-bottom: 18px;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.gateway-card:hover i {
+  transform: scale(1.1); /* Ícone cresce ao passar o rato */
+}
+
+/* Brilho específico no ícone do Sócio */
+.gateway-card.card-atleta i {
+  color: #fff;
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.2));
+}
+
+/* Brilho específico no ícone do Treinador */
+.gateway-card.card-admin i {
+  color: var(--accent); /* Usa o verde neon do ginásio */
+  filter: drop-shadow(0 0 8px rgba(74, 222, 128, 0.2));
+}
+
+.gateway-card h2 {
+  font-family: "Orbitron", sans-serif;
+  font-size: 1.1rem;
+  margin-bottom: 5px;
+  letter-spacing: 1px;
+  color: #fff;
+}
+
+/* Contraste melhorado na descrição */
+.gateway-card p {
+  color: #d1d5db !important; /* Cinzento mais claro e legível */
+  font-size: 0.8rem;
+  line-height: 1.4;
+  margin-top: 10px;
+  margin-bottom: 0;
+  font-weight: 300;
+}
+
+/* =========================================================
+   AJUSTE PARA TABLETS E PCS (Ecrãs Grandes)
+   ========================================================= */
+@media (min-width: 768px) {
+  .gateway-grid {
+    grid-template-columns: 1fr 1fr;
+    max-width: 850px;
+    gap: 30px; /* Afasta os cartões no PC */
+  }
+
+  .gateway-card {
+    padding: 50px 30px !important; /* Mais respiração interna no PC */
+  }
+
+  .gateway-card h2 {
+    font-size: 1.4rem;
+  }
+
+  .gateway-card p {
+    font-size: 0.95rem;
+  }
+
+  .gateway-card i {
+    font-size: 4rem;
+  }
+
+  .gateway-shell {
+    min-height: 60vh;
+  }
+}
+
+/* =========================================================
+   🥊 RODAPÉ COM A VERSÃO DA APP DISCRETA
+   ========================================================= */
+.gateway-footer {
+  text-align: center;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  opacity: 0.3; /* Quase invisível, para não roubar o foco dos cartões */
+  margin-top: 50px;
+  margin-bottom: 20px;
+  font-weight: 400;
+  color: #fff;
+}
+
+#app-version-top,
+#app-version-display {
+  font-family: "Orbitron", sans-serif;
+}
+
+/* Quando o dedo toca no cartão (Android/Mobile) */
+.gateway-card:active {
+  transform: scale(
+    0.95
+  ); /* O cartão "encolhe" ligeiramente como um botão real */
+  border-color: var(--accent); /* Acende a borda verde instantaneamente */
+  background: rgba(
+    74,
+    222,
+    128,
+    0.1
+  ) !important; /* Dá um brilho verde suave ao fundo */
+  box-shadow: 0 5px 15px rgba(74, 222, 128, 0.3);
+}

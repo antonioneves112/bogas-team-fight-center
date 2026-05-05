@@ -1,0 +1,1439 @@
+/* CSS/portal.css - RESTAURO DE SIMETRIA ABSOLUTA E RESPONSIVIDADE DE ELITE */
+
+:root {
+  --accent: #25d366;
+  --bg-dark: #080808;
+  --muted: #888;
+}
+
+body.page-portal {
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)),
+    url("../img/PRETO.jpg") center center / cover no-repeat;
+  background-color: #080808;
+  color: #fff;
+  font-family: "Montserrat", sans-serif;
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  /* TÁTICA MOBILE: Exatamente 5px no topo, 15px nas laterais e 20px no fundo */
+  padding: 5px 15px 20px 15px;
+  box-sizing: border-box;
+}
+
+/* =========================================================================
+   1. ÁREA DE LOGIN (CÓPIADO MILIMETRICAMENTE DO LOGIN.CSS)
+   ========================================================================= */
+.login-wrapper {
+  width: 100%;
+  max-width: 420px;
+  position: relative;
+  margin: auto;
+  animation: fadeIn 0.8s ease-out;
+}
+
+.btn-back-home {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  color: rgba(255, 255, 255, 0.5);
+  font-family: "Montserrat", sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.btn-back-home:hover {
+  color: #fff;
+  transform: translateX(-5px);
+}
+
+.btn-back-home i {
+  font-size: 1.2rem;
+}
+
+.login-panel {
+  padding: 40px 30px !important;
+  margin-top: 0 !important;
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 35px;
+}
+
+.login-header i {
+  font-size: 3rem;
+  color: var(--accent);
+  margin-bottom: 10px;
+  text-shadow: 0 0 20px rgba(156, 230, 156, 0.3);
+}
+
+.login-header h1 {
+  font-family: "Orbitron", sans-serif;
+  font-size: 1.5rem;
+  color: #fff;
+  letter-spacing: 2px;
+  margin: 0 0 8px;
+}
+
+.login-header p {
+  color: var(--muted);
+  font-family: "Montserrat", sans-serif;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+}
+
+.form-group label {
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.8);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.input-wrapper i {
+  position: absolute;
+  left: 15px;
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 1.2rem;
+  transition: all 0.3s ease;
+}
+
+.input-wrapper input {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 14px 15px 14px 45px;
+  color: #fff;
+  font-family: "Montserrat", sans-serif;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.input-wrapper input::placeholder {
+  color: rgba(255, 255, 255, 0.2);
+}
+
+.input-wrapper input:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.input-wrapper input:focus {
+  border-color: var(--accent);
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 0 15px rgba(156, 230, 156, 0.15);
+}
+
+.input-wrapper input:focus ~ i {
+  color: var(--accent);
+  text-shadow: 0 0 8px rgba(156, 230, 156, 0.4);
+}
+
+.login-btn {
+  margin-top: 10px;
+  width: 100%;
+  height: 52px;
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  cursor: pointer;
+}
+
+/* =========================================================================
+   2. ESTRUTURA DO DASHBOARD DO ATLETA (Portal)
+   ========================================================================= */
+.portal-container {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto auto auto;
+  animation: slideUp 0.6s ease-out;
+}
+
+/* --- CABEÇALHO PORTAL --- */
+.portal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px !important;
+  border: 1px solid rgba(37, 211, 102, 0.15) !important;
+  margin-bottom: 5px;
+}
+
+.header-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.profile-area {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.profile-pic {
+  width: 46px;
+  height: 46px;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  object-fit: cover;
+}
+.profile-info h2 {
+  font-family: "Orbitron", sans-serif;
+  font-size: 1.05rem;
+  margin: 0;
+  font-weight: 700;
+}
+.profile-info p {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.btn-icon {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 1.4rem;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+/* NOVO HOVER PARA O BOTÃO DO EURO */
+#btnVerPagamentos:hover {
+  color: var(--accent);
+  text-shadow: 0 0 8px rgba(156, 230, 156, 0.4);
+}
+
+#btnAbrirModalPass:hover {
+  color: var(--accent);
+  text-shadow: 0 0 8px rgba(156, 230, 156, 0.4);
+}
+#btnSairPortal:hover {
+  color: #ff4d4d;
+  text-shadow: 0 0 8px rgba(255, 77, 77, 0.4);
+}
+
+/* --- CARTÃO MENSALIDADE (COMPACTO NO MOBILE) --- */
+.status-card {
+  text-align: center;
+  padding: 12px !important;
+  margin-bottom: 5px;
+}
+.status-icon {
+  font-size: 2rem;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+.status-text h3 {
+  font-family: "Montserrat", sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 5px;
+}
+.status-text h1 {
+  font-family: "Orbitron", sans-serif;
+  font-size: 2.6rem;
+  margin: 0 0 5px 0;
+  font-weight: 900;
+}
+
+.status-text h1.status-pago {
+  color: var(--accent);
+  text-shadow: 0 0 20px rgba(156, 230, 156, 0.3);
+}
+.status-text h1.status-em-divida {
+  color: #ff4d4d;
+  text-shadow: 0 0 20px rgba(255, 77, 77, 0.3);
+}
+
+.status-text p {
+  font-size: 0.85rem;
+  color: #fff;
+  opacity: 0.8;
+  margin: 0;
+}
+
+/* --- GRELHA DETALHES (TÁTICA MOBILE REFINADA 2x2) --- */
+.portal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.info-card {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  padding: 20px 10px !important;
+  height: 185px !important;
+  box-sizing: border-box !important;
+  text-align: center !important;
+}
+
+/* 3. Limpeza do #labelUltimaGrad (podes substituir a regra que criámos há pouco por esta) */
+#labelUltimaGrad {
+  display: block !important;
+  font-size: 0.65rem !important;
+  color: var(--muted) !important;
+}
+
+.info-card i {
+  color: var(--accent) !important;
+  font-size: 1.6rem !important;
+  margin-bottom: 16px !important;
+  display: flex !important;
+  align-items: center !important;
+  height: 30px !important;
+}
+
+.info-card h4 {
+  margin: 0 0 8px 0 !important;
+  font-size: 0.7rem !important;
+  font-family: "Montserrat", sans-serif;
+  color: var(--muted);
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.info-card p {
+  margin: 12px 0 !important;
+  font-size: 0.85rem !important;
+  line-height: 1.2 !important;
+  font-family: "Orbitron", sans-serif;
+  font-weight: 700;
+  color: #fff;
+  word-wrap: break-word;
+}
+
+/* 4. Badges (Pendente, Faltam 2 Meses) */
+.info-card .badge-status {
+  margin-top: 8px !important;
+  font-size: 0.55rem !important;
+  padding: 4px 8px !important;
+}
+
+/* --- BOTÃO REGULAMENTO --- */
+.btn-outline {
+  background: rgba(37, 211, 102, 0.05) !important;
+  border: 1px solid rgba(37, 211, 102, 0.3) !important;
+  color: #fff !important;
+  font-family: "Orbitron", sans-serif !important;
+  font-size: 0.95rem;
+  padding: 16px !important;
+  border-radius: 12px !important;
+  cursor: pointer;
+  width: 100%;
+  margin-bottom: 0 !important;
+}
+
+/* --- MODAIS DE SOBREPOSIÇÃO (Password) --- */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(10px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.modal-content {
+  width: 95%;
+  max-width: 450px;
+  padding: 35px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 15px;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-family: "Orbitron", sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-fechar {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.btn-fechar:hover {
+  color: #ff4d4d;
+}
+
+.hidden {
+  display: none !important;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Estilos para o Histórico de Pagamentos */
+.table-container-modal {
+  margin-top: 20px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.tabela-historico {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.tabela-historico th {
+  text-align: left;
+  padding: 12px;
+  border-bottom: 1px solid rgba(37, 211, 102, 0.3);
+  color: var(--accent);
+  font-family: "Orbitron", sans-serif;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+}
+
+.tabela-historico td {
+  padding: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: #fff;
+}
+
+.tabela-historico tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* Badge de estado dentro da tabela */
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.status-badge.pago {
+  background: rgba(37, 211, 102, 0.2);
+  color: var(--accent);
+}
+.status-badge.pendente {
+  background: rgba(255, 77, 77, 0.2);
+  color: #ff4d4d;
+}
+
+/* Estilos para o Modal de Cobrança */
+.modal-shame {
+  border: 2px solid #ff4d4d !important;
+  box-shadow: 0 0 40px rgba(255, 77, 77, 0.4) !important;
+  text-align: center;
+  max-width: 420px;
+}
+.modal-shame .text-accent {
+  color: #ff4d4d !important;
+}
+.icon-shame-warning {
+  font-size: 5rem;
+  color: #ff4d4d;
+  margin-bottom: 15px;
+  display: block;
+}
+
+.shame-title {
+  color: #ff4d4d;
+  margin-bottom: 15px;
+  font-family: "Orbitron", sans-serif;
+  letter-spacing: 1px;
+}
+
+.shame-description {
+  margin-bottom: 25px;
+  color: #eee;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.btn-shame-confirm {
+  background: #ff4d4d !important;
+  border-color: #ff4d4d !important;
+  color: white !important;
+  width: 100%;
+}
+
+/* =========================================
+   MODAL DO REGULAMENTO
+   ========================================= */
+.modal-z-index {
+  z-index: 9999;
+}
+
+.modal-regulamento-box {
+  max-width: 600px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.scrollable-body {
+  overflow-y: auto;
+  padding-right: 10px;
+  text-align: left;
+  line-height: 1.6;
+  color: #ccc;
+}
+
+.scrollable-body h4 {
+  color: var(--accent);
+  margin-bottom: 10px;
+  margin-top: 15px; /* Dá um respiro caso haja texto acima */
+}
+
+.scrollable-body h4:first-child {
+  margin-top: 0;
+}
+
+.scrollable-body p {
+  margin-bottom: 15px;
+  font-size: 0.9rem;
+}
+
+.modal-footer-full {
+  margin-top: 20px;
+}
+
+.btn-full {
+  width: 100%;
+}
+/* =========================================
+   REGULAMENTO - ESTILOS E DESTAQUES
+   ========================================= */
+
+.modal-z-index {
+  z-index: 9999;
+}
+
+.modal-regulamento-box {
+  max-width: 600px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.scrollable-body {
+  overflow-y: auto;
+  padding-right: 15px;
+  text-align: left;
+}
+
+.modal-section-title {
+  margin-top: 0 !important;
+}
+
+.scrollable-body h4 {
+  color: var(--accent);
+  margin: 25px 0 12px 0;
+  font-family: "Orbitron", sans-serif;
+  font-size: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 5px;
+}
+
+/* Relevo para as Multas e Valores */
+.highlight-title {
+  color: #ff4d4d !important;
+}
+
+.text-accent {
+  color: var(--accent);
+  font-weight: bold;
+}
+
+.text-danger {
+  color: #ff4d4d;
+  font-weight: 800;
+  font-size: 1.1rem;
+  text-shadow: 0 0 5px rgba(255, 77, 77, 0.3);
+}
+
+.alert-box {
+  background: rgba(255, 77, 77, 0.12);
+  padding: 15px;
+  border-left: 5px solid #ff4d4d;
+  border-radius: 4px;
+  margin: 15px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.alert-box i {
+  font-size: 1.8rem;
+  color: #ff4d4d;
+}
+
+/* Listas e Parágrafos */
+.modal-list {
+  margin-left: 20px;
+  margin-bottom: 15px;
+  color: #ccc;
+  font-size: 0.9rem;
+}
+
+.modal-list li {
+  margin-bottom: 8px;
+}
+
+.scrollable-body p {
+  margin-bottom: 12px;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: #eee;
+}
+
+.btn-full {
+  width: 100%;
+  margin-top: 10px;
+}
+
+/* =========================================
+   ALERTA CARTÃO (FEDERAÇÃO E MENSALIDADES) - GÉMEO VERMELHO PERFEITO
+   ========================================= */
+.card-alerta-vermelho {
+  background: rgba(
+    0,
+    0,
+    0,
+    0.42
+  ) !important; /* Fundo base igual ao glass-panel */
+  border: 1px solid rgba(255, 77, 77, 0.22) !important; /* Borda vermelha suave */
+  box-shadow:
+    var(--shadow),
+    0 0 0 3px rgba(255, 77, 77, 0.06),
+    0 0 22px rgba(255, 77, 77, 0.08) !important; /* Brilho exterior vermelho */
+}
+
+/* 🥊 Clonamos o brilho interno do fundo e passamos a vermelho */
+.card-alerta-vermelho::before {
+  background:
+    radial-gradient(
+      120% 90% at 50% 0%,
+      rgba(255, 77, 77, 0.08),
+      rgba(255, 77, 77, 0) 60%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.07),
+      rgba(255, 255, 255, 0) 42%
+    ) !important;
+  display: block !important;
+}
+
+/* 🥊 Clonamos a "linha" especial do topo e passamos a vermelho (com o mesmo tamanho da verde) */
+.card-alerta-vermelho::after {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 77, 77, 0.65),
+    transparent
+  ) !important;
+  box-shadow: 0 0 12px rgba(255, 77, 77, 0.18) !important;
+  display: block !important;
+}
+
+/* Mantém letras e ícones a vermelho vivo */
+.card-alerta-vermelho i,
+.card-alerta-vermelho h1,
+.card-alerta-vermelho h3,
+.card-alerta-vermelho h4,
+.card-alerta-vermelho p {
+  color: #ff4d4d !important;
+  text-shadow: 0 0 8px rgba(255, 77, 77, 0.3) !important;
+}
+
+/* =========================================
+   BANNER DE NOTIFICAÇÕES (PORTAL)
+   ========================================= */
+.notificacoes-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px !important;
+  margin-bottom: 15px;
+  text-align: center;
+  gap: 15px;
+  border: 1px solid rgba(37, 211, 102, 0.4) !important;
+  box-shadow: 0 0 15px rgba(37, 211, 102, 0.05) !important;
+}
+
+.notificacoes-texto h3 {
+  font-family: "Orbitron", sans-serif;
+  color: var(--accent);
+  margin: 0 0 5px 0;
+  font-size: 1.1rem;
+}
+
+.notificacoes-texto p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #ccc;
+}
+
+.btn-alerta {
+  padding: 12px 20px !important;
+  font-size: 0.85rem !important;
+  white-space: nowrap;
+}
+
+/* =========================================
+   MODAL DE AVISO VERDE (NOTIFICAÇÕES)
+   ========================================= */
+.modal-alerta-verde {
+  border: 2px solid var(--accent) !important;
+  box-shadow: 0 0 40px rgba(37, 211, 102, 0.2) !important;
+  text-align: center;
+  max-width: 420px;
+}
+
+.icon-alerta-verde {
+  font-size: 5rem;
+  color: var(--accent);
+  margin-bottom: 15px;
+  display: block;
+}
+
+.titulo-verde {
+  color: var(--accent) !important;
+}
+
+/* =========================================================================
+   🥊 AJUSTES EXCLUSIVOS PARA DESKTOP (Ecrãs Grandes)
+   ========================================================================= */
+@media (min-width: 900px) {
+  /* Restaura as 4 colunas largas em PC[cite: 4] */
+  .portal-grid {
+    grid-area: grid;
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 15px !important;
+    margin-bottom: 0 !important;
+  }
+
+  /* Remove qualquer altura fixa imposta ao mobile e solta o layout[cite: 4] */
+  .info-card {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 45px 20px !important;
+    height: auto !important;
+    min-height: auto !important;
+    box-sizing: border-box !important;
+    text-align: center !important;
+  }
+
+  /* Ícones imponentes no PC */
+  .info-card i {
+    color: var(--accent) !important;
+    font-size: 3.2rem !important;
+    margin: 0 0 18px 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    height: auto !important;
+  }
+
+  /* Títulos largos e elegantes */
+  .info-card h4 {
+    margin: 0 0 8px 0 !important;
+    font-size: 0.85rem !important;
+  }
+
+  /* Valores grandes em destaque */
+  .info-card p {
+    margin: 0 !important;
+    font-size: 1.3rem !important;
+    line-height: 1.2 !important;
+  }
+
+  .info-card .badge-status {
+    font-size: 0.7rem !important;
+    padding: 4px 10px !important;
+    margin-top: 10px !important;
+  }
+
+  #labelUltimaGrad {
+    margin-top: 10px !important;
+    font-size: 0.8rem !important;
+  }
+
+  /* No PC, o banner fica deitado (linha) e alinhado na grelha */
+  .notificacoes-box {
+    grid-area: auto; /* Para não quebrar o layout do PC */
+    flex-direction: row;
+    text-align: left;
+  }
+  /* Restaura a margem normal (20px em todos os lados) no PC */
+  body.page-portal {
+    padding: 20px;
+  }
+
+  .portal-container:not(.hidden) {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    grid-template-areas:
+      "header header"
+      "status grid"
+      "status actions";
+    gap: 15px;
+    align-items: stretch;
+    margin: auto;
+  }
+
+  .portal-header {
+    grid-area: header;
+    padding: 8px 25px !important;
+    margin-bottom: 15px;
+  }
+
+  .status-card {
+    grid-area: status;
+    margin-bottom: 0 !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 40px 20px !important;
+  }
+  .status-icon {
+    font-size: 3rem;
+    margin-bottom: 15px;
+  }
+  .status-text h3 {
+    font-size: 0.8rem;
+    letter-spacing: 3px;
+    margin-bottom: 10px;
+  }
+  .status-text h1 {
+    font-size: 3.8rem;
+    margin-bottom: 10px;
+  }
+
+  .portal-actions {
+    grid-area: actions;
+    display: flex;
+    align-items: flex-end;
+  }
+}
+
+/* =========================================================================
+   CAIXA DE MENSAGENS (NOTIFICAÇÕES DO ATLETA)
+   ========================================================================= */
+
+/* Container do botão para posicionar o badge vermelho perfeitamente */
+.notif-wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+/* Bolinha vermelha de alertas não lidos */
+.badge-notificacao {
+  position: absolute;
+  top: -2px;
+  right: -5px;
+  background: #ff4d4d;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 800;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--bg-dark);
+  pointer-events: none;
+}
+
+/* Limite de tamanho para o modal não ficar gigante no PC */
+.modal-notif-size {
+  max-width: 500px;
+}
+
+/* Caixa com scroll elegante para a lista de mensagens */
+.notificacoes-lista {
+  max-height: 65vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-right: 5px; /* Espaço para o scrollbar não colar no texto */
+}
+
+/* Estilo individual de cada mensagem (Carta) */
+/* 🥊 Força o alinhamento à esquerda em toda a caixa de texto da notificação */
+.notif-info {
+  text-align: left !important;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Garante que os elementos se encostam à esquerda */
+  width: 100%;
+}
+
+.notif-item {
+  background: rgba(255, 255, 255, 0.03);
+  border-left: 4px solid var(--accent); /* Linha verde lateral */
+  padding: 15px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  transition: opacity 0.3s;
+}
+
+/* Efeito visual quando a mensagem já foi lida (fica um pouco mais escura) */
+.notif-item.lida {
+  border-left-color: #444;
+  opacity: 0.6;
+}
+
+.notif-info h4 {
+  margin: 0 0 5px 0;
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.9rem;
+  color: #fff;
+  text-align: left;
+  width: 100%; /* Ocupa todo o espaço para o alinhamento funcionar na perfeição */
+}
+
+.notif-info p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #ccc;
+  line-height: 1.4;
+  text-align: left;
+  width: 100%; /* Ocupa todo o espaço para o alinhamento funcionar na perfeição */
+}
+
+.notif-time {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--muted);
+  margin-top: 8px;
+  text-align: left;
+  width: 100%; /* Ocupa todo o espaço para o alinhamento funcionar na perfeição */
+}
+
+/* Botão de apagar a mensagem (Caixote do lixo) */
+.btn-delete-notif {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: color 0.3s ease;
+  padding: 0 0 0 10px;
+}
+
+.btn-delete-notif:hover {
+  color: #ff4d4d;
+}
+
+/* Texto centralizado quando não há mensagens */
+.notif-empty {
+  text-align: center;
+  color: var(--muted);
+  padding: 20px;
+}
+
+/* =========================================================================
+   MODAL DE CONFIRMAÇÃO DE ELIMINAÇÃO (LIXO)
+   ========================================================================= */
+.modal-confirm-delete {
+  max-width: 400px;
+  text-align: center;
+}
+
+.icon-delete-warning {
+  font-size: 4rem;
+  color: #ff4d4d;
+  margin-bottom: 15px;
+  display: block;
+}
+
+.title-confirm-delete {
+  font-family: "Orbitron", sans-serif;
+  color: #fff;
+  margin-bottom: 10px;
+}
+
+.desc-confirm-delete {
+  color: #ccc;
+  font-size: 0.9rem;
+  margin-bottom: 25px;
+}
+
+.actions-confirm-delete {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-half {
+  width: 50%;
+}
+
+.btn-danger {
+  background: rgba(255, 77, 77, 0.1);
+  border-color: #ff4d4d;
+  color: #ff4d4d;
+}
+
+.btn-danger:hover {
+  background: rgba(255, 77, 77, 0.2) !important;
+  box-shadow: 0 0 15px rgba(255, 77, 77, 0.3) !important;
+}
+
+/* =========================================================
+   NOTIFICAÇÕES FLUTUANTES (TOASTS) - PORTAL
+   ========================================================= */
+#toast-container {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  z-index: 99999; /* 🥊 GOLPE APLICADO AQUI: Aumentamos para 99999 para furar os modais! */
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  pointer-events: none; /* Não bloqueia os cliques atrás dele */
+}
+
+.toast {
+  background: rgba(12, 12, 12, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  padding: 16px 20px;
+  border-radius: 12px;
+  min-width: 300px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  transform: translateX(120%); /* Começa fora do ecrã à direita */
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  pointer-events: auto; /* O próprio aviso recebe cliques */
+}
+
+.toast.show {
+  transform: translateX(0); /* Desliza para dentro do ecrã */
+}
+
+.toast i {
+  font-size: 1.8rem;
+}
+
+.toast-sucesso {
+  border-left: 4px solid #25d366; /* Verde Bogas */
+}
+
+.toast-sucesso i {
+  color: #25d366;
+}
+
+.toast-erro {
+  border-left: 4px solid #ff4d4d; /* Vermelho Erro */
+}
+
+.toast-erro i {
+  color: #ff4d4d;
+}
+
+.toast-content h4 {
+  margin: 0 0 5px 0;
+  font-family: "Orbitron", sans-serif;
+  font-size: 1rem;
+  letter-spacing: 0.5px;
+}
+
+.toast-content p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-family: "Montserrat", sans-serif;
+}
+/* 🥊 DESTAQUE DA HORA DA AULA PARTICULAR */
+.hora-destaque {
+  color: var(--accent) !important; /* Puxa o Verde Bogas igual ao ícone */
+}
+
+/* 🥊 FORÇA MÁXIMA PARA O ÍCONE DE ALERTA */
+.info-card.card-alerta-vermelho i {
+  color: #ff4d4d !important;
+  text-shadow: 0 0 10px rgba(255, 77, 77, 0.3) !important;
+}
+
+/* Ajuste para o mobile (Fica em baixo, ao centro) */
+@media (max-width: 768px) {
+  #toast-container {
+    bottom: 20px;
+    right: 50%;
+    transform: translateX(50%);
+    width: 90%;
+  }
+  .toast {
+    min-width: 100%;
+    transform: translateY(150%); /* Começa fora do ecrã por baixo */
+  }
+  .toast.show {
+    transform: translateY(0);
+  }
+}
+
+/* Garante que o ícone central do modal também fique vermelho e com brilho */
+.modal-shame .icon-shame-warning {
+  color: #ff4d4d !important;
+  text-shadow: 0 0 15px rgba(255, 77, 77, 0.5) !important;
+}
+
+/* Força o texto de destaque dentro do parágrafo a ser vermelho em vez de verde */
+.modal-shame .text-accent {
+  color: #ff4d4d !important;
+}
+
+/* 🥊 ESTILOS PARA O CARD DE GRADUAÇÃO */
+.badge-status {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.status-apto {
+  background: rgba(37, 211, 102, 0.2);
+  color: #25d366;
+  border: 1px solid #25d366;
+  box-shadow: 0 0 10px rgba(37, 211, 102, 0.2);
+}
+
+.status-nao-apto {
+  background: rgba(255, 77, 77, 0.15);
+  color: #ff4d4d;
+  border: 1px solid rgba(255, 77, 77, 0.3);
+}
+
+/* =========================================================
+   🥊 CAIXA DE ACEITAÇÃO DO REGULAMENTO
+   ========================================================= */
+.regulamento-aceite-box {
+  margin-top: 25px;
+  padding: 15px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 8px;
+  border-left: 4px solid var(--accent); /* Verde da Bogas Team */
+}
+
+.check-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.check-label input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  margin-top: 3px;
+  accent-color: var(--accent);
+}
+
+.check-text b {
+  color: #fff;
+}
+
+/* Estado visual do botão desativado */
+.btn-disabled {
+  opacity: 0.4;
+  cursor: not-allowed !important;
+}
+
+/* 🥊 ESTILO PREMIUM PARA O MODAL DE AULAS PARTICULARES */
+
+#formAulaParticular .form-group {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+#formAulaParticular label {
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #ffffff;
+  font-size: 0.95rem;
+}
+
+/* Campos de Data e Hora em Dark Theme */
+#formAulaParticular input[type="date"],
+#formAulaParticular input[type="time"] {
+  width: 100%;
+  padding: 12px 15px;
+  background-color: #222; /* Fundo escuro premium */
+  border: 1px solid #444;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 1rem;
+  outline: none;
+  transition: all 0.3s ease;
+  /* Adiciona o ícone de calendário/relógio em branco nos browsers suportados */
+  color-scheme: dark;
+}
+
+/* Efeito Neon/Verde quando o aluno clica no campo */
+#formAulaParticular input[type="date"]:focus,
+#formAulaParticular input[type="time"]:focus {
+  border-color: #25d366; /* Substitui pela tua cor de destaque (ex: verde ou vermelho Bogas) */
+  box-shadow: 0 0 8px rgba(37, 211, 102, 0.3);
+}
+
+/* Afinar o botão de envio */
+#formAulaParticular .actions {
+  margin-top: 30px;
+}
+
+#btnPedirAula {
+  width: 100%;
+  padding: 15px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* =========================================================
+   🥊 ESTILOS DO MODAL DE AULAS PARTICULARES
+   ========================================================= */
+.modal-aula-tamanho {
+  max-width: 450px;
+}
+
+.form-aula {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.aviso-horarios {
+  margin: 0 0 10px 0;
+  font-size: 0.85rem;
+  color: #ccc;
+  line-height: 1.5;
+  border-left: 3px solid var(--accent);
+  padding-left: 10px;
+  text-align: right;
+}
+
+.label-tatico {
+  color: #fff !important;
+  font-family: "Orbitron", sans-serif !important;
+  font-size: 0.8rem !important;
+  letter-spacing: 1px;
+}
+
+.input-tatico {
+  padding-left: 45px !important;
+  cursor: pointer;
+}
+
+.btn-pedir-aula {
+  width: 100%;
+  margin-top: 15px;
+}
+
+/* --- EMPILHAMENTO DE BOTÕES NA ÁREA DE AÇÕES (MOBILE PRIMEIRO) --- */
+.actions-stacked {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+/* 🥊 ALERTA DE PAGAMENTO PENDENTE NO HISTÓRICO */
+.linha-pendente-alerta,
+.linha-pendente-alerta td {
+  color: #ff4d4d !important; /* Vermelho vibrante */
+  text-shadow: 0 0 10px rgba(255, 77, 77, 0.4);
+  font-weight: 700 !important;
+}
+/* =========================================================================
+   📱 TÁTICA EXCLUSIVA MOBILE (Até 899px) - O que ficou impecável não se toca
+   ========================================================================= */
+@media (max-width: 899px) {
+  .portal-grid {
+    display: grid !important;
+    grid-template-columns: repeat(
+      2,
+      1fr
+    ) !important; /* A grelha 2x2 perfeita[cite: 4] */
+    gap: 12px !important;
+    margin-bottom: 15px !important;
+  }
+
+  .info-card {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    padding: 16px 8px !important;
+    height: 170px !important; /* Altura fixa cravada[cite: 4] */
+    box-sizing: border-box !important;
+    text-align: center !important;
+  }
+
+  .info-card i {
+    font-size: 1.7rem !important;
+    margin: 0 0 10px 0 !important;
+    display: block !important;
+    height: auto !important;
+  }
+
+  .info-card h4 {
+    margin: 0 0 6px 0 !important;
+    font-size: 0.75rem !important;
+    letter-spacing: 0.5px !important;
+  }
+
+  .info-card p {
+    margin: 0 0 12px 0 !important;
+    font-size: 0.95rem !important;
+    line-height: 1.2 !important;
+  }
+
+  /* 🥊 EQUILÍBRIO DOS CARTÕES SEM BADGE (Inscrição e Federação) */
+  .info-card p:last-child {
+    margin-top: 22px !important; /* Cria um respiro grande em relação ao título, preenchendo o vazio */
+  }
+
+  .info-card .badge-status {
+    margin: 0 !important;
+    font-size: 0.65rem !important;
+    padding: 5px 10px !important;
+  }
+
+  #labelUltimaGrad {
+    margin-top: 6px !important;
+    margin-bottom: 0 !important;
+    font-size: 0.65rem !important;
+  }
+} /* 🥊 AJUSTE DE PRECISÃO: Equilíbrio entre tamanho e espaço */
+@media (max-width: 600px) {
+  .tabela-historico {
+    font-size: 0.82rem !important; /* Meio-termo perfeito para não cortar */
+  }
+
+  .tabela-historico th {
+    font-size: 0.7rem !important;
+    padding: 10px 2px !important; /* Redução máxima de espaço lateral */
+    letter-spacing: 0.5px;
+  }
+
+  .tabela-historico td {
+    padding: 12px 2px !important; /* Linhas com respiro vertical, mas finas na horizontal */
+  }
+
+  .status-badge {
+    padding: 4px 6px !important;
+    font-size: 0.65rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0;
+  }
+}
+
+/* 🥊 FORÇA O ÍCONE E O TEXTO A ANDAREM SEMPRE JUNTOS E CENTRADOS */
+.teu-botao-marcar-aula {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important; /* O espaço exato entre o ícone e o texto */
+  text-align: center;
+  position: relative;
+}
+
+/* Impede o ícone de fugir para a esquerda nos ecrãs mais pequenos */
+.teu-botao-marcar-aula i {
+  position: static !important; /* Corta qualquer 'absolute' que exista */
+  margin: 0 !important;
+  font-size: 1.2rem;
+}

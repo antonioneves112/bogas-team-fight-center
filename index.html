@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Bogas Team Fight Center — Página Oficial</title>
+  <meta name="description"
+    content="Procuras Kickboxing e Boxe em Queluz? Junta-te à Bogas Team. Aulas para todas as idades e níveis de experiência. Vem superar os teus limites num ambiente de excelência." />
+
+  <link rel="icon" type="image/jpeg" sizes="192x192" href="./branco_com_fundo_preto_resized.jpeg">
+  <link rel="apple-touch-icon" href="./branco_com_fundo_preto_resized.jpeg">
+  <meta name="theme-color" content="#080808">
+
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+
+  <link rel="stylesheet" href="../CSS/theme.css" />
+  <link rel="stylesheet" href="../CSS/home.css" />
+  <link rel="stylesheet" href="../CSS/menu.css" />
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+  <link rel="manifest" href="./manifest.json">
+</head>
+
+<body class="page-home">
+  <a class="skip-link" href="#conteudo">Saltar para o conteúdo</a>
+
+  <div id="modalWelcome" class="modal-overlay hidden welcome-overlay">
+    <button id="btnFecharWelcome" class="close-slider btn-tatico">
+      <i class='bx bx-x'></i>
+    </button>
+
+    <div class="slider-wrapper">
+      <div class="slider-stage welcome-stage">
+
+        <div class="carousel-slide active">
+          <video autoplay muted loop playsinline>
+            <source src="./img/modal3.mp4" type="video/mp4">
+          </video>
+          <div class="welcome-caption">
+            <h2>BOGAS TEAM</h2>
+            <p>Onde a dedicação encontra a superação no Tatami.</p>
+          </div>
+        </div>
+
+        <div class="carousel-slide">
+          <video autoplay muted loop playsinline>
+            <source src="./img/modal6.mp4" type="video/mp4">
+          </video>
+          <div class="welcome-caption">
+            <h2>ESTRUTURA DE ELITE</h2>
+            <p>Equipamento profissional desenhado para a tua evolução.</p>
+          </div>
+        </div>
+
+        <div class="carousel-slide">
+          <video autoplay muted loop playsinline>
+            <source src="./img/modal4.mp4" type="video/mp4">
+          </video>
+          <div class="welcome-caption">
+            <h2>DISCIPLINA</h2>
+            <p>O respeito e o foco são a base do nosso treino.</p>
+          </div>
+        </div>
+
+        <div class="carousel-slide">
+          <video autoplay muted loop playsinline>
+            <source src="./img/modal5.mp4" type="video/mp4">
+          </video>
+          <div class="welcome-caption">
+            <h2>TÉCNICA</h2>
+            <p>Aperfeiçoa cada movimento com acompanhamento de excelência.</p>
+          </div>
+        </div>
+
+        <div class="carousel-slide">
+          <video autoplay muted loop playsinline>
+            <source src="./img/modal6.mp4" type="video/mp4">
+          </video>
+          <div class="welcome-caption">
+            <h2>RESILIÊNCIA</h2>
+            <p>Treinamos a mente para não desistir perante os desafios.</p>
+          </div>
+        </div>
+
+        <div class="carousel-slide">
+          <video autoplay muted loop playsinline>
+            <source src="./img/modal8.mp4" type="video/mp4">
+          </video>
+          <div class="welcome-caption">
+            <h2>TRABALHO DE SACOS</h2>
+            <p>Potência e precisão em cada golpe desferido.</p>
+          </div>
+        </div>
+
+        <div class="carousel-slide">
+          <img src="./img/juntate.png" alt="Junta-te à Bogas Team" style="object-fit: contain; background: #020202;">
+          <div class="welcome-caption">
+            <h2></h2>
+            <p>Vem fazer parte desta família e supera os teus limites. Marca já a tua aula!</p>
+          </div>
+        </div>
+
+      </div>
+
+      <button class="slider-btn prev btn-tatico" id="btnPrevSlide">
+        <i class='bx bx-chevron-left'></i>
+      </button>
+      <button class="slider-btn next btn-tatico" id="btnNextSlide">
+        <i class='bx bx-chevron-right'></i>
+      </button>
+
+      <div class="welcome-indicators">
+        <span class="dot active" data-slide="0"></span>
+        <span class="dot" data-slide="1"></span>
+        <span class="dot" data-slide="2"></span>
+        <span class="dot" data-slide="3"></span>
+        <span class="dot" data-slide="4"></span>
+        <span class="dot" data-slide="5"></span>
+        <span class="dot" data-slide="6"></span>
+      </div>
+
+    </div>
+  </div>
+
+  <header class="site-header" role="banner">
+    <a href="./index.html" class="site-logo" aria-label="Bogas Team Fight Center — Página Oficial">
+      Bogas Team Fight Center
+    </a>
+
+    <button class="menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="site-nav">
+      <i class="bx bx-menu" aria-hidden="true"></i>
+    </button>
+
+    <nav class="site-nav" id="site-nav" aria-label="Navegação principal">
+      <button id="btnInstalarApp" class="nav-btn-instalar">
+        <i class='bx bx-download bx-tada'></i> Instalar App
+      </button>
+      <a href="./home.html" class="active" aria-current="page">Home</a>
+      <a href="./espaco.html">Espaço</a>
+      <a href="equipa.html">Staff</a>
+      <a href="./horarios.html">Horários</a>
+
+      <div class="dropdown">
+        <button class="dropdown-trigger">Eventos <i class='bx bx-chevron-down'></i></button>
+        <div class="dropdown-menu">
+          <a href="./graduacoes.html">Graduações</a>
+        </div>
+      </div>
+
+      <a href="./merchandising.html">Store</a>
+      <a href="./patrocinadores.html">Patrocinadores</a>
+      <a href="./contactos.html">Contactos</a>
+
+
+
+      <div class="dropdown item-app-only">
+        <button class="dropdown-trigger nav-login-btn"
+          style="background: transparent; cursor: pointer; font-family: inherit; font-size: inherit;">
+          <i class='bx bx-lock-alt'></i> Área Técnica <i class='bx bx-chevron-down'></i>
+        </button>
+        <div class="dropdown-menu">
+          <a href="./login.html"><i class='bx bx-user-circle'></i> Treinador</a>
+          <a href="./portal.html"><i class='bx bx-group'></i> Sócios</a>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <div class="site-nav-overlay" aria-hidden="true"></div>
+
+  <main class="main-content" id="conteudo">
+    <div class="home-shell">
+      <section class="page-hero" aria-labelledby="hero-title">
+        <span
+          style="display:block; font-size: 0.85rem; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 16px; opacity: 0.7;">
+          Kickboxing • Boxe • Performance
+        </span>
+
+        <h1 id="hero-title">
+          Vem fazer parte desta família.
+          <span style="display:block; margin-top: 8px; color: var(--accent); font-size: 0.85em;">Desafia-te.</span>
+        </h1>
+
+        <p>
+          <strong>Constrói a tua melhor versão.</strong>
+          Junta-te à Bogas Team e aprende a arte de combater ao teu próprio ritmo.
+        </p>
+
+        <div class="hero-actions">
+          <a href="./horarios.html" class="btn-tatico">Marcar Aula Experimental</a>
+          <a href="./contactos.html" class="btn-tatico">Falar com a Equipa</a>
+        </div>
+
+        <ul class="hero-pills" aria-label="Destaques">
+          <li class="pill"><i class="bx bx-shield-quarter" aria-hidden="true"></i> Excelência Técnica</li>
+          <li class="pill"><i class="bx bx-bar-chart-alt-2" aria-hidden="true"></i> Evolução Estruturada</li>
+          <li class="pill"><i class="bx bx-group" aria-hidden="true"></i> Ambiente Familiar</li>
+        </ul>
+      </section>
+
+      <section class="features glass-panel" aria-labelledby="features-title">
+        <header class="section-head">
+          <h2 id="features-title">A Nossa Metodologia</h2>
+          <p>Não vendemos apenas treino. Ensinamos competências para a vida.</p>
+        </header>
+
+        <div class="feature-grid" role="list">
+          <article class="card" role="listitem">
+            <i class="fas fa-fire" aria-hidden="true"></i>
+            <h3>Versatilidade</h3>
+            <p>Fundamentos sólidos para iniciantes e refinamento tático para atletas avançados. O treino escala com a
+              tua experiência.</p>
+          </article>
+
+          <article class="card" role="listitem">
+            <i class="fas fa-bullseye" aria-hidden="true"></i>
+            <h3>Técnica</h3>
+            <p>Foco na postura, guarda e na biomecânica correta dos movimentos.</p>
+          </article>
+
+          <article class="card" role="listitem">
+            <i class="fas fa-layer-group" aria-hidden="true"></i>
+            <h3>Estrutura Lógica</h3>
+            <p>Cada aula tem um propósito. Tudo segue uma progressão clara e testada.</p>
+          </article>
+
+          <article class="card" role="listitem">
+            <i class="fas fa-brain" aria-hidden="true"></i>
+            <h3>Resiliência</h3>
+            <p>Treinamos o corpo e a mente. Aumento de confiança, disciplina e capacidade de reação.</p>
+          </article>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer" role="contentinfo">
+    <a href="https://www.instagram.com/bogasteam.kickboxing/" class="footer-link" target="_blank" rel="noopener">
+      <i class="fab fa-instagram" aria-hidden="true"></i>
+      <span>bogasteam.kickboxing</span>
+    </a>
+  </footer>
+
+  <script src="../JS/menu.js" defer></script>
+  <script src="../JS/home.js" defer></script>
+
+
+  <script>
+    // 🥊 Mantemos apenas o registo essencial aqui
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('Motor PWA Ativado!', reg))
+          .catch(err => console.error('Erro no PWA:', err));
+      });
+    }
+
+  </script>
+  <div id="ios-install-modal" class="modal-overlay hidden">
+    <div class="modal-content glass-panel">
+      <button id="close-ios-modal" class="modal-close"><i class='bx bx-x'></i></button>
+      <h3>Instalar no iPhone <i class='bx bxl-apple'></i></h3>
+      <p>Para instalares a App Bogas Team no teu iPhone:</p>
+      <ol>
+        <li>Toca no ícone de <strong>Partilhar</strong> <i class='bx bx-upload'></i> na barra inferior do Safari.</li>
+        <li>Desliza para baixo e escolhe <strong>"Ecrã Principal"</strong> (Add to Home Screen).</li>
+        <li>Clica em <strong>"Adicionar"</strong> no canto superior direito.</li>
+      </ol>
+      <p class="ios-note">A App ficará instalada junto das tuas outras aplicações!</p>
+    </div>
+  </div>
+</body>
+
+</html>

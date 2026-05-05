@@ -1,0 +1,509 @@
+/* CSS/horarios.css - FINAL: ESTÉTICA PREMIUM COM 5PX DE RESPIRO TÁTICO */
+
+/* --- 1. FUNDO --- */
+.page-horarios {
+  background:
+    radial-gradient(
+      1200px 600px at 50% 0%,
+      rgba(255, 255, 255, 0.08),
+      rgba(0, 0, 0, 0) 55%
+    ),
+    linear-gradient(rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0.9)),
+    url("../img/PRETO.jpg") no-repeat center/cover;
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* --- 2. HERO SECTION --- */
+.page-horarios .page-hero {
+  text-align: center;
+  padding-bottom: 0px !important;
+  margin-bottom: 0px !important;
+  animation: fadeIn 0.8s ease-out;
+}
+
+.page-horarios .page-hero h1 {
+  margin-bottom: 5px !important;
+}
+
+.schedule-subtitle {
+  color: var(--muted);
+  font-size: 1rem;
+  max-width: 600px;
+  margin: 0 auto 10px;
+}
+
+/* --- 3. FILTROS --- */
+.filters {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 0px !important;
+}
+
+.filter-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.filter-btn {
+  padding: 10px 24px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--muted);
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border-radius: 0px;
+}
+
+.filter-btn:hover,
+.filter-btn.is-active {
+  border-color: #fff;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.filter-btn.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #000;
+  box-shadow: 0 0 15px rgba(156, 230, 156, 0.3);
+  font-weight: 700;
+}
+
+.filter-count {
+  display: none;
+}
+
+/* --- BOTÃO VOLTAR (SECUNDÁRIO) --- */
+.btn-back {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  font-family: "Montserrat", sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  transition: all 0.3s ease;
+}
+
+.btn-back i {
+  font-size: 1.2rem;
+}
+
+.btn-back:hover {
+  color: #fff;
+  transform: translateX(-5px);
+}
+
+/* --- 4. INFO SELEÇÃO (DESKTOP DEFAULT) --- */
+.schedule-selected {
+  min-height: 1.2rem;
+  font-family: "Orbitron", sans-serif;
+  font-size: clamp(0.9rem, 4vw, 1.1rem);
+  letter-spacing: 0.5px;
+  text-align: center;
+  margin: 0 !important;
+  line-height: 1.4;
+  padding: 0 10px;
+}
+
+.schedule-selected span {
+  display: inline;
+}
+
+.schedule-selected .sel-day {
+  color: var(--accent);
+}
+
+.schedule-selected .sel-mod,
+.schedule-selected .sel-details {
+  color: #ffffff !important;
+  font-weight: 400;
+  font-size: 0.9em;
+}
+
+/* Os pontos separadores no Computador */
+.schedule-selected .sel-mod::before,
+.schedule-selected .sel-details::before {
+  content: " | ";
+  white-space: pre;
+}
+
+.schedule-selected:empty {
+  display: none !important;
+}
+
+/* --- 5. ZONA DE CONFIRMAÇÃO (CTA) --- */
+.schedule-cta {
+  opacity: 0;
+  max-height: 0;
+  margin-bottom: 0;
+  overflow: hidden;
+  transform: translateY(10px);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+  padding: 0;
+}
+
+.schedule-cta.is-enabled {
+  opacity: 1;
+  max-height: 300px;
+  margin-bottom: 40px;
+  transform: translateY(0);
+  pointer-events: auto;
+  padding: 20px var(--pad-x);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+#scheduleCtaBtn {
+  width: 100%;
+  max-width: 320px;
+  min-width: auto;
+  padding: 16px 20px;
+  font-size: 0.9rem;
+  animation: pulseNeon 2s infinite; /* Pulsar no Desktop */
+}
+
+/* --- 6. GRID DOS DIAS --- */
+.days-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  width: min(1200px, 100%);
+  margin: 40px auto !important;
+  padding: 0;
+}
+
+/* --- 7. CARTÃO DO DIA --- */
+.day {
+  position: relative;
+  background: rgba(12, 12, 12, 0.85);
+  border: 1px solid rgba(156, 230, 156, 0.3);
+  padding: 20px 15px;
+  border-radius: 0px;
+  backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  text-align: center;
+  align-items: center;
+}
+
+.day:hover {
+  border-color: rgba(156, 230, 156, 0.3) !important;
+  transform: none !important;
+  box-shadow: none !important;
+  background: rgba(12, 12, 12, 0.85) !important;
+}
+
+.day-title {
+  margin: 0;
+  font-family: "Orbitron", sans-serif;
+  font-size: 1.2rem;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding-bottom: 10px;
+  margin-bottom: 5px;
+  width: 100%;
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.day-title::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  width: 70%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  box-shadow: 0 0 8px var(--accent);
+}
+
+/* --- 8. LISTA DE AULAS --- */
+.classes {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+/* --- 9. BOTÃO DA AULA --- */
+.class {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 12px 10px;
+  border-radius: 0px;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.class:hover,
+.class.is-scroll-focus {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(156, 230, 156, 0.5) !important;
+  box-shadow: 0 0 10px rgba(156, 230, 156, 0.1) !important;
+  transform: translateY(-2px);
+}
+
+.class.is-scroll-focus .modalidade {
+  color: var(--accent);
+}
+
+.class.is-selected {
+  background: rgba(156, 230, 156, 0.15) !important;
+  border: 1px solid var(--accent) !important;
+  box-shadow: 0 0 15px rgba(156, 230, 156, 0.15) !important;
+}
+
+.modalidade {
+  font-family: "Orbitron", sans-serif;
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.class.is-selected .modalidade {
+  color: var(--accent);
+}
+
+.turma {
+  font-family: "Montserrat", sans-serif;
+  font-size: 0.65rem;
+  font-weight: 600;
+  background: rgba(34, 34, 34, 0.8);
+  border: 1px solid rgba(156, 230, 156, 0.3);
+  padding: 3px 10px;
+  border-radius: 99px;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 0;
+}
+
+.horario {
+  color: var(--accent);
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.95rem;
+  letter-spacing: 1px;
+  margin-top: 2px;
+}
+
+.treinador {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-style: italic;
+  opacity: 0.8;
+  margin-top: 0;
+}
+
+/* 10. UTILITÁRIOS E SCROLL */
+.is-hidden {
+  display: none !important;
+}
+
+.schedule-empty {
+  text-align: center;
+  color: var(--muted);
+  margin-top: 40px;
+  font-size: 1.1rem;
+}
+
+#journeySection {
+  scroll-margin-top: calc(var(--header-h) + 40px);
+}
+
+/* --- ANIMAÇÕES DE PULSO --- */
+@keyframes pulseNeon {
+  0% {
+    box-shadow: 0 0 0 0 rgba(156, 230, 156, 0.7);
+    transform: scale(1);
+  }
+  70% {
+    box-shadow: 0 0 20px 10px rgba(156, 230, 156, 0);
+    transform: scale(1);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(156, 230, 156, 0);
+    transform: scale(0.98);
+  }
+}
+
+@keyframes pulseNeonMobile {
+  0% {
+    box-shadow: 0 0 0 0 rgba(156, 230, 156, 0.6);
+    transform: scale(1);
+  }
+  70% {
+    box-shadow: 0 0 20px 12px rgba(156, 230, 156, 0);
+    transform: scale(1.02);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(156, 230, 156, 0);
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =========================================
+   MEDIA QUERIES (RESPONSIVIDADE)
+========================================= */
+
+@media (max-width: 1024px) {
+  .days-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  /* --- EFEITO PREMIUM DE SCROLL PARA OS CARTÕES DA JORNADA --- */
+  .journey-grid .card.is-scroll-focus {
+    border-color: rgba(156, 230, 156, 0.4) !important;
+    background: rgba(255, 255, 255, 0.06) !important;
+    transform: translateY(-2px);
+  }
+
+  /* O ícone fica branco puro com brilho tal como pediste */
+  .journey-grid .card.is-scroll-focus i {
+    color: #fff !important;
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.5) !important;
+  }
+
+  .days-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .journey-section.glass-panel {
+    margin-top: 20px;
+    padding: 30px 15px !important;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.6);
+  }
+
+  .journey-section .section-head {
+    margin-bottom: 25px;
+  }
+  .journey-section .section-head h2 {
+    font-size: 1.5rem;
+    letter-spacing: 2px;
+  }
+  .journey-grid {
+    gap: 15px;
+  }
+  .journey-grid .card {
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(156, 230, 156, 0.1);
+  }
+  .journey-alert {
+    padding: 12px 15px;
+    margin: 20px 0 !important;
+  }
+  .journey-alert p {
+    font-size: 0.85rem;
+  }
+
+  #scheduleCtaBtn {
+    animation: pulseNeonMobile 2s infinite !important;
+    display: flex !important;
+    will-change: transform, box-shadow;
+  }
+}
+
+@media (max-width: 580px) {
+  .days-grid {
+    gap: 15px;
+    margin-top: 20px !important;
+  }
+  .day {
+    padding: 15px 10px;
+  }
+  .day-title {
+    font-size: 1rem;
+  }
+  .class {
+    padding: 10px 8px;
+  }
+  .modalidade {
+    font-size: 0.95rem;
+  }
+  .horario {
+    font-size: 0.85rem;
+  }
+  .btn-back {
+    font-size: 0.75rem;
+    margin-bottom: 5px;
+  }
+}
+
+/* --- AJUSTE EXCLUSIVO MOBILE: 3 LINHAS LIMPAS --- */
+@media (max-width: 480px) {
+  .schedule-cta.is-enabled {
+    gap: 30px;
+    padding: 35px 20px;
+  }
+
+  .btn-back {
+    margin-bottom: 5px;
+  }
+
+  .schedule-selected {
+    display: flex;
+    flex-direction: column; /* Empilha as 3 linhas */
+    align-items: center;
+    gap: 6px;
+  }
+
+  .schedule-selected span {
+    display: block; /* Força quebra de linha */
+  }
+
+  .schedule-selected .sel-day {
+    font-size: 1.1rem;
+  }
+
+  /* Remove os pontos separadores no telemóvel */
+  .schedule-selected .sel-mod::before,
+  .schedule-selected .sel-details::before {
+    content: none !important;
+  }
+}

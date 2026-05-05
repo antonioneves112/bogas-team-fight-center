@@ -1,0 +1,117 @@
+/* Treinadores / Convívios (refatorado para theme.css + menu partilhado) */
+
+.page-treinadores {
+  background: radial-gradient(
+      1200px 600px at 50% 0%,
+      rgba(255, 255, 255, 0.07),
+      rgba(0, 0, 0, 0) 55%
+    ),
+    var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+.page-treinadores .trainers-shell {
+  width: min(1100px, 100%);
+  margin: 0 auto;
+  padding: 0 20px 70px;
+}
+
+.page-treinadores .trainers-hero {
+  text-align: center;
+  margin: 0 auto 22px;
+}
+
+.page-treinadores .trainers-hero h1 {
+  margin: 0 0 10px;
+  font-family: "Orbitron", sans-serif;
+  font-size: clamp(2rem, 3vw, 2.65rem);
+  letter-spacing: 0.9px;
+  color: #fff;
+}
+
+.page-treinadores .trainers-hero p {
+  margin: 0 auto;
+  max-width: 78ch;
+  font-family: "Montserrat", sans-serif;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.page-treinadores .modalidades {
+  margin-top: 18px;
+}
+
+.page-treinadores .imagens {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.page-treinadores .imagens img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+
+  border-radius: var(--r-lg);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.03);
+  box-shadow: var(--shadow);
+
+  cursor: pointer;
+
+  filter: grayscale(25%);
+  transition: transform var(--t), border-color var(--t), box-shadow var(--t),
+    filter var(--t);
+}
+
+.page-treinadores .imagens img:hover {
+  transform: translateY(-2px);
+  border-color: rgba(156, 230, 156, 0.55);
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.82),
+    0 0 0 3px rgba(156, 230, 156, 0.06);
+  filter: grayscale(0%);
+}
+
+.page-treinadores #quadro-horarios {
+  margin-top: 18px;
+  padding: 18px 16px;
+}
+
+.page-treinadores #quadro-horarios.escondido {
+  display: none;
+}
+
+.page-treinadores #horarios-content {
+  display: grid;
+  gap: 10px;
+  font-family: "Montserrat", sans-serif;
+}
+
+.page-treinadores #horarios-content p {
+  margin: 0;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.82);
+  padding: 10px 12px;
+  border-radius: 12px;
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.page-treinadores #horarios-content span {
+  color: rgba(156, 230, 156, 0.92);
+  font-weight: 700;
+}
+
+@media (max-width: 980px) {
+  .page-treinadores .imagens {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .page-treinadores .imagens {
+    grid-template-columns: 1fr;
+  }
+}

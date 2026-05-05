@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Nossa Equipa | Bogas Team Fight Center</title>
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="./CSS/theme.css">
+    <link rel="stylesheet" href="./CSS/menu.css"> <!-- 🥊 O GOLPE VITAL: Faltava o estilo do menu! -->
+    <link rel="stylesheet" href="./CSS/equipa.css">
+</head>
+
+<body class="page-publica">
+    <main class="equipa-container">
+        
+        <!-- 🥊 AQUI ESTÁ A PEÇA EM FALTA (O Fundo do Menu Mobile) -->
+        <div class="site-nav-overlay"></div>
+
+        <header class="site-header" role="banner">
+            <a href="./index.html" class="site-logo" aria-label="Bogas Team Fight Center — Página Oficial">
+              Bogas Team Fight Center
+            </a>
+
+            <button class="menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="site-nav">
+              <i class="bx bx-menu" aria-hidden="true"></i>
+            </button>
+
+            <nav class="site-nav" id="site-nav" aria-label="Navegação principal">
+              <a href="./index.html">Home</a> <!-- 🥊 Ajustado de home.html para index.html se for a principal -->
+              <a href="./espaco.html">Espaço</a>
+              <a href="equipa.html" class="active" aria-current="page">Staff</a> <!-- 🥊 Movido o 'active' para a página certa -->
+              <a href="./horarios.html">Horários</a>
+
+              <div class="dropdown">
+                <button class="dropdown-trigger">Eventos <i class='bx bx-chevron-down'></i></button>
+                <div class="dropdown-menu">
+                  <a href="./graduacoes.html">Graduações</a>
+                </div>
+              </div>
+
+              <a href="./merchandising.html">Store</a>
+              <a href="./patrocinadores.html">Patrocinadores</a>
+              <a href="./contactos.html">Contactos</a>
+
+              <div class="dropdown item-app-only">
+                <button class="dropdown-trigger nav-login-btn"
+                  style="background: transparent; cursor: pointer; font-family: inherit; font-size: inherit;">
+                  <i class='bx bx-lock-alt'></i> Área Técnica <i class='bx bx-chevron-down'></i>
+                </button>
+                <div class="dropdown-menu">
+                  <a href="./login.html"><i class='bx bx-user-circle'></i> Treinador</a>
+                  <a href="./portal.html"><i class='bx bx-group'></i> Sócios</a>
+                </div>
+              </div>
+            </nav>
+        </header>
+        <div id="grelhaTreinadores" class="treinadores-grid">
+        </div>
+    </main>
+
+    <script src="../JS/menu.js" defer></script>
+    <script type="module" src="./JS/equipa.js"></script>
+</body>
+
+</html>

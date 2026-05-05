@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description"
+    content="Tens dúvidas ou queres marcar um treino experimental? Encontra aqui o número de telefone, email e o mapa com a localização do nosso ginásio.">
+  <title>Contactos | Bogas Team Fight Center</title>
+  <link rel="icon" href="../img/favicon.ico" />
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+
+  <link rel="stylesheet" href="../CSS/theme.css" />
+  <link rel="stylesheet" href="../CSS/menu.css" />
+  <link rel="stylesheet" href="../CSS/contactos.css" />
+</head>
+
+<body class="page-contactos">
+  <header class="site-header">
+    <a href="./index.html" class="site-logo">Bogas Team Fight Center</a>
+    <button class="menu-toggle"><i class="bx bx-menu"></i></button>
+    <nav class="site-nav" id="site-nav">
+      <a href="./index.html">Home</a>
+      <a href="./espaco.html">Espaço</a>
+            <a href="equipa.html">Staff</a>
+      <a href="./horarios.html">Horários</a>
+      <div class="dropdown">
+        <button class="dropdown-trigger">Eventos <i class='bx bx-chevron-down'></i></button>
+        <div class="dropdown-menu">
+          <a href="./graduacoes.html">Graduações</a>
+        </div>
+      </div>
+      <a href="./merchandising.html">Store</a>
+      <a href="./patrocinadores.html">Patrocinadores</a>
+      <a href="./contactos.html" class="active">Contactos</a>
+    </nav>
+  </header>
+  <div class="site-nav-overlay"></div>
+
+  <main class="main-content">
+    <header class="page-hero">
+      <h1>CONTACTOS</h1>
+      <p>Pronto para fazer parte desta família? Entra em contacto com a nossa equipa.</p>
+    </header>
+
+    <div class="contactos-grid">
+
+      <div class="map-card">
+        <div class="map-frame">
+          <iframe
+            src="https://maps.google.com/maps?q=Bogas%20Team%20Fight%20Academy,%20Queluz&t=&z=15&ie=UTF8&iwloc=&output=embed"
+            allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+          </iframe>
+        </div>
+        <div class="map-actions">
+          <a href="https://www.google.com/maps/dir/?api=1&destination=Bogas+Team+Fight+Academy+Queluz&destination_place_id=ChIJw_IebAjNHg0RfTVDK-bnATE"
+            target="_blank" rel="noopener noreferrer" class="btn-primary">
+            <i class='bx bx-navigation'></i> Obter Direções
+          </a>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-list">
+          <div class="info-row">
+            <i class='bx bx-map-pin'></i>
+            <div class="stack">
+              <span class="label">Localização</span>
+              <span class="value">Av. da República 97, Queluz</span>
+            </div>
+          </div>
+          <div class="info-row">
+            <i class='bx bx-phone'></i>
+            <div class="stack">
+              <span class="label">Contacto</span>
+              <span id="obf-tel" class="value link"></span>
+            </div>
+          </div>
+          <div class="info-row">
+            <i class='bx bx-envelope'></i>
+            <div class="stack">
+              <span class="label">Email</span>
+              <a href="mailto:geral@bogasteam.pt" class="value link">geral@bogasteam.pt</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="cta-row">
+          <button type="button" class="btn" id="openWaModal">
+            <i class='bx bxl-whatsapp'></i> WhatsApp
+          </button>
+
+          <a href="https://www.instagram.com/bogasteam.kickboxing/" target="_blank" class="btn">
+            <i class='bx bxl-instagram'></i> Instagram
+          </a>
+          <a href="https://www.google.com/maps/search/?api=1&query=Bogas+Team+Fight+Academy+Queluz" target="_blank"
+            class="btn">
+            <i class='bx bxs-star'></i> Ver Críticas
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <div class="modal-overlay is-hidden" id="waModal">
+    <div class="modal-panel glass-panel">
+      <button class="modal-close" id="closeWaModal"><i class='bx bx-x'></i></button>
+
+      <h3 class="modal-title">QUAL O SEU HORÁRIO?</h3>
+      <p class="modal-desc">Selecione a turma em que pretende treinar para falar diretamente com o treinador
+        responsável.</p>
+
+      <div class="modal-form">
+        <div class="tactic-options">
+          <button type="button" class="tactic-opt" data-coach="francisco"
+            data-msg="Gostaria de saber mais informações sobre a Turma A (18:00 - 19:10).">
+            <span class="opt-time">18:00 - 19:10</span>
+            <span class="opt-coach">Boxe (Francisco António)</span>
+          </button>
+
+          <button type="button" class="tactic-opt" data-coach="bogas"
+            data-msg="Gostaria de saber mais informações sobre a Turma A (19:15 - 20:30).">
+            <span class="opt-time">19:15 - 20:30</span>
+            <span class="opt-coach">Turma A (Bogas)</span>
+          </button>
+
+          <button type="button" class="tactic-opt" data-coach="antonio"
+            data-msg="Gostaria de saber mais informações sobre a Turma B (20:40 - 21:50).">
+            <span class="opt-time">20:40 - 21:50</span>
+            <span class="opt-coach">Turma B (António Neves)</span>
+          </button>
+        </div>
+
+        <button class="btn-primary" id="waSendBtn" disabled>
+          <i class='bx bxl-whatsapp'></i> Iniciar Conversa
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../JS/menu.js" defer></script>
+  <script src="../JS/contactos.js" defer></script>
+</body>
+
+</html>

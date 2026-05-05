@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Painel de Gestão | Bogas Team Fight Center</title>
+
+    <link rel="icon" type="image/png" sizes="192x192" href="./faviicon.png">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="./CSS/theme.css" />
+    <link rel="stylesheet" href="./CSS/dashboard.css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <script>
+        window.jsPDF = window.jspdf.jsPDF;
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module" src="./JS/main.js"></script>
+</head>
+
+<body class="page-dashboard">
+    <div id="toast-container" class="toast-container"></div>
+    <nav class="dash-nav glass-panel">
+        <div class="dash-logo">
+            <i class='bx bx-shield-quarter'></i>
+            <span>BOGAS TEAM <strong>ADMIN</strong></span>
+        </div>
+        <div class="nav-actions">
+            <button id="btnAbrirModalBroadcast" class="btn-tatico btn-small">
+                <i class='bx bx-message-square-dots'></i> Avisos
+            </button>
+            <button id="btnLogout" class="btn-tatico btn-small">
+                <i class='bx bx-log-out'></i> Sair
+            </button>
+        </div>
+    </nav>
+
+    <main class="dash-container">
+
+        <header class="dash-header">
+            <h2>Visão Geral</h2>
+
+            <div class="header-actions-group">
+                <input type="month" id="filtroMesMensalidade" class="dash-filter" title="Escolher Mês de Análise">
+
+                <button id="btnParceirosAdmin" class="btn-icon-red" title="Ação de Grupo">
+                    <i class='bx bx-group'></i>
+                </button>
+            </div>
+        </header>
+
+        <section class="dash-stats">
+            <div class="stat-card glass-panel" id="cardTotalSocios" title="Clique para ver todos os guerreiros">
+                <div class="stat-icon"><i class='bx bx-group'></i></div>
+                <div class="stat-info">
+                    <h3>Total de Sócios</h3>
+                    <p id="totalSocios">--</p>
+                </div>
+            </div>
+
+            <div class="stat-card glass-panel" id="cardPendentes"
+                title="Clique para ver os guerreiros com pagamentos pendentes">
+                <div class="stat-icon alert"><i class='bx bx-error-circle'></i></div>
+                <div class="stat-info">
+                    <h3>Pagamentos Pendentes</h3>
+                    <p id="pagamentosPendentes">--</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="dash-tabs">
+            <button class="tab-btn active" data-target="view-socios">
+                <i class='bx bx-group'></i> Gestão de Sócios
+            </button>
+            <button class="tab-btn" data-target="view-mensalidades">
+                <i class='bx bx-wallet'></i> Gestão de Mensalidades
+            </button>
+            <!-- Exemplo de como deve ficar o teu botão da Tab -->
+            <button class="tab-btn" data-target="view-aulas">
+                <i class='bx bx-time-five'></i> Aulas Particulares
+                <span id="badgeAulas" class="badge-tab-inline">1</span>
+            </button>
+        </div>
+
+        <div id="view-socios" class="tab-content active">
+            <section class="dash-content glass-panel">
+                <div class="content-header">
+                    <h3>Sócios Registados</h3>
+
+                    <div class="header-actions">
+                        <div class="search-container">
+                            <i class='bx bx-search search-icon'></i>
+                            <input type="text" id="filtroNomeSocio" autocomplete="off" placeholder="Procurar nome...">
+                            <i class='bx bx-x btn-limpar-pesquisa' id="limparSocio" title="Limpar pesquisa"></i>
+                        </div>
+                        <button class="btn-tatico btn-small" id="btnAddSocio">
+                            <i class='bx bx-user-plus'></i> NOVO SÓCIO
+                        </button>
+                        <button class="btn-tatico btn-small" id="btnExportarSociosPDF">
+                            <i class='bx bxs-file-pdf'></i> PDF
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="dash-table">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Modalidade</th>
+                                <th>Estado</th>
+                                <th>Mensalidade</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaSocios">
+                            <tr>
+                                <td colspan="5" class="table-empty-state">A carregar guerreiros...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+
+        <div id="view-inativos" class="tab-content hidden">
+            <section class="dash-content glass-panel">
+                <div class="content-header">
+                    <h3>Sócios Inativos</h3>
+
+                    <div class="header-actions">
+                        <div class="search-container">
+                            <i class='bx bx-search search-icon'></i>
+                            <input type="text" id="filtroNomeInativo" autocomplete="off"
+                                placeholder="Procurar ex-atleta...">
+                            <i class='bx bx-x btn-limpar-pesquisa' id="limparInativo" title="Limpar pesquisa"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="dash-table">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Modalidade</th>
+                                <th>Estado</th>
+                                <th>Data de Saída</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaInativos">
+                            <tr>
+                                <td colspan="5" class="table-empty-state">A carregar inativos...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+
+        <div id="view-mensalidades" class="tab-content hidden">
+            <section class="dash-content glass-panel">
+
+                <div class="content-header">
+                    <h3 id="tituloMensalidade">Controlo de Mensalidades</h3>
+
+                    <div class="header-actions">
+                        <div class="search-container">
+                            <i class='bx bx-search search-icon'></i>
+                            <input type="text" id="filtroNomeMensalidade" autocomplete="off"
+                                placeholder="Procurar nome...">
+                            <i class='bx bx-x btn-limpar-pesquisa' id="limparMensalidade" title="Limpar pesquisa"></i>
+                        </div>
+                        <button class="btn-tatico btn-small" id="btnAddPagamento">
+                            <i class='bx bx-euro'></i>Faturar
+                        </button>
+                        <button class="btn-tatico btn-small" id="btnExportarPDF">
+                            <i class='bx bxs-file-pdf'></i> PDF
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="dash-table">
+                        <thead>
+                            <tr>
+                                <th>Mês / Ano</th>
+                                <th>Sócio</th>
+                                <th>Tipo</th>
+                                <th>Modalidade</th>
+                                <th>Valor</th>
+                                <th>Estado</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaMensalidades">
+                            <tr>
+                                <td colspan="6" class="table-empty-state">A carregar registos...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+
+        <!-- 🥊 TAB: GESTÃO DE AULAS PARTICULARES -->
+        <div id="view-aulas" class="tab-content hidden">
+            <section class="dash-content glass-panel"> <!-- A classe glass-panel é a chave aqui -->
+                <div class="content-header">
+                    <h3>Pedidos de Aulas Particulares</h3>
+                    <div class="header-actions">
+                        <div class="search-container">
+                            <i class='bx bx-search search-icon'></i>
+                            <input type="text" id="filtroAtletaAula" autocomplete="off"
+                                placeholder="Procurar atleta...">
+                            <i class='bx bx-x btn-limpar-pesquisa' id="limparAulaPesquisa" title="Limpar pesquisa"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="dash-table">
+                        <thead>
+                            <tr>
+                                <th>Atleta</th>
+                                <th>Data</th>
+                                <th>Hora</th>
+                                <th>Valor</th>
+                                <th>Estado</th>
+                                <th>Pago</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaAulasParticulares">
+                            <!-- Gerado pelo JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <div id="modalSocio" class="modal-overlay hidden">
+        <div class="modal-content glass-panel">
+            <div class="modal-header">
+                <h3><i class='bx bx-user-plus'></i> Registar Novo Sócio</h3>
+                <button id="btnFecharModal" class="btn-fechar"><i class='bx bx-x'></i></button>
+            </div>
+
+            <form id="formNovoSocio" class="dash-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nome Completo</label>
+                        <input type="text" id="nomeSocio" placeholder="Ex: Carlos Silva" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="emailSocio" placeholder="Ex: carlos@email.com">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Telemóvel</label>
+                        <input type="tel" id="telSocio" placeholder="Ex: 912345678" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Data de Inscrição</label>
+                        <input type="date" id="dataInscricao" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Fotografia de Perfil (Opcional)</label>
+                    <input type="file" id="fotoSocio" accept="image/*" class="file-input-styled">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Modalidade Principal</label>
+                        <select id="modSocio" required>
+                            <option value="" disabled selected>Escolhe uma opção...</option>
+                            <option value="Kickboxing">Kickboxing</option>
+                            <option value="Boxe">Boxe</option>
+                            <option value="Aulas Particulares">Aulas Particulares</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Treinador Responsável</label>
+                        <select id="treinadorSocio" required>
+                            <option value="" disabled selected>Escolhe uma opção...</option>
+                            <option value="Bogas">Bogas</option>
+                            <option value="António">António</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Estado do Atleta</label>
+                        <select id="estadoSocio" required>
+                            <option value="Ativo">Ativo</option>
+                            <option value="Inativo">Inativo</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="graduacaoSocio">Graduação (Cinto)</label>
+                        <select id="graduacaoSocio" required>
+                            <option value="N/A">Não Aplicável</option>
+                            <option value="Amarela">Amarela</option>
+                            <option value="Laranja">Laranja</option>
+                            <option value="Verde">Verde</option>
+                            <option value="Azul">Azul</option>
+                            <option value="Castanha">Castanha</option>
+                            <option value="Preta">Preta</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="dataSaidaSocio">Data de Saída (Se Inativo)</label>
+                        <input type="date" id="dataSaidaSocio">
+                    </div>
+                    <div class="form-group">
+                        <label for="dataReentradaSocio">Data de Reentrada</label>
+                        <input type="date" id="dataReentradaSocio">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="federacaoSocio">Estado na Federação</label>
+                        <select id="federacaoSocio" required>
+                            <option value="Não Regularizada">Não Regularizado</option>
+                            <option value="Regularizada">Regularizado</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="dataUltimaGraduacao">Data da Última Graduação</label>
+                        <input type="date" id="dataUltimaGraduacao">
+                    </div>
+                </div>
+                <button type="submit" id="btnGuardarSocio" class="btn-tatico btn-full-width">
+                    Guardar Atleta <i class='bx bx-save'></i>
+                </button>
+
+            </form>
+        </div>
+    </div>
+
+    <div id="modalPagamento" class="modal-overlay hidden">
+        <div class="modal-content glass-panel">
+            <div class="modal-header">
+                <h3><i class='bx bx-euro'></i> Registar Mensalidade</h3>
+                <button id="btnFecharModalPagamento" class="btn-fechar"><i class='bx bx-x'></i></button>
+            </div>
+
+            <form id="formNovoPagamento" class="dash-form">
+                <div class="form-group">
+                    <label>Selecionar Sócio (Pesquisa)</label>
+                    <input type="text" id="pagamentoSocioSearch" list="listaSocios"
+                        placeholder="Escreve o nome para procurar..." required autocomplete="off">
+                    <datalist id="listaSocios"></datalist>
+                    <input type="hidden" id="pagamentoSocioId">
+                    <input type="hidden" id="pagamentoSocioId">
+                    <!-- NOVO: Guarda o ID da Aula Particular (se vier de lá) -->
+                    <input type="hidden" id="pagamentoAulaId">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Mês Referente</label>
+                        <input type="month" id="pagamentoMes" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Valor Cobrado</label>
+                        <input type="text" id="pagamentoValor" placeholder="Ex: 40€" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Estado do Pagamento</label>
+                    <select id="pagamentoEstado" required>
+                        <option value="Pago">Pago (Regularizado)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Tipo de Pagamento</label>
+                    <select id="pagamentoTipo" required>
+                        <option value="Mensalidade" selected>Mensalidade</option>
+                        <option value="Aula Particular">Aula Particular</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn-tatico btn-full-width">
+                    Registar Pagamento <i class='bx bx-check-circle'></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 🥊 MODAL DEDICADO: FATURAR AULA PARTICULAR -->
+    <div id="modalFaturarAula" class="modal-overlay hidden">
+        <div class="modal-content glass-panel">
+            <div class="modal-header">
+                <h3><i class='bx bx-euro bx-tada'></i> Liquidar Aula</h3>
+                <button id="btnFecharModalFaturarAula" class="btn-fechar"><i class='bx bx-x'></i></button>
+            </div>
+
+            <form id="formFaturarAula" class="dash-form">
+                <!-- Estes campos são readonly (apenas leitura) para o treinador só confirmar -->
+                <div class="form-group">
+                    <label>Atleta</label>
+                    <input type="text" id="faturarAulaNome" readonly
+                        style="color: var(--accent); font-weight: bold; background: rgba(0,0,0,0.2);">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Data da Aula</label>
+                        <input type="text" id="faturarAulaData" readonly style="background: rgba(0,0,0,0.2);">
+                    </div>
+                    <div class="form-group">
+                        <label>Valor a Cobrar</label>
+                        <input type="text" id="faturarAulaValor" readonly
+                            style="color: var(--accent); font-weight: bold; background: rgba(0,0,0,0.2);">
+                    </div>
+                </div>
+
+                <!-- Campos Escondidos para a Base de Dados -->
+                <input type="hidden" id="faturarAulaId">
+                <input type="hidden" id="faturarAulaSocioId">
+                <input type="hidden" id="faturarAulaDataDb">
+
+                <button type="submit" class="btn-tatico btn-full-width">
+                    Confirmar Pagamento <i class='bx bx-check-double'></i>
+                </button>
+            </form>
+        </div>
+    </div>
+    <div id="modalBroadcast" class="modal-overlay hidden">
+        <div class="modal-content glass-panel">
+            <div class="modal-header">
+                <h3><i class='bx bx-broadcast bx-tada'></i> Alerta Global</h3>
+                <button id="btnFecharModalBroadcast" class="btn-fechar"><i class='bx bx-x'></i></button>
+            </div>
+
+            <form id="formBroadcast" class="dash-form" onsubmit="event.preventDefault();">
+                <p class="modal-desc-broadcast">
+                    Envia um alerta diretamente para o telemóvel de todos os sócios registados.
+                </p>
+
+                <div class="form-group">
+                    <label>Título da Mensagem</label>
+                    <input type="text" id="tituloNotificacao" class="broadcast-input"
+                        placeholder="Ex: Alerta Mensalidade">
+                </div>
+
+                <div class="form-group">
+                    <label>Mensagem</label>
+                    <textarea id="mensagemNotificacao" class="broadcast-input"
+                        placeholder="Escreve a tua mensagem aqui..." rows="4"></textarea>
+                </div>
+
+                <button id="btnAvisarGeral" class="btn-tatico btn-full-width">
+                    Disparar Alerta <i class='bx bx-send'></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div id="modalConfirmLogout" class="modal-overlay hidden">
+        <div class="modal-content glass-panel modal-confirm-box">
+            <i class='bx bx-log-out bx-tada icon-confirm-warning'></i>
+            <h2 class="title-confirm">Terminar Sessão?</h2>
+            <p class="desc-confirm">Tens a certeza que queres sair do painel de gestão?</p>
+            <div class="actions-confirm">
+                <button id="btnCancelarLogout" class="btn-tatico btn-outline-muted">Cancelar</button>
+                <button id="btnConfirmarLogout" class="btn-tatico btn-danger-action">Sim, Sair</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalConfirmDeleteSocio" class="modal-overlay hidden">
+        <div class="modal-content glass-panel modal-confirm-box">
+            <i class='bx bx-trash bx-tada icon-confirm-warning'></i>
+            <h2 class="title-confirm">Eliminar Sócio?</h2>
+            <p class="desc-confirm">Tens a certeza que queres eliminar este atleta? Toda a informação será apagada e
+                esta ação não pode ser desfeita.</p>
+            <div class="actions-confirm">
+                <button id="btnCancelarDeleteSocio" class="btn-tatico btn-outline-muted">Cancelar</button>
+                <button id="btnConfirmarDeleteSocio" class="btn-tatico btn-danger-action">Sim, Eliminar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalConfirmDeleteMensalidade" class="modal-overlay hidden">
+        <div class="modal-content glass-panel modal-confirm-box">
+            <i class='bx bx-trash bx-tada icon-confirm-warning'></i>
+            <h2 class="title-confirm">Eliminar Registo?</h2>
+            <p class="desc-confirm">Tens a certeza que queres apagar este registo de pagamento? Esta ação não pode ser
+                desfeita.</p>
+            <div class="actions-confirm">
+                <button id="btnCancelarDeleteMensalidade" class="btn-tatico btn-outline-muted">Cancelar</button>
+                <button id="btnConfirmarDeleteMensalidade" class="btn-tatico btn-hal">Sim, Eliminar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🥊 MODAL DE APROVAÇÃO DE AULA (Portal do Treinador) -->
+    <div id="modalAprovarAula" class="modal-overlay hidden modal-z-index">
+        <div class="modal-content glass-panel modal-aula-tamanho">
+            <div class="modal-header">
+                <h3><i class='bx bx-check-circle'></i> Aprovar Aula Particular</h3>
+                <button id="btnFecharModalAprovar" class="btn-fechar"><i class='bx bx-x'></i></button>
+            </div>
+
+            <form id="formAprovarAula" class="dash-form">
+                <p class="aviso-horarios-modal">
+                    Define o valor desta aula. O sistema irá gerar automaticamente a cobrança pendente para o atleta.
+                </p>
+
+                <div class="form-group">
+                    <label>Valor da Aula (€)</label>
+                    <div class="input-wrapper-tatico">
+                        <input type="number" id="valorAulaParticular" min="0" step="0.50" placeholder="20.00" required>
+                        <i class='bx bx-euro'></i>
+                    </div>
+                </div>
+
+                <input type="hidden" id="hiddenAulaId">
+                <input type="hidden" id="hiddenSocioIdAula">
+                <input type="hidden" id="hiddenDataAula">
+
+                <button type="submit" class="btn-tatico btn-full-width" id="btnConfirmarAprovacao">
+                    Aprovar e Faturar <i class='bx bx-file-find'></i>
+                </button>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,487 @@
+/* CSS/home.css - LIMPO E UNIFICADO */
+.page-home .hero-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 30px;
+}
+.page-home .hero-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.page-home .feature-grid,
+.page-home .first-training-grid {
+  display: grid;
+  gap: 24px;
+  align-items: stretch;
+  width: min(1100px, 100%);
+  margin-inline: auto;
+}
+.page-home .feature-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.page-home .first-training-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* --- RESTAURAR ESTILOS ORIGINAIS DOS CARTÕES DA HOME --- */
+.page-home .feature-card,
+.page-home .info-card {
+  padding: 24px 20px;
+  text-align: left;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-home .feature-card i,
+.page-home .info-card i {
+  color: rgba(156, 230, 156, 0.9);
+  font-size: 1.5rem;
+  margin-bottom: 16px;
+}
+
+/* --- RESTAURAR A NOTA FINAL COM A BARRA VERDE --- */
+.page-home .first-training-actions {
+  margin: 40px auto 0;
+  width: min(1050px, 100%);
+  text-align: center;
+}
+
+.page-home .first-training-note {
+  margin: 0 auto;
+  padding: 16px 20px 16px 28px;
+  position: relative;
+  border-radius: var(--r-lg);
+  background:
+    radial-gradient(
+      120% 80% at 50% 0%,
+      rgba(255, 255, 255, 0.06),
+      rgba(0, 0, 0, 0) 60%
+    ),
+    rgba(12, 12, 12, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(10px);
+  font-family: "Montserrat", sans-serif;
+  font-size: 1rem;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.85);
+  text-align: left;
+}
+
+/* A barrinha verde lateral brilhante */
+.page-home .first-training-note::before {
+  content: "";
+  position: absolute;
+  left: 10px;
+  top: 12px;
+  bottom: 12px;
+  width: 3px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to bottom,
+    rgba(156, 230, 156, 0.85),
+    rgba(156, 230, 156, 0.18)
+  );
+  box-shadow: 0 0 18px rgba(156, 230, 156, 0.18);
+  opacity: 0.95;
+}
+
+/* --- ANIMAÇÕES DE SCROLL (Ativadas pelo home.js) --- */
+.page-home .glass-panel,
+.page-home .card {
+  opacity: 0;
+  transform: translateY(40px);
+  transition:
+    opacity 0.7s cubic-bezier(0.2, 0.8, 0.2, 1),
+    transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+  will-change: opacity, transform;
+}
+
+.page-home .card:nth-child(1) {
+  transition-delay: 100ms;
+}
+.page-home .card:nth-child(2) {
+  transition-delay: 200ms;
+}
+.page-home .card:nth-child(3) {
+  transition-delay: 300ms;
+}
+.page-home .card:nth-child(4) {
+  transition-delay: 400ms;
+}
+
+.page-home .glass-panel.is-visible,
+.page-home .card.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* --- RESTAURAR O FOOTER DA HOME --- */
+.page-home {
+  display: flex;
+  flex-direction: column;
+}
+
+.page-home .main-content {
+  flex: 1 0 auto;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+/* Destaque para o botão de Login no Menu */
+.nav-login-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center;
+  gap: 8px;
+  background: transparent;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 8px 16px !important;
+  margin-left: 10px;
+  transition: all 0.3s ease;
+  color: var(--accent) !important;
+}
+
+.nav-login-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--accent);
+}
+
+/* Responsividade Tablet/Mobile Intermédio */
+@media (max-width: 980px) {
+  .page-home .feature-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .page-home .first-training-grid {
+    grid-template-columns: 1fr;
+    max-width: 500px;
+    margin-inline: auto;
+  }
+}
+@media (max-width: 560px) {
+  .page-home .feature-grid {
+    grid-template-columns: 1fr;
+  }
+  .page-home .hero-actions {
+    flex-direction: column;
+  }
+}
+
+/* =========================================
+   CARROSSEL DE BOAS-VINDAS (CSS INDEPENDENTE E OTIMIZADO)
+   ========================================= */
+
+/* 1. Fundo do Modal */
+.welcome-overlay {
+  z-index: 10000 !important;
+  background: rgba(0, 0, 0, 0.95) !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+/* 2. Palco Principal */
+.welcome-stage {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 1px solid rgba(156, 230, 156, 0.2);
+  border-radius: 12px;
+  box-shadow:
+    0 10px 40px rgba(0, 0, 0, 0.8),
+    0 0 20px rgba(156, 230, 156, 0.1);
+  position: relative;
+  overflow: hidden;
+  background: #020202;
+}
+
+/* 3. Slides */
+.carousel-slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.8s ease-in-out,
+    visibility 0.8s;
+  width: 100%;
+  height: 100%;
+}
+
+.carousel-slide.active {
+  opacity: 1;
+  visibility: visible;
+  z-index: 10;
+}
+
+.carousel-slide img,
+.carousel-slide video {
+  width: 100%;
+  height: 100%;
+}
+
+/* 4. Encaixe perfeito dos vídeos (ESPAÇO MAXIMIZADO) */
+.carousel-slide video {
+  object-fit: contain !important;
+  padding-bottom: 0 !important;
+  background: #020202;
+}
+
+/* 5. Legendas (Otimizadas para não roubar ecrã à ação) */
+.welcome-caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 50px 15px 15px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, transparent 100%);
+  text-align: center;
+  transform: translateY(15px);
+  opacity: 0;
+  transition: all 0.6s ease 0.3s;
+  pointer-events: none;
+}
+
+.carousel-slide.active .welcome-caption {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.welcome-caption h2 {
+  font-family: "Orbitron", sans-serif;
+  color: var(--accent);
+  font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+  letter-spacing: 2px;
+  margin: 0 0 2px 0;
+  text-transform: uppercase;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
+}
+
+.welcome-caption p {
+  color: #fff;
+  font-family: "Montserrat", sans-serif;
+  font-size: clamp(0.85rem, 1.8vw, 0.95rem);
+  margin: 0;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9);
+}
+
+/* 6. Indicadores (Bolinhas) */
+.welcome-indicators {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 15px;
+  z-index: 20;
+}
+
+.welcome-indicators .dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.welcome-indicators .dot:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.welcome-indicators .dot.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 0 10px var(--accent);
+  transform: scale(1.3);
+}
+
+/* 7. Botões Táticos Reduzidos */
+#modalWelcome .close-slider,
+#modalWelcome .slider-btn {
+  border-radius: 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  background: rgba(15, 15, 15, 0.8) !important;
+  border: 1px solid #fff !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+#modalWelcome .close-slider {
+  width: 22px !important;
+  height: 22px !important;
+  top: 15px !important;
+  right: 15px !important;
+}
+
+#modalWelcome .close-slider i {
+  font-size: 0.9rem !important;
+  line-height: 1 !important;
+}
+
+#modalWelcome .slider-btn {
+  width: 28px !important;
+  height: 28px !important;
+  position: absolute !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  z-index: 100 !important;
+}
+
+#modalWelcome .slider-btn i {
+  font-size: 1.1rem !important;
+  line-height: 1 !important;
+}
+
+#modalWelcome .slider-btn.prev {
+  left: 10px !important;
+}
+#modalWelcome .slider-btn.next {
+  right: 10px !important;
+}
+
+#modalWelcome .close-slider:hover {
+  border-color: #ff4d4d !important;
+  color: #ff4d4d !important;
+  background: rgba(255, 77, 77, 0.1) !important;
+  transform: rotate(90deg) !important;
+}
+
+#modalWelcome .slider-btn:hover {
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+  background: rgba(156, 230, 156, 0.1) !important;
+  box-shadow: 0 0 10px rgba(156, 230, 156, 0.2) !important;
+}
+
+/* =========================================
+   RESPONSIVIDADE GERAL (TABLET)
+   ========================================= */
+@media (max-width: 980px) {
+  .page-home .feature-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .page-home .first-training-grid {
+    grid-template-columns: 1fr;
+    max-width: 500px;
+    margin-inline: auto;
+  }
+}
+
+/* =========================================
+   GOLPE FINAL: OTIMIZAÇÃO MOBILE (BOTÕES BLINDADOS)
+   ========================================= */
+@media (max-width: 768px) {
+  /* 1. CENTRAMENTO ABSOLUTO DOS BOTÕES DA HOME */
+  .page-home .feature-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .page-home .hero-actions {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important; /* Força tudo ao centro da coluna */
+    justify-content: center !important;
+    width: 100% !important;
+    gap: 15px !important;
+  }
+
+  .page-home .hero-actions .btn-tatico {
+    width: 100% !important;
+    max-width: 280px !important; /* Controla a largura máxima */
+    display: flex !important;
+    justify-content: center !important; /* Centra o texto dentro do botão */
+    align-items: center !important;
+    text-align: center !important;
+    margin: 0 auto !important; /* A trava de segurança para centrar */
+  }
+
+  /* 2. MENU LOGIN BTN */
+  .nav-login-btn {
+    margin-left: 0 !important;
+    margin-top: 10px !important;
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  /* 3. AFINAÇÕES DO MODAL (CARROSSEL) */
+  .welcome-stage {
+    aspect-ratio: 4 / 5 !important;
+    overflow: visible !important;
+  }
+
+  .slider-wrapper {
+    margin-top: 60px !important;
+    margin-bottom: 130px !important;
+  }
+
+  /* Legenda do Carrossel */
+  .welcome-caption {
+    top: 100% !important;
+    bottom: auto !important;
+    margin-top: 25px !important;
+    background: transparent !important;
+    padding: 0 10px !important;
+    transform: translateY(10px) !important;
+    pointer-events: none;
+  }
+
+  .carousel-slide.active .welcome-caption {
+    transform: translateY(0) !important;
+  }
+
+  /* Bolinhas do Carrossel */
+  .welcome-indicators {
+    margin-top: 115px !important;
+    position: relative;
+    z-index: 30;
+  }
+
+  /* Textos da Legenda */
+  .welcome-caption h2 {
+    font-size: 1.3rem !important;
+    text-shadow: none !important;
+    margin-bottom: 4px !important;
+  }
+
+  .welcome-caption p {
+    font-size: 0.9rem !important;
+    color: rgba(255, 255, 255, 0.7) !important;
+    text-shadow: none !important;
+    line-height: 1.3 !important;
+  }
+
+  /* 4. SETAS DO CARROSSEL (VOLTARAM AO CENTRO EXATO) */
+  #modalWelcome .slider-btn {
+    top: 50% !important; /* O centro milimétrico do vídeo */
+    transform: translateY(-50%) !important;
+    width: 34px !important; /* Um pouco mais largas para o dedo não falhar no telemóvel */
+    height: 34px !important;
+  }
+
+  #modalWelcome .slider-btn i {
+    font-size: 1.4rem !important;
+  }
+
+  /* Descolam um pouco da borda do ecrã para ficarem esteticamente perfeitas */
+  #modalWelcome .slider-btn.prev {
+    left: 8px !important;
+  }
+  #modalWelcome .slider-btn.next {
+    right: 8px !important;
+  }
+  .nav-btn-instalar {
+    width: 100% !important;
+    justify-content: center !important; /* Força o texto e ícone ao centro */
+    margin: 5px 0 !important;
+    padding: 12px !important;
+  }
+}

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <meta name="description"
+    content="Conhece o sistema de graduações da Bogas Team Kickboxing. Descobre os requisitos para as passagens de cinto e acompanha a tua evolução!">
+  <title>Bogas Team - Graduações</title>
+  <link rel="icon" href="../img/favicon.ico" type="image/x-icon" />
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="../CSS/theme.css" />
+  <link rel="stylesheet" href="../CSS/graduacoes.css" />
+  <link rel="stylesheet" href="../CSS/menu.css" />
+</head>
+
+<body class="page-graduacoes">
+  <header class="site-header" role="banner">
+    <a href="./index.html" class="site-logo">Bogas Team Fight Center</a>
+    <button class="menu-toggle"><i class="bx bx-menu"></i></button>
+    <nav class="site-nav" id="site-nav">
+      <a href="./index.html">Home</a>
+      <a href="./espaco.html">Espaço</a>
+            <a href="equipa.html">Staff</a>
+      <a href="./horarios.html">Horários</a>
+      <div class="dropdown">
+        <button class="dropdown-trigger">Eventos <i class='bx bx-chevron-down'></i></button>
+        <div class="dropdown-menu">
+          <a href="./graduacoes.html">Graduações</a>
+          <!-- <a href="./combates.html">Combates</a>
+              <a href="./treinadores.html#muaythai">Convívios</a> -->
+        </div>
+      </div>
+      <a href="./merchandising.html">Store</a>
+      <a href="./patrocinadores.html">Patrocinadores</a>
+      <a href="./contactos.html">Contactos</a>
+    </nav>
+  </header>
+  <div class="site-nav-overlay"></div>
+
+  <main class="main-content">
+    <section class="graduacoes-shell">
+      <header class="page-hero">
+        <h1>Graduações</h1>
+        <p>A prova de que o trabalho duro compensa. Escolhe a data e revive as conquistas que definem o nosso legado.
+        </p>
+
+        <div class="year-buttons" role="group">
+          <button class="btn-tatico js-year" type="button" data-year="2026">2026</button>
+          <button class="btn-tatico js-year" type="button" data-year="2025">2025</button>
+          <button class="btn-tatico js-year" type="button" data-year="2024">2024</button>
+        </div>
+      </header>
+
+      <section class="year-panel">
+        <h2 class="year-title" id="yearTitle"></h2>
+        <section class="graduacoes-container" id="yearEvents"></section>
+      </section>
+    </section>
+
+    <section class="slider-section" id="gym-modal">
+      <button class="close-slider btn-tatico" onclick="closePremiumModal()">
+        <i class='bx bx-x'></i>
+      </button>
+
+      <div class="slider-wrapper">
+        <div class="slider-stage" id="modal-content-area">
+          <img id="modal-main-img" src="" alt="" style="display: none;">
+          <video id="modal-main-video" autoplay muted playsinline controls
+            style="display: none; max-width: 100%; max-height: 70vh;"></video>
+        </div>
+
+        <button class="slider-btn prev btn-tatico" onclick="changeImage(-1)">
+          <i class='bx bx-chevron-left'></i>
+        </button>
+        <button class="slider-btn next btn-tatico" onclick="changeImage(1)">
+          <i class='bx bx-chevron-right'></i>
+        </button>
+
+        <div class="slider-caption" id="modal-caption"></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="../JS/menu.js" defer></script>
+
+  <script src="../JS/graduacoes.js" defer></script>
+
+
+</body>
+
+</html>

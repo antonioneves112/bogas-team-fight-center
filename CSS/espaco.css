@@ -1,0 +1,125 @@
+/* =========================================================
+   CSS/espaco.css - MASTER DESIGN
+========================================================= */
+
+:root {
+  --header-h: 60px !important;
+}
+
+.espaco-hero {
+  text-align: center;
+  margin-bottom: 40px;
+}
+.hero-subtitle {
+  max-width: 60ch;
+  margin: 0 auto;
+  color: var(--muted);
+  font-size: 1.1rem;
+}
+
+/* --- BOTÃO GALERIA (EXPLORAR) --- */
+.gallery-trigger-section {
+  width: 100%;
+  margin-bottom: 80px;
+}
+
+.gallery-card {
+  display: block;
+  width: 100%;
+  height: clamp(300px, 50vh, 500px); /* Garante que nunca fica gigante */
+  position: relative;
+  border: 1px solid var(--rim);
+  border-radius: var(--r-card);
+  overflow: hidden;
+  background: #000;
+  cursor: pointer;
+}
+
+/* Trancar a imagem como fundo absoluto */
+.gallery-media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.gallery-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.7;
+  transition: transform 0.6s ease;
+}
+
+.gallery-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  z-index: 2;
+  text-align: center;
+}
+
+.gallery-content i {
+  font-size: 3rem;
+  color: #fff;
+}
+
+.gallery-content span {
+  font-family: "Orbitron", sans-serif;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #fff;
+}
+
+/* Overlay de brilho */
+.overlay-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at center,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.6) 100%
+  );
+}
+
+.gallery-card:hover img {
+  transform: scale(1.03);
+  opacity: 0.5;
+}
+
+/* --- SECÇÃO AMENITIES (GRID) --- */
+.amenities-section {
+  position: relative;
+  padding: 40px;
+  margin-top: 30px;
+  border-radius: 18px;
+  background: rgba(0, 0, 0, 0.42);
+  border: 1px solid rgba(156, 230, 156, 0.22);
+  backdrop-filter: blur(10px);
+}
+
+.amenities-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 24px;
+}
+
+/* Responsividade */
+@media (max-width: 980px) {
+  .amenities-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .amenities-grid {
+    grid-template-columns: 1fr;
+  }
+}

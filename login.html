@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Acesso Restrito | Bogas Team Fight Center</title>
+
+    <link rel="icon" type="image/png" sizes="192x192" href="./faviicon.png">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+
+    <link rel="stylesheet" href="../CSS/theme.css" />
+    <link rel="stylesheet" href="../CSS/login.css" />
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../JS/login.js" defer></script>
+</head>
+
+<body class="page-login">
+
+    <main class="login-wrapper">
+        <a href="./index.html" class="btn-back-home">
+            <i class='bx bx-left-arrow-alt'></i> Voltar ao site
+        </a>
+
+        <div class="login-panel glass-panel">
+
+            <header class="login-header">
+                <i class='bx bx-shield-quarter'></i>
+                <h1>ÁREA TÉCNICA</h1>
+                <p>Acesso exclusivo para treinadores Bogas Team.</p>
+            </header>
+
+            <form id="loginForm" class="login-form">
+
+                <div class="form-group">
+                    <label for="emailInput">Email do Treinador</label>
+                    <div class="input-wrapper">
+                        <i class='bx bx-envelope'></i>
+                        <input type="email" id="emailInput" placeholder="treinador@bogasteam.pt" required />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="passInput">Palavra-Passe</label>
+                    <div class="input-wrapper">
+                        <i class='bx bx-lock-alt'></i>
+                        <input type="password" id="passInput" placeholder="••••••••" required />
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-tatico login-btn">
+                    Iniciar Sessão <i class='bx bx-log-in-circle'></i>
+                </button>
+
+            </form>
+
+        </div>
+    </main>
+    <script src="./JS/app-routing.js" defer></script>
+</body>
+
+</html>

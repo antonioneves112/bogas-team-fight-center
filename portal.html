@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal do Atleta | Bogas Team</title>
+    <link rel="icon" type="image/png" sizes="192x192" href="./faviicon.png">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Orbitron:wght@400;500;700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="./CSS/theme.css" />
+    <link rel="stylesheet" href="./CSS/portal.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module" src="./JS/portal.js"></script>
+    <link rel="manifest" href="./manifest.json">
+</head>
+
+<body class="page-portal">
+
+    <main id="login-section" class="login-wrapper">
+        <a href="./index.html" class="btn-back-home">
+            <i class='bx bx-left-arrow-alt'></i> Voltar ao site
+        </a>
+
+        <div class="login-panel glass-panel">
+            <header class="login-header">
+                <i class='bx bx-shield-quarter'></i>
+                <h1>ÁREA TÉCNICA</h1>
+                <p>Acesso exclusivo para sócios Bogas Team.</p>
+            </header>
+
+            <form id="formLoginAtleta" class="login-form">
+                <div class="form-group">
+                    <label for="emailAtletaLogin">Email do Atleta</label>
+                    <div class="input-wrapper">
+                        <i class='bx bx-envelope'></i>
+                        <input type="email" id="emailAtletaLogin" placeholder="atleta@email.com" required
+                            autocomplete="off" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="passAtletaLogin">Palavra-Passe</label>
+                    <div class="input-wrapper">
+                        <i class='bx bx-lock-alt'></i>
+                        <input type="password" id="passAtletaLogin" placeholder="••••••••" required />
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-tatico login-btn">
+                    Iniciar Sessão <i class='bx bx-log-in-circle'></i>
+                </button>
+            </form>
+        </div>
+    </main>
+
+    <div id="portal-section" class="portal-container hidden">
+
+        <div class="notificacoes-box glass-panel hidden" id="boxNotificacoes">
+            <div class="notificacoes-texto">
+                <h3><i class='bx bx-bell bx-tada'></i> Alertas Bogas Team</h3>
+                <p style="margin: 0; font-size: 0.85rem;">
+                    Estado neste dispositivo: <span id="statusNotificacoesDispositivo"
+                        style="font-weight: bold; color: #ff4d4d;">Desativado</span>
+                </p>
+            </div>
+            <button id="btnAtivarNotificacoes" class="btn-tatico btn-alerta">Ativar Alertas</button>
+        </div>
+
+        <header class="portal-header glass-panel">
+            <div class="profile-area">
+                <img src="./img/PRETO.jpg" id="atletaFoto" alt="Foto" class="profile-pic">
+                <div class="profile-info">
+                    <h2 id="atletaNome">A carregar...</h2>
+                    <p id="atletaModalidade"><i class='bx bx-medal'></i> ---</p>
+                </div>
+            </div>
+            <div class="header-controls">
+                <div class="notif-wrapper">
+                    <button id="btnVerNotificacoes" class="btn-icon" title="Notificações">
+                        <i class='bx bx-bell'></i>
+                    </button>
+                    <span id="badgeNotificacoes" class="badge-notificacao hidden">0</span>
+                </div>
+
+                <button id="btnVerPagamentos" class="btn-icon" title="Histórico de Pagamentos">
+                    <i class='bx bx-euro'></i>
+                </button>
+                <button id="btnAbrirModalPass" class="btn-icon" title="Alterar Password">
+                    <i class='bx bx-lock-open-alt'></i>
+                </button>
+                <button id="btnSairPortal" class="btn-icon" title="Sair">
+                    <i class='bx bx-log-out'></i>
+                </button>
+            </div>
+        </header>
+
+        <section class="status-card glass-panel" id="cardMensalidade">
+            <div class="status-icon" id="iconeMensalidade"><i class='bx bx-loader-alt bx-spin'></i></div>
+            <div class="status-text">
+                <h3>Mensalidade Atual</h3>
+                <h1 id="statusMensalidade">---</h1>
+                <p id="mesReferencia">A verificar sistema...</p>
+            </div>
+        </section>
+
+        <div class="portal-grid">
+            <div class="info-card glass-panel">
+                <i class='bx bx-calendar-star'></i>
+                <h4>Inscrição</h4>
+                <p id="atletaDataInscricao">--/--/----</p>
+            </div>
+            <div class="info-card glass-panel" id="cardGraduacao">
+                <i class='bx bx-award'></i>
+                <h4>Graduação</h4>
+                <p id="atletaGraduacao" style="margin-bottom: 5px;">---</p>
+                <div id="statusAptidao" class="badge-status">Verificando...</div>
+                <p id="labelUltimaGrad" style="font-size: 0.65rem; color: var(--muted); margin-top: 8px;">Última:
+                    --/--/----</p>
+            </div>
+            <div class="info-card glass-panel">
+                <i class='bx bx-id-card'></i>
+                <h4>Federação</h4>
+                <p id="atletaFederacao">---</p>
+            </div>
+            <div class="info-card glass-panel" id="cardAulas">
+                <i class='bx bx-time-five'></i>
+                <h4>Aula Particular</h4>
+                <p id="atletaProximaAula">Nenhuma agendada</p>
+                <div id="statusProximaAula" class="badge-status hidden">---</div>
+            </div>
+        </div>
+
+        <section class="portal-actions actions-stacked">
+            <!-- 🥊 GÉMEO 1: Marcar Aula (BLINDADO COM FLEXBOX) -->
+            <button id="btnAbrirModalParticular" class="btn-tatico btn-outline"
+                style="display: flex !important; align-items: center !important; justify-content: center !important; gap: 10px !important; position: relative;">
+                <i class='bx bx-calendar-plus'
+                    style="position: static !important; margin: 0 !important; font-size: 1.2rem;"></i> Marcar Aula
+                Particular
+            </button>
+
+            <!-- 🥊 GÉMEO 2: Ler Regulamento (BLINDADO COM FLEXBOX) -->
+            <button id="btnRegulamento" class="btn-tatico btn-outline"
+                style="display: flex !important; align-items: center !important; justify-content: center !important; gap: 10px !important; position: relative;">
+                <i class='bx bx-book-open'
+                    style="position: static !important; margin: 0 !important; font-size: 1.2rem;"></i> Ler Regulamento
+            </button>
+        </section>
+    </div>
+
+    <div id="modalNotificacoes" class="modal-overlay hidden">
+        <div class="modal-content glass-panel modal-notif-size">
+            <div class="modal-header">
+                <h3><i class='bx bx-bell'></i> Caixa de Mensagens</h3>
+                <button id="btnFecharNotificacoes" class="btn-fechar"><i class='bx bx-x'></i></button>
+            </div>
+            <div id="listaNotificacoes" class="notificacoes-lista">
+                <p class="notif-empty">A carregar mensagens...</p>
+            </div>
+        </div>
+    </div>
+    <div id="modalPass" class="modal-overlay hidden">
+        <div class="modal-content glass-panel">
+            <div class="modal-header">
+                <h3><i class='bx bx-lock-alt'></i> Nova Password</h3>
+                <button id="btnFecharModalPass" class="btn-fechar"><i class='bx bx-x'></i></button>
+            </div>
+
+            <form id="formAlterarPass" class="login-form">
+
+                <div class="form-group">
+                    <label>Nova Password</label>
+                    <div class="input-wrapper">
+                        <i class='bx bx-key'></i>
+                        <input type="password" id="novaPass" placeholder="Mínimo 4 caracteres..." required
+                            autocomplete="off">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Confirmar Password</label>
+                    <div class="input-wrapper">
+                        <i class='bx bx-check-shield'></i>
+                        <input type="password" id="confirmaNovaPass" placeholder="Repete a password..." required
+                            autocomplete="off">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-tatico login-btn" style="margin-top: 15px;">
+                    Guardar Alteração <i class='bx bx-save'></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div id="modalHistorico" class="modal-overlay hidden">
+        <div class="modal-content glass-panel" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3><i class='bx bx-history'></i> O Meu Histórico</h3>
+                <button id="btnFecharHistorico" class="btn-fechar"><i class='bx bx-x'></i></button>
+            </div>
+
+            <div class="table-container-modal">
+                <table class="tabela-historico">
+                    <thead>
+                        <tr>
+                            <th>Ano/Mês</th>
+                            <th>Tipo</th>
+                            <th>Valor</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="listaPagamentosAtleta">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div id="modalCobranca" class="modal-overlay hidden">
+        <div class="modal-content modal-shame glass-panel">
+            <i class='bx bx-error-alt bx-tada icon-shame-warning'></i>
+            <h2 class="shame-title">MENSALIDADE PENDENTE</h2>
+            <p class="shame-description">
+                Os nossos registos indicam que tens a tua mensalidade em atraso.<br><br>
+                <strong class="text-accent">Regulariza a tua situação com o treinador o mais breve possível para
+                    continuares a
+                    treinar.</strong>
+            </p>
+            <button id="btnFecharCobranca" class="btn-tatico btn-shame-confirm">
+                Confirmar!
+            </button>
+        </div>
+    </div>
+    <div id="modalAvisoNotificacoes" class="modal-overlay hidden">
+        <div class="modal-content modal-alerta-verde glass-panel">
+            <i class='bx bx-bell bx-tada icon-alerta-verde'></i>
+            <h2 class="shame-title titulo-verde">ATIVA OS ALERTAS</h2>
+            <p class="shame-description">
+                Ainda não ativaste as notificações da Bogas Team no teu telemóvel.<br><br>
+                <strong>Ativa agora para receberes as nossas notificações.</strong>
+            </p>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button id="btnRecusarNotificacoes" class="btn-tatico btn-outline" style="width: 50%;">Mais
+                    Tarde</button>
+                <button id="btnAceitarNotificacoesModal" class="btn-tatico" style="width: 50%;">Ativar Agora</button>
+            </div>
+        </div>
+    </div>
+    <div id="modalRegulamento" class="modal-overlay hidden modal-z-index">
+        <div class="modal-content glass-panel modal-regulamento-box">
+            <div class="modal-header">
+                <h3><i class='bx bx-book-bookmark'></i> Regras e Condutas</h3>
+                <button id="btnFecharRegulamentoX" class="btn-close"><i class='bx bx-x'></i></button>
+            </div>
+
+            <div class="modal-body scrollable-body">
+                <h4 class="modal-section-title">1. Conduta, Respeito e Hierarquia</h4>
+                <p>• Respeitar os professores e colegas. Cumprimentar corretamente ao entrar e sair do Tatami.</p>
+                <p>• Solicitar autorização ao Professor para beber água, sair da aula ou atender chamadas.</p>
+                <p>• Zelar pelo silêncio e manter total atenção às instruções do Professor.</p>
+
+                <p>• <b>Exclusividade:</b> Não é permitido treinar noutra equipa sem a autorização expressa do
+                    Professor.
+                </p>
+
+                <h4>2. Higiene, Vestuário e Espaço</h4>
+                <p>• É obrigatório o uso de t-shirt; não é permitido treinar de tronco nu.</p>
+
+                <p>• Manter as unhas devidamente cortadas e os pés limpos antes de aceder ao tatami.</p>
+                <p>• <b>Dever de Limpeza:</b> É dever de todos manter o tatami e os arredores sempre limpos.</p>
+
+                <h4>3. Equipamento e Segurança</h4>
+                <p>• <b>Seguro Desportivo:</b> É obrigatória a subscrição do seguro desportivo, que deve ser
+                    registado
+                    através do portal da <b>FPKMT</b>.</p>
+                <p>• Uso obrigatório de equipamento de proteção individual, devidamente higienizado.</p>
+                <p>• <b>IMPORTANTE:</b> Em caso de lesão ou incapacidade física, o atleta deve comunicar
+                    obrigatoriamente ao
+                    Professor antes de iniciar o treino.</p>
+                <p>• É estritamente proibida a permanência de telemóveis na área do tatami.</p>
+
+                <h4 class="highlight-title"><i class='bx bx-wallet'></i> 4. Pagamentos e Mensalidades</h4>
+                <p>• <b>Inscrição:</b> O valor da inscrição é de <span class="text-accent">10€</span>.</p>
+                <p>• <b>PRAZO:</b> A mensalidade terá de ser paga <b>até ao dia 8 de cada mês</b>.</p>
+
+                <div class="alert-box">
+                    <i class='bx bxs-error-alt'></i>
+                    <span><b>MULTA:</b> O pagamento após o dia 8 acresce o valor de <span class="text-danger">20€</span>
+                        de
+                        multa de atraso. O incumprimento suspende o acesso aos treinos.</span>
+                </div>
+
+                <p>• <b>FÉRIAS E AUSÊNCIAS:</b></p>
+                <ul class="modal-list">
+                    <li>Ausência até 15 dias: A mensalidade é paga na <b>TOTALIDADE (100%)</b>.</li>
+                    <li>Ausência superior a 30 dias: É paga uma taxa de manutenção do ginásio de <span
+                            class="text-accent">20€</span> No mês que regressar.</li>
+                    <li>O cancelamento da inscrição deve ser comunicado com um mês de antecedência.</li>
+                </ul>
+
+                <h4>5. Assiduidade e Pontualidade</h4>
+                <p>• A pontualidade é um pilar da disciplina. Em caso de atraso, deve-se aguardar autorização para
+                    entrar.
+                </p>
+                <p>• <b>AVISO:</b> Se precisar de se ausentar por algum tempo dos treinos (viagens ou doença), avise o
+                    Professor antecipadamente.</p>
+
+                <h4>6. Saúde e Integridade</h4>
+                <p>• É proibido treinar em estado de doença grave ou com feridas expostas.</p>
+                <p>• Cada atleta deve preservar a sua integridade física e a dos seus parceiros de treino.</p>
+            </div>
+
+            <div id="containerAceiteRegulamento" class="regulamento-aceite-box">
+                <label class="check-label">
+                    <input type="checkbox" id="checkAceiteRegulamento">
+                    <span class="check-text">Confirmo que li e <b>aceito o Regulamento Interno</b> da Bogas Team e
+                        comprometo-me a
+                        cumpri-lo.</span>
+                </label>
+            </div>
+            <div class="modal-footer-full">
+                <button id="btnFecharRegulamento" class="btn-tatico btn-full">Fechar!</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('Motor PWA Ativado com Sucesso no Portal!', reg))
+                    .catch(err => console.error('Erro no PWA:', err));
+            });
+        }
+    </script>
+    <div id="toast-container"></div>
+
+    <div id="modalConfirmarApagar" class="modal-overlay hidden modal-z-index">
+        <div class="modal-content glass-panel modal-confirm-delete">
+            <i class='bx bx-trash bx-tada icon-delete-warning'></i>
+            <h2 class="title-confirm-delete">Apagar Mensagem?</h2>
+            <p class="desc-confirm-delete">Esta ação não pode ser desfeita. Queres mesmo apagar esta notificação?
+            </p>
+            <div class="actions-confirm-delete">
+                <button id="btnCancelarApagar" class="btn-tatico btn-outline btn-half">Cancelar</button>
+                <button id="btnConfirmarApagar" class="btn-tatico btn-danger btn-half">Sim, Apagar</button>
+            </div>
+        </div>
+    </div>
+    <div id="modalConfirmLogout" class="modal-overlay hidden modal-z-index">
+        <div class="modal-content glass-panel modal-confirm-delete">
+            <i class='bx bx-log-out bx-tada icon-delete-warning'></i>
+            <h2 class="title-confirm-delete">Terminar Sessão?</h2>
+            <p class="desc-confirm-delete">Tens a certeza que queres sair do teu portal?</p>
+            <div class="actions-confirm-delete">
+                <button id="btnCancelarLogout" class="btn-tatico btn-outline btn-half">Cancelar</button>
+                <button id="btnConfirmarLogout" class="btn-tatico btn-danger btn-half">Sim, Sair</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- 🥊 NOVO MODAL DE MARCAÇÃO PREMIUM -->
+    <div id="modalAulaParticular" class="modal-overlay hidden modal-z-index">
+        <div class="modal-content glass-panel modal-aula-tamanho">
+            <div class="modal-header">
+                <h3><i class='bx bx-time-five'></i> Agendar Aula</h3>
+                <button id="btnFecharModalParticular" class="btn-fechar"><i class='bx bx-x'></i></button>
+            </div>
+
+            <form id="formAulaParticular" class="form-aula">
+                <p class="aviso-horarios">
+                    <b>Sábado:</b> A partir das 13:00<br>
+                    <b>Domingo:</b> A partir das 10:00
+
+                </p>
+
+                <div class="form-group">
+                    <label class="label-tatico">Data da Aula:</label>
+                    <div class="input-wrapper">
+                        <i class='bx bx-calendar'></i>
+                        <input type="date" id="dataParticular" required class="input-tatico">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="label-tatico">Hora da Aula:</label>
+                    <div class="input-wrapper">
+                        <i class='bx bx-time'></i>
+                        <input type="time" id="horaParticular" required class="input-tatico">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-tatico btn-pedir-aula" id="btnPedirAula">
+                    Pedir Aprovação <i class='bx bx-send'></i>
+                </button>
+            </form>
+        </div>
+    </div>
+    <script src="./JS/app-routing.js" defer></script>
+</body>
+
+</html>

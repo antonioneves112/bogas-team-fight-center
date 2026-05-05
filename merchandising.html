@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <meta name="description"
+    content="Equipa-te a rigor na loja da Bogas Team Kickboxing. Descobre o nosso merchandising oficial. Mostra o orgulho na nossa equipa!">
+  <title>Bogas Team Fight Center - Store</title>
+
+  <link rel="icon" href="../img/favicon.ico" type="image/x-icon" />
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+
+  <link rel="stylesheet" href="../CSS/theme.css" />
+  <link rel="stylesheet" href="../CSS/merch.css" />
+  <link rel="stylesheet" href="../CSS/menu.css" />
+</head>
+
+<body class="page-merch">
+  <header class="site-header" role="banner">
+    <a href="./index.html" class="site-logo" aria-label="Bogas Team Fight Center — Home">
+      Bogas Team Fight Center
+    </a>
+
+    <button class="menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="site-nav">
+      <i class="bx bx-menu" aria-hidden="true"></i>
+    </button>
+
+    <nav class="site-nav" id="site-nav" aria-label="Navegação principal">
+      <a href="./index.html">Home</a>
+      <a href="./espaco.html">Espaço</a>
+            <a href="equipa.html">Staff</a>
+      <a href="./horarios.html">Horários</a>
+
+      <div class="dropdown">
+        <button class="dropdown-trigger">Eventos <i class='bx bx-chevron-down'></i></button>
+        <div class="dropdown-menu">
+          <a href="./graduacoes.html">Graduações</a>
+        </div>
+      </div>
+
+      <a href="./merchandising.html" class="active" aria-current="page">Store</a>
+      <a href="./patrocinadores.html">Patrocinadores</a>
+      <a href="./contactos.html">Contactos</a>
+    </nav>
+  </header>
+  <div class="site-nav-overlay" aria-hidden="true"></div>
+
+  <main class="main-content merch">
+    <section class="merch-shell" aria-label="Merchandising">
+      <header class="page-hero">
+        <h1>STORE</h1>
+        <p class="merch-subtitle">
+          Equipamento oficial à distância de um clique. Escolhe o teu artigo, confirma o tamanho,encomenda já!
+        </p>
+
+        <div class="filters" aria-label="Filtros de produtos">
+          <div class="filter-row" role="group" aria-label="Filtrar por categoria">
+            <button class="btn-tatico js-filter" type="button" data-filter="roupa" aria-pressed="false">Roupa</button>
+            <button class="btn-tatico js-filter" type="button" data-filter="acessorios"
+              aria-pressed="false">Acessórios</button>
+            <button class="btn-tatico js-filter" type="button" data-filter="all" aria-pressed="false">Todos</button>
+          </div>
+
+          <div class="tools" id="merchTools" style="display: none;">
+            <label class="search" aria-label="Pesquisar">
+              <i class="bx bx-search"></i>
+              <input type="text" id="searchInput" placeholder="Pesquisar artigo..." />
+            </label>
+            <label class="sort" aria-label="Ordenar por">
+              <select id="sortSelect">
+                <option value="price-asc">Preço: Baixo para Alto</option>
+                <option value="price-desc">Preço: Alto para Baixo</option>
+                <option value="name-asc">Nome: A-Z</option>
+              </select>
+            </label>
+          </div>
+
+
+        </div>
+      </header>
+
+      <section class="merch-grid" id="merchGrid" aria-label="Lista de produtos">
+        <button class="card product-card js-product" type="button" data-category="roupa"
+          data-product="Fato Treino Verde" data-price="100€" data-sizes="S,M,L,XL" data-stock="out"
+          data-badge="esgotado">
+          <div class="product-media">
+            <img src="../img/fato treino verde.png" alt="Fato treino verde" loading="lazy" decoding="async" />
+          </div>
+          <div class="product-meta">
+            <p class="product-name">Fato Treino Verde</p>
+            <p class="product-price">100€</p>
+          </div>
+          <span class="product-cta">Encomendar</span>
+        </button>
+
+        <button class="card product-card js-product" type="button" data-category="roupa"
+          data-product="Fato Treino Laranja" data-price="100€" data-sizes="S,M,L,XL" data-stock="out"
+          data-badge="esgotado">
+          <div class="product-media">
+            <img src="../img/fatotreinolaranja.png" alt="Fato treino laranja" loading="lazy" decoding="async" />
+          </div>
+          <div class="product-meta">
+            <p class="product-name">Fato Treino Laranja</p>
+            <p class="product-price">100€</p>
+          </div>
+          <span class="product-cta">Encomendar</span>
+        </button>
+
+        <button class="card product-card js-product" type="button" data-category="roupa" data-product="Polo"
+          data-price="30€" data-sizes="S,M,L,XL" data-stock="out" data-badge="esgotado">
+          <div class="product-media">
+            <img src="../img/polo.png" alt="Polo" loading="lazy" decoding="async" />
+          </div>
+          <div class="product-meta">
+            <p class="product-name">Polo</p>
+            <p class="product-price">30€</p>
+          </div>
+          <span class="product-cta">Encomendar</span>
+        </button>
+
+        <button class="card product-card js-product" type="button" data-category="acessorios" data-product="Chapéu"
+          data-price="30€" data-sizes="" data-badge="novo">
+          <div class="product-media">
+            <img src="../img/CHAPEU.png" alt="Chapéu" loading="lazy" decoding="async" />
+          </div>
+          <div class="product-meta">
+            <p class="product-name">Chapéu</p>
+            <p class="product-price">30€</p>
+          </div>
+          <span class="product-cta">Encomendar</span>
+        </button>
+
+        <button class="card product-card js-product" type="button" data-category="roupa" data-product="T-shirt Preta"
+          data-price="15€" data-sizes="S,M,L,XL" data-badge="mais-vendido">
+          <div class="product-media">
+            <img src="../img/tshirtpreta.jpeg" alt="T-shirt preta" loading="lazy" decoding="async" />
+          </div>
+          <div class="product-meta">
+            <p class="product-name">T-shirt Preta</p>
+            <p class="product-price">15€</p>
+          </div>
+          <span class="product-cta">Encomendar</span>
+        </button>
+
+        <button class="card product-card js-product" type="button" data-category="roupa" data-product="T-shirt Branca"
+          data-price="15€" data-sizes="S,M,L,XL" data-stock="out" data-badge="esgotado">
+          <div class="product-media">
+            <img src="../img/tshirtbranca.png" alt="T-shirt branca" loading="lazy" decoding="async" />
+          </div>
+          <div class="product-meta">
+            <p class="product-name">T-shirt Branca</p>
+            <p class="product-price">15€</p>
+          </div>
+          <span class="product-cta">Esgotado</span>
+        </button>
+
+        <button class="card product-card js-product" type="button" data-category="acessorios"
+          data-product="Sticker Preto" data-price="2€" data-sizes="" data-badge="mais-vendido">
+          <div class="product-media">
+            <img src="../img/sticket preto.png" alt="Sticker preto" loading="lazy" decoding="async" />
+          </div>
+          <div class="product-meta">
+            <p class="product-name">Sticker Preto</p>
+            <p class="product-price">2€</p>
+          </div>
+          <span class="product-cta">Encomendar</span>
+        </button>
+
+        <button class="card product-card js-product" type="button" data-category="acessorios"
+          data-product="Sticker Branco" data-price="2€" data-sizes="" data-badge="mais-vendido">
+          <div class="product-media">
+            <img src="../img/sticker branco.png" alt="Sticker branco" loading="lazy" decoding="async" />
+          </div>
+          <div class="product-meta">
+            <p class="product-name">Sticker Branco</p>
+            <p class="product-price">2€</p>
+          </div>
+          <span class="product-cta">Esgotado</span>
+        </button>
+
+        <button class="card product-card js-product" type="button" data-category="acessorios"
+          data-product="Pin Bogas Team" data-price="2€" data-sizes="" data-badge="novo">
+          <div class="product-media">
+            <img src="../img/cracha.jpeg" alt="Pin Bogas Team" loading="lazy" decoding="async" />
+          </div>
+          <div class="product-meta">
+            <p class="product-name">Crachá</p>
+            <p class="product-price">2€</p>
+          </div>
+          <span class="product-cta">Encomendar</span>
+        </button>
+
+        <button class="card product-card js-product" type="button" data-category="roupa" data-product="Meias Bogas Team"
+          data-price="5€" data-sizes="Tamanho Único" data-badge="novo">
+          <div class="product-media">
+            <img src="../img/meias.png" alt="Meias Bogas Team" loading="lazy" decoding="async" />
+          </div>
+          <div class="product-meta">
+            <p class="product-name">Meias</p>
+            <p class="product-price">5€</p>
+          </div>
+          <span class="product-cta">Encomendar</span>
+        </button>
+      </section>
+
+      <p class="filter-empty is-hidden" id="filterEmpty">Sem resultados com os filtros atuais.</p>
+    </section>
+  </main>
+
+  <div class="modal-overlay is-hidden" id="size-modal" role="dialog" aria-modal="true" aria-hidden="true"
+    aria-label="Escolher tamanho">
+    <div class="modal-panel glass-panel" role="document">
+      <button class="modal-close" id="modal-close" type="button" aria-label="Fechar"><i class='bx bx-x'></i></button>
+
+      <h3 class="modal-title" id="modal-product-name">Produto</h3>
+      <p class="modal-desc" id="modal-product-price" style="color: var(--accent);"></p>
+
+      <div class="modal-form">
+        <div class="tactic-options" id="modal-size-options" aria-label="Selecionar tamanho"></div>
+        <button class="btn-primary" id="confirm-size" type="button" disabled>Selecionar Tamanho</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../JS/menu.js" defer></script>
+  <script src="../JS/merch.js" defer></script>
+</body>
+
+</html>
