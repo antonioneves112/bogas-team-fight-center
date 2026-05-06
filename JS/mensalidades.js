@@ -1,9 +1,8 @@
 /* JS/mensalidades.js - GESTÃO DE MENSALIDADES (Modais Premium) */
 import { supabase } from "./supabase.js";
 import { state } from "./state.js";
-import { formatarNomeCurto } from "./helpers.js";
+import { formatarNomeCurto, extrairPreco, debounce } from "./helpers.js"; // 🥊 IMPORT: Agrupado e adicionado o debounce
 import { carregarGuerreiros } from "./socios.js";
-import { extrairPreco } from "./helpers.js";
 import { mostrarAviso } from "./main.js"; // 🥊 IMPORTAMOS OS AVISOS VISUAIS
 
 export function renderizarTabelaMensalidades(lista) {
@@ -23,6 +22,10 @@ export function renderizarTabelaMensalidades(lista) {
   }
 
   const mesReferencia = filtroMes.value;
+
+  // 🥊 OTIMIZAÇÃO: Criação do fragmento para evitar reflows múltiplos
+  const fragment = document.createDocumentFragment();
+
   listaAtivos.forEach((m) => {
     totalGeral += extrairPreco(m.valor);
 
@@ -45,7 +48,9 @@ export function renderizarTabelaMensalidades(lista) {
           <button class="btn-acao btn-edit-mensalidade" data-id="${m.id}"><i class='bx bx-edit'></i></button>
           <button class="btn-acao btn-delete-mensalidade" data-id="${m.id}"><i class='bx bx-trash'></i></button>
       </td>`;
-    tabelaMensalidades.appendChild(tr);
+
+    // 🥊 OTIMIZAÇÃO: Adiciona a row ao fragmento na memória
+    fragment.appendChild(tr);
   });
 
   const trTotal = document.createElement("tr");
@@ -55,7 +60,12 @@ export function renderizarTabelaMensalidades(lista) {
     <td style="font-weight: bold; color: var(--accent);">${totalGeral.toFixed(2)}€</td>
     <td colspan="2"></td>
   `;
-  tabelaMensalidades.appendChild(trTotal);
+
+  // 🥊 OTIMIZAÇÃO: Adiciona a row totalizadora ao fragmento
+  fragment.appendChild(trTotal);
+
+  // 🥊 OTIMIZAÇÃO: Injeta todo o conteúdo de uma só vez no DOM real
+  tabelaMensalidades.appendChild(fragment);
 }
 
 export async function carregarMensalidades() {
@@ -402,18 +412,22 @@ export function initMensalidadesEvents() {
   const btnLimparMensalidade = document.getElementById("limparMensalidade");
 
   if (filtroNomeMensalidade) {
-    filtroNomeMensalidade.addEventListener("input", () => {
-      const termo = filtroNomeMensalidade.value.toLowerCase();
-      if (btnLimparMensalidade)
-        btnLimparMensalidade.style.display =
-          termo.length > 0 ? "block" : "none";
+    // 🥊 OTIMIZAÇÃO: Debounce aplicado à caixa de pesquisa
+    filtroNomeMensalidade.addEventListener(
+      "input",
+      debounce(() => {
+        const termo = filtroNomeMensalidade.value.toLowerCase();
+        if (btnLimparMensalidade)
+          btnLimparMensalidade.style.display =
+            termo.length > 0 ? "block" : "none";
 
-      const filtrados = state.mensalidadesAtuais.filter((m) => {
-        const nomeSocio = m.socios?.nome || "";
-        return nomeSocio.toLowerCase().includes(termo);
-      });
-      renderizarTabelaMensalidades(filtrados);
-    });
+        const filtrados = state.mensalidadesAtuais.filter((m) => {
+          const nomeSocio = m.socios?.nome || "";
+          return nomeSocio.toLowerCase().includes(termo);
+        });
+        renderizarTabelaMensalidades(filtrados);
+      }, 300),
+    ); // Espera 300ms antes de filtrar e renderizar
 
     if (btnLimparMensalidade) {
       btnLimparMensalidade.addEventListener("click", () => {

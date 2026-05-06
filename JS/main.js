@@ -3,6 +3,7 @@ import { supabase } from "./supabase.js";
 import { state } from "./state.js";
 import { formatarNomeCurto } from "./helpers.js";
 import { inicializarTabs, inicializarFechoModais } from "./ui.js";
+import { executarLogout } from "./auth.js"; // 🥊 IMPORT: Autenticação Centralizada
 import {
   carregarGuerreiros,
   renderizarTabelaSocios,
@@ -421,15 +422,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         "A sair... <i class='bx bx-loader-alt bx-spin'></i>";
       btnConfirma.disabled = true;
 
-      try {
-        localStorage.removeItem("bogas_treinador_ativo");
-        localStorage.removeItem("bogas_treinador_nome");
-        await supabase.auth.signOut();
-        window.location.replace("gateway.html");
-      } catch (err) {
-        console.error("Erro ao sair:", err);
-        window.location.replace("gateway.html");
-      }
+      // 🥊 CORREÇÃO: Utilização da função global de logout
+      await executarLogout();
     });
 });
 

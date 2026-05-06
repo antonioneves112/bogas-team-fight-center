@@ -1,6 +1,7 @@
 /* JS/portal.js - MOTOR DO PORTAL (VERSÃO FINAL E AFINADA) */
 import { supabase } from "./supabase.js";
 import { formatarNomeCurto } from "./helpers.js";
+import { executarLogout } from "./auth.js"; // 🥊 IMPORT: Autenticação Centralizada
 
 // 🥊 VARIÁVEIS DE NÍVEL DE MÓDULO
 let atletaLogadoId = null;
@@ -362,9 +363,16 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   document
     .getElementById("btnConfirmarLogout")
-    ?.addEventListener("click", (e) => {
-      localStorage.removeItem("bogas_atleta_id");
-      window.location.replace("index.html");
+    ?.addEventListener("click", async (e) => {
+      const btnConfirma = document.getElementById("btnConfirmarLogout");
+      if (btnConfirma) {
+        btnConfirma.innerHTML =
+          "A sair... <i class='bx bx-loader-alt bx-spin'></i>";
+        btnConfirma.disabled = true;
+      }
+
+      // 🥊 CORREÇÃO: Utilização da função global de logout
+      await executarLogout();
     });
 
   document.getElementById("btnRegulamento")?.addEventListener("click", () => {

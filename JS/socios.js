@@ -106,6 +106,9 @@ export function renderizarTabelaSocios(lista, idsPagos = null, mesAtual = "") {
     return;
   }
 
+  // OTIMIZAÇÃO: Criação de um fragmento de documento
+  const fragment = document.createDocumentFragment();
+
   lista.forEach((s) => {
     const tr = document.createElement("tr");
     const estaPago = idsPagos.includes(s.id);
@@ -126,19 +129,25 @@ export function renderizarTabelaSocios(lista, idsPagos = null, mesAtual = "") {
         ? `<a href="https://wa.me/351${s.telemovel}?text=${gerarMensagemWhatsApp(s.nome, mesAtual)}" target="_blank" class="btn-acao btn-whatsapp" title="Avisar"><i class='bx bxl-whatsapp'></i></a>`
         : "";
 
+    // 🥊 CORREÇÃO: Adicionados os atributos data-label para UI Mobile
     tr.innerHTML = `
-      <td style="font-weight: 600;">${formatarNomeCurto(s.nome)}</td>
-      <td>${s.modalidade}</td>
-      <td><span class="badge ${isInativo ? "badge-inativo" : "badge-ativo"}">${s.estado}</span></td>
-      <td><span class="badge ${badgeMensalidade}">${textoMensalidade}</span></td>
-      <td>
+      <td data-label="Nome" style="font-weight: 600;">${formatarNomeCurto(s.nome)}</td>
+      <td data-label="Modalidade">${s.modalidade}</td>
+      <td data-label="Estado"><span class="badge ${isInativo ? "badge-inativo" : "badge-ativo"}">${s.estado}</span></td>
+      <td data-label="Mensalidade"><span class="badge ${badgeMensalidade}">${textoMensalidade}</span></td>
+      <td data-label="Ações">
           <button class="btn-acao btn-edit" data-id="${s.id}" title="Editar"><i class='bx bx-edit'></i></button>
           <button class="btn-acao btn-delete" data-id="${s.id}" title="Eliminar"><i class='bx bx-trash'></i></button>
           ${btnFaturar}
           ${btnWhatsApp}
       </td>`;
-    tabelaSocios.appendChild(tr);
+
+    // Adiciona ao fragmento (na memória) em vez do DOM real
+    fragment.appendChild(tr);
   });
+
+  // Injeta tudo de uma vez no DOM real
+  tabelaSocios.appendChild(fragment);
 }
 
 // 🥊 NOVA FUNÇÃO: RENDERIZAR TABELA DE INATIVOS
@@ -153,23 +162,32 @@ export function renderizarTabelaInativos(lista) {
     return;
   }
 
+  // 🥊 CORREÇÃO: Fragmento adicionado para evitar reflows múltiplos
+  const fragment = document.createDocumentFragment();
+
   lista.forEach((s) => {
     const tr = document.createElement("tr");
     const dataSaida = s.data_inativo
       ? s.data_inativo.split("-").reverse().join("/")
       : "N/D";
 
+    // 🥊 CORREÇÃO: Adicionados os atributos data-label para UI Mobile
     tr.innerHTML = `
-      <td style="font-weight: 600;">${formatarNomeCurto(s.nome)}</td>
-      <td>${s.modalidade}</td>
-      <td><span class="badge badge-inativo">${s.estado}</span></td>
-      <td style="color: #ff4d4d; font-weight: 600;">${dataSaida}</td>
-      <td>
+      <td data-label="Nome" style="font-weight: 600;">${formatarNomeCurto(s.nome)}</td>
+      <td data-label="Modalidade">${s.modalidade}</td>
+      <td data-label="Estado"><span class="badge badge-inativo">${s.estado}</span></td>
+      <td data-label="Data de Saída" style="color: #ff4d4d; font-weight: 600;">${dataSaida}</td>
+      <td data-label="Ações">
           <button class="btn-acao btn-edit" data-id="${s.id}" title="Editar"><i class='bx bx-edit'></i></button>
           <button class="btn-acao btn-delete" data-id="${s.id}" title="Eliminar"><i class='bx bx-trash'></i></button>
       </td>`;
-    tabela.appendChild(tr);
+
+    // Anexa ao fragmento
+    fragment.appendChild(tr);
   });
+
+  // Injeta de uma só vez
+  tabela.appendChild(fragment);
 }
 
 export function initSociosEvents() {
@@ -268,7 +286,8 @@ export function initSociosEvents() {
       }
 
       modalSocio.classList.add("hidden");
-      carregarGuerreiros();
+      // 🥊 CORREÇÃO: Await adicionado para garantir que a tabela só atualiza quando a DB confirmar
+      await carregarGuerreiros();
       mostrarAviso(
         "Sócio Atualizado",
         "Os dados foram guardados com sucesso.",
@@ -353,12 +372,56 @@ export function initSociosEvents() {
     btnConfirmarDelete.disabled = true;
 
     try {
-      await supabase.from("socios").delete().eq("id", socioIdParaEliminar);
+      // 🥊 1. OTIMIZAÇÃO: PROCURAR O SÓCIO NA MEMÓRIA (Sem query à BD)
+      const socio = state.todosOsGuerreiros?.find(
+        (s) => s.id == socioIdParaEliminar,
+      );
+
+      // 🥊 2. LIMPEZA: APAGAR A FOTOGRAFIA FÍSICA NO STORAGE (Se existir)
+      if (socio && socio.foto_url) {
+        // Extrai apenas o nome do ficheiro no fim do URL
+        const fileName = socio.foto_url.split("/").pop();
+
+        if (fileName) {
+          const { error: storageError } = await supabase.storage
+            .from("fotos_socios")
+            .remove([fileName]);
+
+          if (storageError) {
+            console.warn(
+              "Aviso: A foto não pôde ser apagada do Storage:",
+              storageError,
+            );
+            // Nota: Não usamos 'throw' aqui para garantir que se o ficheiro já não
+            // existir (ou der erro de cache), o Sócio será apagado da BD na mesma.
+          } else {
+            console.log("Ficheiro de imagem limpo do Storage.");
+          }
+        }
+      }
+
+      // 🥊 3. TIRO FINAL: APAGAR NA BASE DE DADOS (Dispara ON DELETE CASCADE)
+      const { data, error } = await supabase
+        .from("socios")
+        .delete()
+        .eq("id", socioIdParaEliminar)
+        .select();
+
+      if (error) throw error;
+
+      if (!data || data.length === 0) {
+        throw new Error(
+          "A base de dados bloqueou a eliminação. Verifica permissões (RLS)!",
+        );
+      }
+
       modalDeleteSocio.classList.add("hidden");
-      carregarGuerreiros();
+
+      // Sincroniza as tabelas com os dados mais recentes
+      await carregarGuerreiros();
       mostrarAviso(
         "Atleta Eliminado",
-        "Registo apagado com sucesso.",
+        "Registo e fotografia apagados com sucesso.",
         "sucesso",
       );
     } catch (erro) {

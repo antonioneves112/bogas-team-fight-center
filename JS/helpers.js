@@ -55,3 +55,16 @@ export function extrairPreco(texto) {
     .trim();
   return parseFloat(apenasNumeros) || 0;
 }
+
+// OTIMIZAÇÃO: Função de Debounce para atrasar a execução de eventos repetitivos
+export function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}

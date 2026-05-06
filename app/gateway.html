@@ -6,9 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestão | Bogas Team Fight Center</title>
 
-    <link rel="icon" type="image/jpeg" sizes="192x192" href="./branco_com_fundo_preto_resized.jpeg">
-    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <!-- 🥊 CORREÇÃO: Ícone unificado PNG e Manifest adicionado -->
+    <link rel="icon" type="image/png" sizes="192x192" href="./faviicon.png">
+    <link rel="manifest" href="./manifest.json">
 
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="./CSS/theme.css">
     <link rel="stylesheet" href="./CSS/gateway.css">
 </head>
@@ -40,11 +42,20 @@
             </div>
         </div>
     </main>
-    <footer class="gateway-footer">
-        <div id="app-version-top"></div>
+    oter class="gateway-footer">
+    <div id="app-version-top"></div>
     </footer>
     <script src="./JS/menu.js" defer></script>
-    <div id="app-version-top"></div>
+    <!-- 🥊 CORREÇÃO: Script de Routing e Registo do Service Worker -->
+    <script src="./JS/app-routing.js" defer></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .catch(err => console.error('Erro no SW:', err));
+            });
+        }
+    </script>
 </body>
 
 </html>

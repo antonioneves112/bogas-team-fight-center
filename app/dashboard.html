@@ -7,6 +7,8 @@
     <title>Painel de Gestão | Bogas Team Fight Center</title>
 
     <link rel="icon" type="image/png" sizes="192x192" href="./faviicon.png">
+    <!-- 🥊 CORREÇÃO: Manifest adicionado ao painel do treinador -->
+    <link rel="manifest" href="./manifest.json">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="./CSS/theme.css" />
     <link rel="stylesheet" href="./CSS/dashboard.css" />
@@ -83,7 +85,8 @@
             <!-- Exemplo de como deve ficar o teu botão da Tab -->
             <button class="tab-btn" data-target="view-aulas">
                 <i class='bx bx-time-five'></i> Aulas Particulares
-                <span id="badgeAulas" class="badge-tab-inline">1</span>
+                <!-- 🥊 CORREÇÃO: Arranca escondido (display: none) e vazio -->
+                <span id="badgeAulas" class="badge-tab-inline" style="display: none;"></span>
             </button>
         </div>
 
@@ -539,12 +542,23 @@
                 <input type="hidden" id="hiddenSocioIdAula">
                 <input type="hidden" id="hiddenDataAula">
 
-                <button type="submit" class="btn-tatico btn-full-width" id="btnConfirmarAprovacao">
-                    Aprovar e Faturar <i class='bx bx-file-find'></i>
+                tton type="submit" class="btn-tatico btn-full-width" id="btnConfirmarAprovacao">
+                Aprovar e Faturar <i class='bx bx-file-find'></i>
                 </button>
             </form>
         </div>
     </div>
+
+    <!-- 🥊 CORREÇÃO: Script de Routing e Registo do Service Worker -->
+    <script src="./JS/app-routing.js" defer></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .catch(err => console.error('Erro no PWA:', err));
+            });
+        }
+    </script>
 </body>
 
 </html>
