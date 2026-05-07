@@ -75,17 +75,25 @@ export async function carregarGuerreiros() {
       const pagoB = state.idsPagosGlobal.includes(b.id);
       if (pagoA !== pagoB) return pagoA ? 1 : -1;
 
-      // 🥊 ORDENAÇÃO BLINDADA (Tradicional e à prova de bugs de browser)
-      const nomeA = String(a.nome || "")
-        .trim()
-        .toLowerCase();
-      const nomeB = String(b.nome || "")
-        .trim()
-        .toLowerCase();
+      // 🥊 ORDENAÇÃO INTELIGENTE: Primeiro e Último Nome
+      const partesA = (a.nome || "").trim().toLowerCase().split(" ");
+      const partesB = (b.nome || "").trim().toLowerCase().split(" ");
 
-      if (nomeA < nomeB) return -1; // A sobe
-      if (nomeA > nomeB) return 1; // B sobe
-      return 0; // Iguais
+      const primeiroA = partesA[0];
+      const ultimoA = partesA[partesA.length - 1];
+
+      const primeiroB = partesB[0];
+      const ultimoB = partesB[partesB.length - 1];
+
+      // 1. Compara o primeiro nome
+      if (primeiroA < primeiroB) return -1;
+      if (primeiroA > primeiroB) return 1;
+
+      // 2. Se o primeiro nome for igual, desempata pelo último apelido
+      if (ultimoA < ultimoB) return -1;
+      if (ultimoA > ultimoB) return 1;
+
+      return 0;
     });
 
     state.guerreirosAtuais = socios;
