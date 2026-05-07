@@ -42,7 +42,7 @@ export function renderizarTabelaMensalidades(lista) {
       <td data-label="Sócio" class="${classeNeon}" style="font-weight: 600;">${formatarNomeCurto(m.socios?.nome)}</td>
       <td data-label="Tipo" class="${classeNeon}">${m.tipo || "Mensalidade"}</td>
       <td data-label="Modalidade" class="${classeNeon}">${m.socios?.modalidade || "N/A"}</td>
-      <td data-label="Valor" class="${classeNeon}">${m.valor}€</td> <!-- O € é colocado AQUI VISUALMENTE! -->
+      <td data-label="Valor" class="${classeNeon}">${m.valor}€</td>
       <td data-label="Estado"><span class="badge ${badgeClass}">${m.estado}</span></td>
       <td data-label="Ações">
           <button class="btn-acao btn-edit-mensalidade" data-id="${m.id}"><i class='bx bx-edit'></i></button>
@@ -71,23 +71,60 @@ export function renderizarTabelaMensalidades(lista) {
 export async function carregarMensalidades() {
   const tabelaMensalidades = document.getElementById("tabelaMensalidades");
   const filtroMes = document.getElementById("filtroMesMensalidade");
+
   tabelaMensalidades.innerHTML =
     '<tr><td colspan="7">A carregar registos...</td></tr>';
+
   const mesReferencia = filtroMes.value;
 
-  const { data: mensalidades } = await supabase
+  const { data: mensalidades, error } = await supabase
     .from("mensalidades")
     .select(
-      `id, mes_ano, valor, estado, tipo, socio_id, socios ( nome, modalidade, telemovel, data_inscricao, estado )`,
+      `
+      id,
+      mes_ano,
+      valor,
+      estado,
+      tipo,
+      socio_id,
+      socios (
+        nome,
+        modalidade,
+        telemovel,
+        data_inscricao,
+        estado
+      )
+    `,
     )
     .eq("mes_ano", mesReferencia);
+
+  if (error) {
+    console.error(error);
+    tabelaMensalidades.innerHTML =
+      '<tr><td colspan="7">Erro ao carregar mensalidades.</td></tr>';
+    return;
+  }
 
   if (mensalidades) {
     const apenasAtivos = mensalidades.filter(
       (m) => m.socios?.estado !== "Inativo",
     );
 
- if (primeiroA < primeiroB) return -1;
+    // 🥊 ORDENAÇÃO ALFABÉTICA
+    apenasAtivos.sort((a, b) => {
+      const nomeA = a.socios?.nome || "";
+      const nomeB = b.socios?.nome || "";
+
+      const partesA = nomeA.trim().split(" ");
+      const partesB = nomeB.trim().split(" ");
+
+      const primeiroA = partesA[0].toLowerCase();
+      const primeiroB = partesB[0].toLowerCase();
+
+      const ultimoA = partesA[partesA.length - 1].toLowerCase();
+      const ultimoB = partesB[partesB.length - 1].toLowerCase();
+
+      if (primeiroA < primeiroB) return -1;
       if (primeiroA > primeiroB) return 1;
 
       if (ultimoA < ultimoB) return -1;
@@ -97,6 +134,7 @@ export async function carregarMensalidades() {
     });
 
     state.mensalidadesAtuais = apenasAtivos;
+
     renderizarTabelaMensalidades(apenasAtivos);
 
     const totalArrecadado = apenasAtivos
@@ -104,7 +142,10 @@ export async function carregarMensalidades() {
       .reduce((soma, m) => soma + (parseFloat(m.valor) || 0), 0);
 
     const elReceita = document.getElementById("totalMensalidade");
-    if (elReceita) elReceita.innerText = totalArrecadado + " €";
+
+    if (elReceita) {
+      elReceita.innerText = totalArrecadado.toFixed(2) + " €";
+    }
   }
 }
 
@@ -208,7 +249,7 @@ export function initMensalidadesEvents() {
     const dados = {
       socio_id: inputId.value,
       mes_ano: document.getElementById("pagamentoMes").value,
-      valor: valorLimpoManual, // Usamos o limpo!
+      valor: valorLimpoManual,
       estado: document.getElementById("pagamentoEstado").value,
       tipo: document.getElementById("pagamentoTipo").value,
     };
@@ -219,13 +260,14 @@ export function initMensalidadesEvents() {
           .from("mensalidades")
           .update(dados)
           .eq("id", state.idMensalidadeEmEdicao);
+
         if (error) throw error;
       } else {
         const { error } = await supabase.from("mensalidades").insert([dados]);
+
         if (error) throw error;
       }
 
-      // 🥊 SE FOR MARCADO COMO PAGO (Avisa o Atleta e Levanta a Taça)
       if (dados.estado === "Pago") {
         await supabase
           .from("socios")
@@ -264,7 +306,6 @@ export function initMensalidadesEvents() {
           console.error("Falha ao guardar notificação de pagamento:", err);
         }
 
-        // 🥊 AVISO VISUAL DE VITÓRIA (PAGO)
         mostrarAviso(
           "Faturado!",
           "Mensalidade paga com sucesso e notificação entregue ao atleta.",
@@ -279,180 +320,4 @@ export function initMensalidadesEvents() {
       mostrarAviso("Erro", err.message, "erro");
     }
   });
-
-  document
-    .getElementById("tabelaMensalidades")
-    ?.addEventListener("click", async (e) => {
-      const btnEdit = e.target.closest(".btn-edit-mensalidade");
-      if (btnEdit) {
-        const id = btnEdit.getAttribute("data-id");
-        const m = state.mensalidadesAtuais.find((mens) => mens.id == id);
-        if (m) {
-          state.idMensalidadeEmEdicao = m.id;
-          tituloModalPagamento.innerHTML =
-            "<i class='bx bx-edit'></i> Editar Pagamento";
-          document.getElementById("pagamentoMes").value = m.mes_ano;
-
-          await prepararSelectSocios();
-
-          if (inputSearch && inputId) {
-            const datalist = document.getElementById("listaSocios");
-            const options = Array.from(datalist.options);
-            const optionToSelect = options.find(
-              (opt) => opt.getAttribute("data-id") == m.socio_id,
-            );
-            if (optionToSelect) {
-              inputSearch.value = optionToSelect.value;
-              inputId.value = m.socio_id;
-            }
-          }
-
-          document.getElementById("pagamentoTipo").value =
-            m.tipo || "Mensalidade";
-          document.getElementById("pagamentoValor").value = m.valor;
-          document.getElementById("pagamentoEstado").value = m.estado;
-          modalPagamento.classList.remove("hidden");
-        }
-        return;
-      }
-
-      // 🥊 ABRE O NOSSO NOVO MODAL DE ELIMINAÇÃO
-      const btnDelete = e.target.closest(".btn-delete-mensalidade");
-      if (btnDelete) {
-        mensalidadeIdParaEliminar = btnDelete.getAttribute("data-id");
-        modalDeleteMensalidade?.classList.remove("hidden");
-      }
-    });
-
-  // 🥊 EVENTOS DO MODAL DE ELIMINAR MENSALIDADE
-  btnCancelarDeleteMens?.addEventListener("click", () => {
-    modalDeleteMensalidade.classList.add("hidden");
-    mensalidadeIdParaEliminar = null;
-  });
-
-  btnConfirmarDeleteMens?.addEventListener("click", async () => {
-    if (!mensalidadeIdParaEliminar) return;
-
-    const textoOriginal = btnConfirmarDeleteMens.innerHTML;
-    btnConfirmarDeleteMens.innerHTML =
-      "A apagar... <i class='bx bx-loader-alt bx-spin'></i>";
-    btnConfirmarDeleteMens.disabled = true;
-
-    try {
-      // 🥊 BLINDAGEM: Adicionamos o .select() no final.
-      // Isto obriga o Supabase a devolver os dados da linha que apagou.
-      const { data, error } = await supabase
-        .from("mensalidades")
-        .delete()
-        .eq("id", mensalidadeIdParaEliminar)
-        .select();
-
-      if (error) throw error;
-
-      // Se a data vier vazia, significa que o Supabase bloqueou o Delete por falta de permissões RLS!
-      if (!data || data.length === 0) {
-        throw new Error(
-          "A base de dados bloqueou a eliminação. Verifica as tuas permissões de DELETE (RLS) no Supabase!",
-        );
-      }
-
-      modalDeleteMensalidade.classList.add("hidden");
-
-      // 🥊 GOLPE DE SINCRONIZAÇÃO: Adicionámos o 'await' para a tabela só atualizar quando a BD confirmar!
-      await carregarMensalidades();
-      await carregarGuerreiros();
-
-      mostrarAviso(
-        "Registo Eliminado",
-        "A mensalidade foi apagada com sucesso.",
-        "sucesso",
-      );
-    } catch (erro) {
-      mostrarAviso("Erro ao Eliminar", erro.message, "erro");
-    } finally {
-      btnConfirmarDeleteMens.innerHTML = textoOriginal;
-      btnConfirmarDeleteMens.disabled = false;
-      mensalidadeIdParaEliminar = null;
-    }
-  });
-
-  // -------------------------------------------------------------
-  // PESQUISA NA TABELA DE MENSALIDADES
-  // -------------------------------------------------------------
-  const filtroNomeMensalidade = document.getElementById(
-    "filtroNomeMensalidade",
-  );
-  const btnLimparMensalidade = document.getElementById("limparMensalidade");
-
-  if (filtroNomeMensalidade) {
-    // 🥊 OTIMIZAÇÃO: Debounce aplicado à caixa de pesquisa
-    filtroNomeMensalidade.addEventListener(
-      "input",
-      debounce(() => {
-        const termo = filtroNomeMensalidade.value.toLowerCase();
-        if (btnLimparMensalidade)
-          btnLimparMensalidade.style.display =
-            termo.length > 0 ? "block" : "none";
-
-        const filtrados = state.mensalidadesAtuais.filter((m) => {
-          const nomeSocio = m.socios?.nome || "";
-          return nomeSocio.toLowerCase().includes(termo);
-        });
-        renderizarTabelaMensalidades(filtrados);
-      }, 300),
-    ); // Espera 300ms antes de filtrar e renderizar
-
-    if (btnLimparMensalidade) {
-      btnLimparMensalidade.addEventListener("click", () => {
-        filtroNomeMensalidade.value = "";
-        btnLimparMensalidade.style.display = "none";
-        renderizarTabelaMensalidades(state.mensalidadesAtuais);
-        filtroNomeMensalidade.focus();
-      });
-    }
-
-    filtroNomeMensalidade.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && filtroNomeMensalidade.value.length > 0) {
-        btnLimparMensalidade.click();
-      }
-    });
-  }
-
-  // -------------------------------------------------------------
-  // ATALHO DE ELITE: FATURAR A PARTIR DA TABELA DE SÓCIOS
-  // -------------------------------------------------------------
-  const tabelaSocios = document.getElementById("tabelaSocios");
-  if (tabelaSocios) {
-    tabelaSocios.addEventListener("click", async (e) => {
-      const btnFaturar = e.target.closest(".btn-faturar");
-      if (btnFaturar) {
-        const socioId = btnFaturar.getAttribute("data-id");
-        state.idMensalidadeEmEdicao = null;
-        formNovoPagamento.reset();
-
-        document.getElementById("pagamentoMes").value = document.getElementById(
-          "filtroMesMensalidade",
-        ).value;
-        tituloModalPagamento.innerHTML =
-          "<i class='bx bx-euro'></i> Registar Pagamento";
-
-        await prepararSelectSocios();
-
-        if (inputSearch && inputId) {
-          const datalist = document.getElementById("listaSocios");
-          const options = Array.from(datalist.options);
-          const optionToSelect = options.find(
-            (opt) => opt.getAttribute("data-id") == socioId,
-          );
-          if (optionToSelect) {
-            inputSearch.value = optionToSelect.value;
-            inputId.value = socioId;
-          }
-        }
-
-        document.getElementById("pagamentoEstado").value = "Pago";
-        modalPagamento.classList.remove("hidden");
-      }
-    });
-  }
 }
