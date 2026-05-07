@@ -88,9 +88,17 @@ export async function carregarMensalidades() {
     );
 
     apenasAtivos.sort((a, b) => {
-      const nomeA = a.socios?.nome || "";
-      const nomeB = b.socios?.nome || "";
-      return nomeA.localeCompare(nomeB);
+      // 🥊 ORDENAÇÃO BLINDADA (Tradicional e à prova de bugs de browser)
+      const nomeA = String(a.socios?.nome || "")
+        .trim()
+        .toLowerCase();
+      const nomeB = String(b.socios?.nome || "")
+        .trim()
+        .toLowerCase();
+
+      if (nomeA < nomeB) return -1; // A sobe
+      if (nomeA > nomeB) return 1; // B sobe
+      return 0; // Iguais
     });
 
     state.mensalidadesAtuais = apenasAtivos;
@@ -222,7 +230,6 @@ export function initMensalidadesEvents() {
         if (error) throw error;
       }
 
-      // 🥊 SE FOR MARCADO COMO PAGO (Avisa o Atleta e Levanta a Taça)
       // 🥊 SE FOR MARCADO COMO PAGO (Avisa o Atleta e Levanta a Taça)
       if (dados.estado === "Pago") {
         await supabase

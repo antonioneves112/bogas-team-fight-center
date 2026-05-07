@@ -29,9 +29,14 @@ export async function carregarGuerreiros() {
     // 🥊 GUARDAR TODOS PARA PODERMOS EDITAR OS INATIVOS TAMBÉM
     state.todosOsGuerreiros = todosSocios;
 
-    // 🥊 FILTRAR OS INATIVOS PARA A NOVA TABELA
-    state.inativosAtuais = todosSocios.filter((s) => s.estado === "Inativo");
-
+    // 🥊 FILTRAR OS INATIVOS E ORDENAR LOGO DE A a Z
+    state.inativosAtuais = todosSocios
+      .filter((s) => s.estado === "Inativo")
+      .sort((a, b) =>
+        (a.nome || "")
+          .trim()
+          .localeCompare((b.nome || "").trim(), "pt", { sensitivity: "base" }),
+      );
     const idsFaturados = mensalidadesMes
       ? mensalidadesMes.map((m) => m.socio_id)
       : [];
@@ -69,7 +74,18 @@ export async function carregarGuerreiros() {
       const pagoA = state.idsPagosGlobal.includes(a.id);
       const pagoB = state.idsPagosGlobal.includes(b.id);
       if (pagoA !== pagoB) return pagoA ? 1 : -1;
-      return (a.nome || "").localeCompare(b.nome || "");
+
+      // 🥊 ORDENAÇÃO BLINDADA (Tradicional e à prova de bugs de browser)
+      const nomeA = String(a.nome || "")
+        .trim()
+        .toLowerCase();
+      const nomeB = String(b.nome || "")
+        .trim()
+        .toLowerCase();
+
+      if (nomeA < nomeB) return -1; // A sobe
+      if (nomeA > nomeB) return 1; // B sobe
+      return 0; // Iguais
     });
 
     state.guerreirosAtuais = socios;
