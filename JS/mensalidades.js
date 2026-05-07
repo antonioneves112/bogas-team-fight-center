@@ -7,7 +7,7 @@ import { mostrarAviso } from "./main.js";
 
 // 🥊 VARIÁVEIS DE CONTROLO DE PAGINAÇÃO
 let paginaAtualMens = 1;
-const ITENS_POR_PAGINA_MENS = 20;
+const ITENS_POR_PAGINA_MENS = 10;
 
 export function renderizarTabelaMensalidades(lista, manterPagina = false) {
   const tabelaMensalidades = document.getElementById("tabelaMensalidades");
@@ -63,7 +63,7 @@ export function renderizarTabelaMensalidades(lista, manterPagina = false) {
     trMore.innerHTML = `
       <td colspan="7" style="text-align: center; padding: 15px;">
         <button class="btn-tatico btn-small btn-carregar-mais-mens" style="width: 100%; border-color: var(--accent); color: var(--accent);">
-          Carregar mais faturas <i class='bx bx-chevron-down bx-fade-down'></i>
+          Carregar mais <i class='bx bx-chevron-down bx-fade-down'></i>
         </button>
       </td>`;
     fragment.appendChild(trMore);

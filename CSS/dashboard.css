@@ -1250,3 +1250,70 @@
     margin-bottom: 25px !important;
   }
 }
+
+/* =========================================================================
+   🥊 DESIGN PREMIUM PARA BOTÃO "CARREGAR MAIS" (MOBILE E DESKTOP)
+   ========================================================================= */
+
+/* 1. Libertar o botão da "caixa" do cartão no mobile */
+table tr:has(.btn-carregar-mais),
+table tr:has(.btn-carregar-mais-mens) {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin-top: 10px !important;
+  margin-bottom: 30px !important;
+}
+
+table tr:has(.btn-carregar-mais) td,
+table tr:has(.btn-carregar-mais-mens) td {
+  border: none !important;
+  display: flex !important;
+  justify-content: center !important;
+  padding: 0 !important;
+}
+
+/* Esconder qualquer label móvel que tente aparecer ao lado */
+table tr:has(.btn-carregar-mais) td::before,
+table tr:has(.btn-carregar-mais-mens) td::before {
+  display: none !important;
+}
+
+/* 2. O Novo Design do Botão (Formato Pílula Neon) */
+.btn-carregar-mais,
+.btn-carregar-mais-mens {
+  background: rgba(
+    37,
+    211,
+    102,
+    0.05
+  ) !important; /* Fundo escuro muito subtil */
+  border: 1px solid var(--accent) !important;
+  color: var(--accent) !important;
+  border-radius: 30px !important; /* Formato elegante de pílula redonda */
+  padding: 12px 25px !important;
+  font-family: "Orbitron", sans-serif !important;
+  font-size: 0.8rem !important; /* Letra ligeiramente menor para caber */
+  letter-spacing: 1px !important;
+  text-transform: uppercase !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  white-space: nowrap !important; /* Impede o texto de quebrar em 2 linhas */
+  transition: all 0.3s ease !important;
+  box-shadow: 0 0 15px rgba(37, 211, 102, 0.1) !important;
+  width: auto !important; /* Deixa de forçar 100% da largura */
+  max-width: 90% !important; /* Mas respeita as margens do telemóvel */
+}
+
+/* Efeito ao passar o dedo/rato */
+.btn-carregar-mais:hover,
+.btn-carregar-mais-mens:hover,
+.btn-carregar-mais:active,
+.btn-carregar-mais-mens:active {
+  background: rgba(37, 211, 102, 0.15) !important;
+  box-shadow: 0 0 20px rgba(37, 211, 102, 0.4) !important;
+  transform: translateY(-2px) !important;
+}

@@ -187,7 +187,7 @@ export function renderizarTabelaSocios(
     trMore.innerHTML = `
       <td colspan="5" style="text-align: center; padding: 15px;">
         <button class="btn-tatico btn-small btn-carregar-mais" style="width: 100%; border-color: var(--accent); color: var(--accent);">
-          Carregar mais atletas <i class='bx bx-chevron-down bx-fade-down'></i>
+          Carregar mais <i class='bx bx-chevron-down bx-fade-down'></i>
         </button>
       </td>`;
     fragment.appendChild(trMore);
