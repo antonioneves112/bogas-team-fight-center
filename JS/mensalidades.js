@@ -5,10 +5,17 @@ import { formatarNomeCurto, extrairPreco, debounce } from "./helpers.js";
 import { carregarGuerreiros } from "./socios.js";
 import { mostrarAviso } from "./main.js";
 
-export function renderizarTabelaMensalidades(lista) {
+// 🥊 VARIÁVEIS DE CONTROLO DE PAGINAÇÃO
+let paginaAtualMens = 1;
+const ITENS_POR_PAGINA_MENS = 10;
+
+export function renderizarTabelaMensalidades(lista, manterPagina = false) {
   const tabelaMensalidades = document.getElementById("tabelaMensalidades");
   const filtroMes = document.getElementById("filtroMesMensalidade");
   tabelaMensalidades.innerHTML = "";
+
+  // Reset à paginação se for uma nova pesquisa ou mudança de mês
+  if (!manterPagina) paginaAtualMens = 1;
 
   let totalGeral = 0;
 
@@ -21,14 +28,21 @@ export function renderizarTabelaMensalidades(lista) {
     return;
   }
 
+  // 🥊 MATEMÁTICA ANTES DA PAGINAÇÃO: Calcula o total de TODOS os ativos do mês
+  listaAtivos.forEach((m) => {
+    totalGeral += extrairPreco(m.valor);
+  });
+
   const mesReferencia = filtroMes.value;
 
   // 🥊 OTIMIZAÇÃO: Criação do fragmento para evitar reflows múltiplos
   const fragment = document.createDocumentFragment();
 
-  listaAtivos.forEach((m) => {
-    totalGeral += extrairPreco(m.valor);
+  // 🥊 A MAGIA DA PAGINAÇÃO: Cortar a lista para exibir apenas o limite atual
+  const limiteAtual = paginaAtualMens * ITENS_POR_PAGINA_MENS;
+  const listaPaginada = listaAtivos.slice(0, limiteAtual);
 
+  listaPaginada.forEach((m) => {
     const isPago = m.estado === "Pago";
     const badgeClass = isPago ? "badge-pago" : "badge-pendente";
     const isNovoNoMes =
@@ -51,6 +65,18 @@ export function renderizarTabelaMensalidades(lista) {
 
     fragment.appendChild(tr);
   });
+
+  // 🥊 BOTÃO "CARREGAR MAIS"
+  if (limiteAtual < listaAtivos.length) {
+    const trMore = document.createElement("tr");
+    trMore.innerHTML = `
+      <td colspan="7" style="text-align: center; padding: 15px;">
+        <button class="btn-tatico btn-small btn-carregar-mais-mens" style="width: 100%; border-color: var(--accent); color: var(--accent);">
+          Carregar mais faturas <i class='bx bx-chevron-down bx-fade-down'></i>
+        </button>
+      </td>`;
+    fragment.appendChild(trMore);
+  }
 
   const trTotal = document.createElement("tr");
   trTotal.style.background = "rgba(37, 211, 102, 0.1)";
@@ -131,6 +157,8 @@ export async function carregarMensalidades() {
 
     state.mensalidadesAtuais = apenasAtivos;
 
+    // Reset da paginação a cada carregamento limpo
+    paginaAtualMens = 1;
     renderizarTabelaMensalidades(apenasAtivos);
 
     const totalArrecadado = apenasAtivos
@@ -191,11 +219,32 @@ export function initMensalidadesEvents() {
   const inputId = document.getElementById("pagamentoSocioId");
 
   // ==========================================================
-  // 🥊 NOVO: DELEGAÇÃO DE EVENTOS PARA EDITAR E ELIMINAR
+  // 🥊 DELEGAÇÃO DE EVENTOS PARA A TABELA (Inclui Carregar Mais)
   // ==========================================================
   document
     .getElementById("tabelaMensalidades")
     ?.addEventListener("click", async (e) => {
+      // 🥊 VIGIA DO BOTÃO CARREGAR MAIS (Paginação)
+      const btnCarregarMais = e.target.closest(".btn-carregar-mais-mens");
+      if (btnCarregarMais) {
+        paginaAtualMens++;
+
+        // Respeita o filtro de pesquisa por nome se estiver a ser usado
+        const filtroTexto = document
+          .getElementById("filtroNomeMensalidade")
+          ?.value.toLowerCase();
+        let listaAUsar = state.mensalidadesAtuais;
+
+        if (filtroTexto) {
+          listaAUsar = state.mensalidadesAtuais.filter((m) =>
+            (m.socios?.nome || "").toLowerCase().includes(filtroTexto),
+          );
+        }
+
+        renderizarTabelaMensalidades(listaAUsar, true);
+        return;
+      }
+
       const btnEdit = e.target.closest(".btn-edit-mensalidade");
       const btnDelete = e.target.closest(".btn-delete-mensalidade");
 
