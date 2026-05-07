@@ -630,7 +630,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const box = document.getElementById("boxNotificacoes");
         if (box) box.style.display = "none";
-        mostrarAviso("Ossss!", "Alertas ativados com sucesso.", "sucesso");
+        mostrarAviso("Alertas ativados com sucesso.", "sucesso");
       } else {
         mostrarAviso(
           "Aviso",

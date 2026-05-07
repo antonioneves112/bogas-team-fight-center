@@ -713,7 +713,7 @@ export function initAulasEvents() {
             {
               socio_id: socioId,
               titulo: "Aula Recusada ❌",
-              mensagem: `Infelizmente o Mestre não tem disponibilidade para a aula particular do dia ${dataAula}. Fala com ele no dojo para reagendar. Ossss!`,
+              mensagem: `Infelizmente o Mestre não tem disponibilidade para a aula particular do dia ${dataAula}.`,
               lida: false,
             },
           ]);
@@ -837,7 +837,7 @@ function configurarPagamentoDiretoAula() {
       // ==========================================================
       const dataLegivel = dataAulaDb.split("-").reverse().join("/");
       const tituloPagamento = "Pagamento Recebido 🏆";
-      const mensagemPagamento = `Obrigado, guerreiro! O pagamento referente à aula particular do dia ${dataLegivel} foi liquidado e as tuas contas estão regularizadas. Ossss!`;
+      const mensagemPagamento = `Obrigado, guerreiro! O pagamento referente à aula particular do dia ${dataLegivel} foi liquidado e as tuas contas estão regularizadas.`;
 
       // Guarda no 'sininho' da app do atleta
       const { error: erroNotifPagamento } = await supabase
@@ -896,3 +896,99 @@ function configurarPagamentoDiretoAula() {
 }
 // Inicializa o Listener
 configurarPagamentoDiretoAula();
+
+// =========================================================================
+// 🥊 GESTÃO DO NOVO MODAL DE DESPESAS GLOBAIS
+// =========================================================================
+
+function configurarRegistoDespesas() {
+  const btnAbrirModal = document.getElementById("btnRegistarDespesaGlobal");
+  const modalDespesa = document.getElementById("modalDespesa");
+  const btnFecharModal = document.getElementById("btnFecharModalDespesa");
+  const formDespesa = document.getElementById("formNovaDespesa");
+
+  // 1. Abrir o Modal
+  btnAbrirModal?.addEventListener("click", () => {
+    modalDespesa?.classList.remove("hidden");
+
+    // Auto-preencher a data de hoje para facilitar a vida ao Mestre
+    const hoje = new Date().toISOString().split("T")[0];
+    document.getElementById("despesaData").value = hoje;
+  });
+
+  // 2. Fechar o Modal
+  btnFecharModal?.addEventListener("click", () => {
+    modalDespesa?.classList.add("hidden");
+    formDespesa?.reset();
+  });
+
+  // 3. Submeter o Formulário
+  formDespesa?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const descricao = document.getElementById("despesaDescricao").value.trim();
+    const categoria = document.getElementById("despesaCategoria").value;
+    const dataDespesa = document.getElementById("despesaData").value;
+    const valorDigitado = document.getElementById("despesaValor").value;
+
+    // Converte o valor para número e garante precisão decimal
+    const valor = parseFloat(valorDigitado.replace(",", "."));
+
+    if (isNaN(valor) || valor <= 0) {
+      mostrarAviso(
+        "Erro",
+        "O valor da despesa deve ser maior que zero.",
+        "erro",
+      );
+      return;
+    }
+
+    const btnGuardar = document.getElementById("btnGuardarDespesa");
+    const textoOriginal = btnGuardar.innerHTML;
+    btnGuardar.innerHTML =
+      "A Registar... <i class='bx bx-loader-alt bx-spin'></i>";
+    btnGuardar.disabled = true;
+
+    try {
+      // Usa o nome do treinador logado (Bogas) que foi guardado no init
+      const treinadorLogado =
+        state.treinadorAtual ||
+        localStorage.getItem("bogas_treinador_nome") ||
+        "Desconhecido";
+
+      const { error } = await supabase.from("despesas").insert([
+        {
+          descricao: descricao,
+          categoria: categoria,
+          data: dataDespesa,
+          valor: valor,
+          treinador: treinadorLogado,
+        },
+      ]);
+
+      if (error) throw error;
+
+      mostrarAviso(
+        "Despesa Registada",
+        `Despesa de ${valor.toFixed(2)}€ guardada no sistema.`,
+        "sucesso",
+      );
+
+      modalDespesa.classList.add("hidden");
+      formDespesa.reset();
+
+      // NOTA: Se futuramente quisermos atualizar uma tabela visível de despesas,
+      // chamaríamos aqui uma função como carregarDespesas(). Por agora, o foco
+      // será mostrar isto no PDF!
+    } catch (err) {
+      console.error("Erro ao guardar despesa:", err);
+      mostrarAviso("Erro", "Falha ao registar despesa: " + err.message, "erro");
+    } finally {
+      btnGuardar.innerHTML = textoOriginal;
+      btnGuardar.disabled = false;
+    }
+  });
+}
+
+// Inicializa a escuta de eventos do modal de despesas
+configurarRegistoDespesas();

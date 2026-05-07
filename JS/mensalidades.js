@@ -222,32 +222,17 @@ export function initMensalidadesEvents() {
         if (error) throw error;
       }
 
+      // 🥊 SE FOR MARCADO COMO PAGO (Avisa o Atleta e Levanta a Taça)
+      // 🥊 SE FOR MARCADO COMO PAGO (Avisa o Atleta e Levanta a Taça)
       if (dados.estado === "Pago") {
         await supabase
           .from("socios")
           .update({ estado: "Ativo" })
           .eq("id", dados.socio_id);
 
-        const mesesPT = [
-          "Janeiro",
-          "Fevereiro",
-          "Março",
-          "Abril",
-          "Maio",
-          "Junho",
-          "Julho",
-          "Agosto",
-          "Setembro",
-          "Outubro",
-          "Novembro",
-          "Dezembro",
-        ];
-        const [anoRef, mesRef] = dados.mes_ano.split("-");
-        const nomeMes = mesesPT[parseInt(mesRef) - 1];
-
         try {
           const tituloNotif = "Mensalidade Validada";
-          const mensagemNotif = `O teu pagamento referente ao mês de ${nomeMes} foi validado com sucesso.`;
+          const mensagemNotif = `O teu pagamento referente a ${dados.mes_ano} foi validado com sucesso.`;
 
           const { error: notifError } = await supabase
             .from("notificacoes")
@@ -261,42 +246,28 @@ export function initMensalidadesEvents() {
             ]);
 
           if (notifError) throw notifError;
-          console.log(`Aviso de pagamento (${nomeMes}) enviado ao atleta!`);
 
-          // ==========================================================
-          // 🥊 O TIRO DO SNIPER (Acordar o telemóvel do Atleta)
-          // ==========================================================
           try {
-            const { data, error: invokeError } =
-              await supabase.functions.invoke("notificar-alvo", {
-                body: {
-                  socio_id: parseInt(dados.socio_id),
-                  titulo: tituloNotif,
-                  mensagem: mensagemNotif,
-                },
-              });
-
-            if (invokeError) throw invokeError;
-
-            // 🥊 O VAR (Verificamos a resposta da Edge Function)
-            if (data?.alertaTreinador) {
-              mostrarAviso("Atenção!", data.alertaTreinador, "erro");
-            } else if (data?.aviso) {
-              mostrarAviso(
-                "Sem App",
-                "Pagamento registado, mas o atleta não tem a App ativada para receber avisos.",
-                "erro",
-              );
-            } else {
-              console.log("Notificação nativa enviada!");
-            }
+            await supabase.functions.invoke("notificar-alvo", {
+              body: {
+                socio_id: parseInt(dados.socio_id),
+                titulo: tituloNotif,
+                mensagem: mensagemNotif,
+              },
+            });
           } catch (erroPush) {
-            console.warn("Falha grave na chamada do Push.", erroPush);
+            console.warn("Aviso: Falha na chamada do Push.", erroPush);
           }
-          // ==========================================================
         } catch (err) {
-          console.error("Falha ao enviar aviso individual:", err);
+          console.error("Falha ao guardar notificação de pagamento:", err);
         }
+
+        // 🥊 AVISO VISUAL DE VITÓRIA (PAGO)
+        mostrarAviso(
+          "Faturado!",
+          "Mensalidade paga com sucesso e notificação entregue ao atleta.",
+          "sucesso",
+        );
       }
 
       modalPagamento.classList.add("hidden");

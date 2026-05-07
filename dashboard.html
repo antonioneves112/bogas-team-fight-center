@@ -7,9 +7,13 @@
     <title>Painel de Gestão | Bogas Team Fight Center</title>
 
     <link rel="icon" type="image/png" sizes="192x192" href="./faviicon.png">
-    <!-- 🥊 CORREÇÃO: Manifest adicionado ao painel do treinador -->
     <link rel="manifest" href="./manifest.json">
+
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Orbitron:wght@400;500;700;900&display=swap"
+        rel="stylesheet">
+
     <link rel="stylesheet" href="./CSS/theme.css" />
     <link rel="stylesheet" href="./CSS/dashboard.css" />
 
@@ -43,15 +47,18 @@
     </nav>
 
     <main class="dash-container">
-
         <header class="dash-header">
             <h2>Visão Geral</h2>
 
             <div class="header-actions-group">
                 <input type="month" id="filtroMesMensalidade" class="dash-filter" title="Escolher Mês de Análise">
 
-                <button id="btnParceirosAdmin" class="btn-icon-red" title="Ação de Grupo">
+                <button id="btnParceirosAdmin" class="btn-icon-red" title="Ver Inativos">
                     <i class='bx bx-group'></i>
+                </button>
+
+                <button id="btnRegistarDespesaGlobal" class="btn-icon-red" title="Registar Despesa">
+                    <i class='bx bx-trending-down'></i>
                 </button>
             </div>
         </header>
@@ -82,10 +89,8 @@
             <button class="tab-btn" data-target="view-mensalidades">
                 <i class='bx bx-wallet'></i> Gestão de Mensalidades
             </button>
-            <!-- Exemplo de como deve ficar o teu botão da Tab -->
             <button class="tab-btn" data-target="view-aulas">
                 <i class='bx bx-time-five'></i> Aulas Particulares
-                <!-- 🥊 CORREÇÃO: Arranca escondido (display: none) e vazio -->
                 <span id="badgeAulas" class="badge-tab-inline" style="display: none;"></span>
             </button>
         </div>
@@ -211,9 +216,8 @@
             </section>
         </div>
 
-        <!-- 🥊 TAB: GESTÃO DE AULAS PARTICULARES -->
         <div id="view-aulas" class="tab-content hidden">
-            <section class="dash-content glass-panel"> <!-- A classe glass-panel é a chave aqui -->
+            <section class="dash-content glass-panel">
                 <div class="content-header">
                     <h3>Pedidos de Aulas Particulares</h3>
                     <div class="header-actions">
@@ -240,7 +244,6 @@
                             </tr>
                         </thead>
                         <tbody id="tabelaAulasParticulares">
-                            <!-- Gerado pelo JS -->
                         </tbody>
                     </table>
                 </div>
@@ -352,7 +355,6 @@
                 <button type="submit" id="btnGuardarSocio" class="btn-tatico btn-full-width">
                     Guardar Atleta <i class='bx bx-save'></i>
                 </button>
-
             </form>
         </div>
     </div>
@@ -371,8 +373,6 @@
                         placeholder="Escreve o nome para procurar..." required autocomplete="off">
                     <datalist id="listaSocios"></datalist>
                     <input type="hidden" id="pagamentoSocioId">
-                    <input type="hidden" id="pagamentoSocioId">
-                    <!-- NOVO: Guarda o ID da Aula Particular (se vier de lá) -->
                     <input type="hidden" id="pagamentoAulaId">
                 </div>
 
@@ -409,7 +409,6 @@
         </div>
     </div>
 
-    <!-- 🥊 MODAL DEDICADO: FATURAR AULA PARTICULAR -->
     <div id="modalFaturarAula" class="modal-overlay hidden">
         <div class="modal-content glass-panel">
             <div class="modal-header">
@@ -418,7 +417,6 @@
             </div>
 
             <form id="formFaturarAula" class="dash-form">
-                <!-- Estes campos são readonly (apenas leitura) para o treinador só confirmar -->
                 <div class="form-group">
                     <label>Atleta</label>
                     <input type="text" id="faturarAulaNome" readonly
@@ -437,7 +435,6 @@
                     </div>
                 </div>
 
-                <!-- Campos Escondidos para a Base de Dados -->
                 <input type="hidden" id="faturarAulaId">
                 <input type="hidden" id="faturarAulaSocioId">
                 <input type="hidden" id="faturarAulaDataDb">
@@ -448,6 +445,7 @@
             </form>
         </div>
     </div>
+
     <div id="modalBroadcast" class="modal-overlay hidden">
         <div class="modal-content glass-panel">
             <div class="modal-header">
@@ -512,12 +510,11 @@
                 desfeita.</p>
             <div class="actions-confirm">
                 <button id="btnCancelarDeleteMensalidade" class="btn-tatico btn-outline-muted">Cancelar</button>
-                <button id="btnConfirmarDeleteMensalidade" class="btn-tatico btn-hal">Sim, Eliminar</button>
+                <button id="btnConfirmarDeleteMensalidade" class="btn-tatico btn-danger-action">Sim, Eliminar</button>
             </div>
         </div>
     </div>
 
-    <!-- 🥊 MODAL DE APROVAÇÃO DE AULA (Portal do Treinador) -->
     <div id="modalAprovarAula" class="modal-overlay hidden modal-z-index">
         <div class="modal-content glass-panel modal-aula-tamanho">
             <div class="modal-header">
@@ -542,14 +539,60 @@
                 <input type="hidden" id="hiddenSocioIdAula">
                 <input type="hidden" id="hiddenDataAula">
 
-                tton type="submit" class="btn-tatico btn-full-width" id="btnConfirmarAprovacao">
-                Aprovar e Faturar <i class='bx bx-file-find'></i>
+                <button type="submit" class="btn-tatico btn-full-width" id="btnConfirmarAprovacao">
+                    Aprovar e Faturar <i class='bx bx-file-find'></i>
                 </button>
             </form>
         </div>
     </div>
 
-    <!-- 🥊 CORREÇÃO: Script de Routing e Registo do Service Worker -->
+    <div id="modalDespesa" class="modal-overlay hidden">
+        <div class="modal-content glass-panel">
+            <div class="modal-header">
+                <h3><i class='bx bx-trending-down'></i> Registar Despesa</h3>
+                <button id="btnFecharModalDespesa" class="btn-fechar"><i class='bx bx-x'></i></button>
+            </div>
+
+            <form id="formNovaDespesa" class="dash-form">
+                <p class="modal-desc-broadcast" style="margin-bottom: 20px;">
+                    Regista as saídas de caixa do ginásio (Renda, Luz, Material, etc) para o relatório mensal.
+                </p>
+
+                <div class="form-group">
+                    <label>Descrição da Despesa</label>
+                    <input type="text" id="despesaDescricao" placeholder="Ex: Pagamento da Renda" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Categoria</label>
+                        <select id="despesaCategoria" required>
+                            <option value="Espaço">Renda</option>
+                            <option value="Outros" selected>Outras Despesas</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Data da Despesa</label>
+                        <input type="date" id="despesaData" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Valor Pago (€)</label>
+                    <div class="input-wrapper-tatico">
+                        <input type="number" id="despesaValor" min="0" step="0.01" placeholder="0.00" required>
+                        <i class='bx bx-euro'></i>
+                    </div>
+                </div>
+
+                <button type="submit" id="btnGuardarDespesa" class="btn-tatico btn-full-width"
+                    style="border-color: #ff4d4d; color: #ff4d4d;">
+                    Confirmar Despesa <i class='bx bx-check-double'></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
     <script src="./JS/app-routing.js" defer></script>
     <script>
         if ('serviceWorker' in navigator) {
