@@ -1,9 +1,9 @@
-/* JS/main.js - O CÉREBRO DA APLICAÇÃO (Versão Blindada 2.0) */
+/* JS/main.js - O CÉREBRO DA APLICAÇÃO (Versão Blindada 2.0 - c/ Debounce) */
 import { supabase } from "./supabase.js";
 import { state } from "./state.js";
-import { formatarNomeCurto } from "./helpers.js";
+import { formatarNomeCurto, extrairPreco, debounce } from "./helpers.js"; // 🥊 IMPORT DO DEBOUNCE UNIFICADO
 import { inicializarTabs, inicializarFechoModais } from "./ui.js";
-import { executarLogout } from "./auth.js"; // 🥊 IMPORT: Autenticação Centralizada
+import { executarLogout } from "./auth.js";
 import {
   carregarGuerreiros,
   renderizarTabelaSocios,
@@ -19,7 +19,6 @@ import {
   exportarGuerreirosPDF,
   exportarMensalidadesPDF,
 } from "./pdfManager.js";
-import { extrairPreco } from "./helpers.js";
 
 // =========================================================================
 // 🥊 FUNÇÃO GLOBAL DE TOAST (AVISOS VISUAIS DE ELITE)
@@ -222,13 +221,11 @@ document.addEventListener("DOMContentLoaded", async () => {
             body: { titulo: titulo, mensagem: mensagem },
           },
         );
-
         if (error) throw error;
 
         const atletasAtivos = state.guerreirosAtuais.filter(
           (s) => s.estado !== "Inativo",
         );
-
         if (atletasAtivos.length > 0) {
           const novasNotificacoes = atletasAtivos.map((atleta) => ({
             socio_id: atleta.id,
@@ -261,20 +258,26 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // =======================================================================
-  // PESQUISAS DINÂMICAS NAS TABELAS (Com restauro do clique fora)
+  // PESQUISAS DINÂMICAS NAS TABELAS (Agora com 🥊 DEBOUNCE Otimizado)
   // =======================================================================
   const filtroNome = document.getElementById("filtroNomeSocio");
   const btnLimparSocio = document.getElementById("limparSocio");
 
   if (filtroNome) {
-    filtroNome.addEventListener("input", () => {
-      const termo = filtroNome.value.toLowerCase();
-      if (btnLimparSocio)
-        btnLimparSocio.style.display = termo.length > 0 ? "block" : "none";
+    // 1. O Debounce: O trabalho pesado de filtrar e renderizar espera 300ms
+    const renderizaFiltroSocio = debounce((termo) => {
       const filtrados = state.guerreirosAtuais.filter((s) =>
         s.nome.toLowerCase().includes(termo),
       );
       renderizarTabelaSocios(filtrados);
+    }, 300);
+
+    // 2. O Evento: Mostra logo o botão X e ativa o debounce
+    filtroNome.addEventListener("input", (e) => {
+      const termo = e.target.value.toLowerCase();
+      if (btnLimparSocio)
+        btnLimparSocio.style.display = termo.length > 0 ? "block" : "none";
+      renderizaFiltroSocio(termo);
     });
 
     btnLimparSocio?.addEventListener("click", () => {
@@ -284,7 +287,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       filtroNome.focus();
     });
 
-    // 🥊 O RESTAURO: Limpar ao clicar fora (Sócios Ativos)
     document.addEventListener("click", (e) => {
       if (filtroNome.value.trim() !== "") {
         const isClickInside =
@@ -302,14 +304,18 @@ document.addEventListener("DOMContentLoaded", async () => {
   const btnLimparInativo = document.getElementById("limparInativo");
 
   if (filtroInativo) {
-    filtroInativo.addEventListener("input", () => {
-      const termo = filtroInativo.value.toLowerCase();
-      if (btnLimparInativo)
-        btnLimparInativo.style.display = termo.length > 0 ? "block" : "none";
+    const renderizaFiltroInativo = debounce((termo) => {
       const filtrados = (state.inativosAtuais || []).filter((s) =>
         s.nome.toLowerCase().includes(termo),
       );
       renderizarTabelaInativos(filtrados);
+    }, 300);
+
+    filtroInativo.addEventListener("input", (e) => {
+      const termo = e.target.value.toLowerCase();
+      if (btnLimparInativo)
+        btnLimparInativo.style.display = termo.length > 0 ? "block" : "none";
+      renderizaFiltroInativo(termo);
     });
 
     btnLimparInativo?.addEventListener("click", () => {
@@ -318,7 +324,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       renderizarTabelaInativos(state.inativosAtuais);
     });
 
-    // 🥊 O RESTAURO: Limpar ao clicar fora (Inativos)
     document.addEventListener("click", (e) => {
       if (filtroInativo.value.trim() !== "") {
         const isClickInside =
@@ -339,15 +344,19 @@ document.addEventListener("DOMContentLoaded", async () => {
   const btnLimparMensalidade = document.getElementById("limparMensalidade");
 
   if (filtroNomeMensalidade) {
-    filtroNomeMensalidade.addEventListener("input", () => {
-      const termo = filtroNomeMensalidade.value.toLowerCase();
-      if (btnLimparMensalidade)
-        btnLimparMensalidade.style.display =
-          termo.length > 0 ? "block" : "none";
+    const renderizaFiltroMensalidade = debounce((termo) => {
       const filtrados = state.mensalidadesAtuais.filter((m) =>
         (m.socios?.nome || "").toLowerCase().includes(termo),
       );
       renderizarTabelaMensalidades(filtrados);
+    }, 300);
+
+    filtroNomeMensalidade.addEventListener("input", (e) => {
+      const termo = e.target.value.toLowerCase();
+      if (btnLimparMensalidade)
+        btnLimparMensalidade.style.display =
+          termo.length > 0 ? "block" : "none";
+      renderizaFiltroMensalidade(termo);
     });
 
     btnLimparMensalidade?.addEventListener("click", () => {
@@ -356,7 +365,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       renderizarTabelaMensalidades(state.mensalidadesAtuais);
     });
 
-    // 🥊 O RESTAURO: Limpar ao clicar fora (Mensalidades)
     document.addEventListener("click", (e) => {
       if (filtroNomeMensalidade.value.trim() !== "") {
         const isClickInside =
@@ -412,7 +420,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       btnConfirma.disabled = true;
       await executarLogout();
     });
-}); // 🥊 CORREÇÃO DO ERRO DE SINTAXE: Aqui estava };); em vez de });
+});
 
 // =========================================================================
 // 🥊 FUNÇÕES DE AULAS E DESPESAS (Declaradas fora para estarem disponíveis)
@@ -599,14 +607,19 @@ export function initAulasEvents() {
   const limparAulaPesquisa = document.getElementById("limparAulaPesquisa");
 
   if (filtroAtletaAula) {
-    filtroAtletaAula.addEventListener("input", () => {
-      const termo = filtroAtletaAula.value.toLowerCase();
-      if (limparAulaPesquisa)
-        limparAulaPesquisa.style.display = termo.length > 0 ? "block" : "none";
+    // 🥊 DEBOUNCE TAMBÉM NAS AULAS PARTICULARES
+    const renderizaFiltroAula = debounce((termo) => {
       const filtrados = (state.aulasParticulares || []).filter((a) =>
         (a.socios?.nome || "").toLowerCase().includes(termo),
       );
       renderizarTabelaAulas(filtrados);
+    }, 300);
+
+    filtroAtletaAula.addEventListener("input", (e) => {
+      const termo = e.target.value.toLowerCase();
+      if (limparAulaPesquisa)
+        limparAulaPesquisa.style.display = termo.length > 0 ? "block" : "none";
+      renderizaFiltroAula(termo);
     });
 
     limparAulaPesquisa?.addEventListener("click", () => {
