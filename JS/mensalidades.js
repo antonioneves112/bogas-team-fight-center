@@ -7,19 +7,16 @@ import { mostrarAviso } from "./main.js";
 
 // 🥊 VARIÁVEIS DE CONTROLO DE PAGINAÇÃO
 let paginaAtualMens = 1;
-const ITENS_POR_PAGINA_MENS = 10;
+const ITENS_POR_PAGINA_MENS = 20;
 
 export function renderizarTabelaMensalidades(lista, manterPagina = false) {
   const tabelaMensalidades = document.getElementById("tabelaMensalidades");
   const filtroMes = document.getElementById("filtroMesMensalidade");
   tabelaMensalidades.innerHTML = "";
 
-  // Reset à paginação se for uma nova pesquisa ou mudança de mês
   if (!manterPagina) paginaAtualMens = 1;
 
   let totalGeral = 0;
-
-  // Filtro de Segurança
   const listaAtivos = lista.filter((m) => m.socios?.estado !== "Inativo");
 
   if (listaAtivos.length === 0) {
@@ -28,17 +25,13 @@ export function renderizarTabelaMensalidades(lista, manterPagina = false) {
     return;
   }
 
-  // 🥊 MATEMÁTICA ANTES DA PAGINAÇÃO: Calcula o total de TODOS os ativos do mês
   listaAtivos.forEach((m) => {
     totalGeral += extrairPreco(m.valor);
   });
 
   const mesReferencia = filtroMes.value;
-
-  // 🥊 OTIMIZAÇÃO: Criação do fragmento para evitar reflows múltiplos
   const fragment = document.createDocumentFragment();
 
-  // 🥊 A MAGIA DA PAGINAÇÃO: Cortar a lista para exibir apenas o limite atual
   const limiteAtual = paginaAtualMens * ITENS_POR_PAGINA_MENS;
   const listaPaginada = listaAtivos.slice(0, limiteAtual);
 
@@ -62,11 +55,9 @@ export function renderizarTabelaMensalidades(lista, manterPagina = false) {
           <button class="btn-acao btn-edit-mensalidade" data-id="${m.id}"><i class='bx bx-edit'></i></button>
           <button class="btn-acao btn-delete-mensalidade" data-id="${m.id}"><i class='bx bx-trash'></i></button>
       </td>`;
-
     fragment.appendChild(tr);
   });
 
-  // 🥊 BOTÃO "CARREGAR MAIS"
   if (limiteAtual < listaAtivos.length) {
     const trMore = document.createElement("tr");
     trMore.innerHTML = `
@@ -85,7 +76,6 @@ export function renderizarTabelaMensalidades(lista, manterPagina = false) {
     <td style="font-weight: bold; color: var(--accent);">${totalGeral.toFixed(2)}€</td>
     <td colspan="2"></td>
   `;
-
   fragment.appendChild(trTotal);
   tabelaMensalidades.appendChild(fragment);
 }
@@ -93,32 +83,15 @@ export function renderizarTabelaMensalidades(lista, manterPagina = false) {
 export async function carregarMensalidades() {
   const tabelaMensalidades = document.getElementById("tabelaMensalidades");
   const filtroMes = document.getElementById("filtroMesMensalidade");
-
   tabelaMensalidades.innerHTML =
     '<tr><td colspan="7">A carregar registos...</td></tr>';
-
-  const mesReferencia = filtroMes.value;
 
   const { data: mensalidades, error } = await supabase
     .from("mensalidades")
     .select(
-      `
-      id,
-      mes_ano,
-      valor,
-      estado,
-      tipo,
-      socio_id,
-      socios (
-        nome,
-        modalidade,
-        telemovel,
-        data_inscricao,
-        estado
-      )
-    `,
+      `id, mes_ano, valor, estado, tipo, socio_id, socios ( nome, modalidade, telemovel, data_inscricao, estado )`,
     )
-    .eq("mes_ano", mesReferencia);
+    .eq("mes_ano", filtroMes.value);
 
   if (error) {
     console.error(error);
@@ -132,44 +105,29 @@ export async function carregarMensalidades() {
       (m) => m.socios?.estado !== "Inativo",
     );
 
-    // 🥊 ORDENAÇÃO ALFABÉTICA INTELIGENTE
     apenasAtivos.sort((a, b) => {
       const nomeA = a.socios?.nome || "";
       const nomeB = b.socios?.nome || "";
-
       const partesA = nomeA.trim().split(" ");
       const partesB = nomeB.trim().split(" ");
-
-      const primeiroA = partesA[0].toLowerCase();
-      const primeiroB = partesB[0].toLowerCase();
-
-      const ultimoA = partesA[partesA.length - 1].toLowerCase();
-      const ultimoB = partesB[partesB.length - 1].toLowerCase();
-
-      if (primeiroA < primeiroB) return -1;
-      if (primeiroA > primeiroB) return 1;
-
-      if (ultimoA < ultimoB) return -1;
-      if (ultimoA > ultimoB) return 1;
-
-      return 0;
+      const pA = partesA[0].toLowerCase();
+      const pB = partesB[0].toLowerCase();
+      const uA = partesA[partesA.length - 1].toLowerCase();
+      const uB = partesB[partesB.length - 1].toLowerCase();
+      if (pA < pB) return -1;
+      if (pA > pB) return 1;
+      return uA < uB ? -1 : 1;
     });
 
     state.mensalidadesAtuais = apenasAtivos;
-
-    // Reset da paginação a cada carregamento limpo
     paginaAtualMens = 1;
     renderizarTabelaMensalidades(apenasAtivos);
 
     const totalArrecadado = apenasAtivos
       .filter((m) => m.estado === "Pago")
       .reduce((soma, m) => soma + (parseFloat(m.valor) || 0), 0);
-
     const elReceita = document.getElementById("totalMensalidade");
-
-    if (elReceita) {
-      elReceita.innerText = totalArrecadado.toFixed(2) + " €";
-    }
+    if (elReceita) elReceita.innerText = totalArrecadado.toFixed(2) + " €";
   }
 }
 
@@ -179,16 +137,13 @@ export async function prepararSelectSocios() {
     .select("id, nome, estado")
     .eq("treinador", state.treinadorAtual)
     .order("nome");
-
   const dataList = document.getElementById("listaSocios");
   if (!dataList) return;
   dataList.innerHTML = "";
-
   if (todos) {
     todos.forEach((s) => {
-      const sufixo = s.estado === "Inativo" ? " (Inativo)" : "";
       const option = document.createElement("option");
-      option.value = `${s.nome}${sufixo}`;
+      option.value = `${s.nome}${s.estado === "Inativo" ? " (Inativo)" : ""}`;
       option.setAttribute("data-id", s.id);
       dataList.appendChild(option);
     });
@@ -201,182 +156,132 @@ export function initMensalidadesEvents() {
   const tituloModalPagamento = document.querySelector(
     "#modalPagamento .modal-header h3",
   );
-  const filtroMes = document.getElementById("filtroMesMensalidade");
-
-  // 🥊 ELEMENTOS DO NOVO MODAL DE ELIMINAÇÃO
   const modalDeleteMensalidade = document.getElementById(
     "modalConfirmDeleteMensalidade",
   );
-  const btnCancelarDeleteMens = document.getElementById(
-    "btnCancelarDeleteMensalidade",
-  );
-  const btnConfirmarDeleteMens = document.getElementById(
-    "btnConfirmarDeleteMensalidade",
-  );
-  let mensalidadeIdParaEliminar = null;
-
   const inputSearch = document.getElementById("pagamentoSocioSearch");
   const inputId = document.getElementById("pagamentoSocioId");
+  let mensalidadeIdParaEliminar = null;
 
-  // ==========================================================
-  // 🥊 DELEGAÇÃO DE EVENTOS PARA A TABELA (Inclui Carregar Mais)
-  // ==========================================================
   document
     .getElementById("tabelaMensalidades")
     ?.addEventListener("click", async (e) => {
-      // 🥊 VIGIA DO BOTÃO CARREGAR MAIS (Paginação)
-      const btnCarregarMais = e.target.closest(".btn-carregar-mais-mens");
-      if (btnCarregarMais) {
+      const btnMore = e.target.closest(".btn-carregar-mais-mens");
+      if (btnMore) {
         paginaAtualMens++;
-
-        // Respeita o filtro de pesquisa por nome se estiver a ser usado
-        const filtroTexto = document
+        const termo = document
           .getElementById("filtroNomeMensalidade")
           ?.value.toLowerCase();
-        let listaAUsar = state.mensalidadesAtuais;
-
-        if (filtroTexto) {
-          listaAUsar = state.mensalidadesAtuais.filter((m) =>
-            (m.socios?.nome || "").toLowerCase().includes(filtroTexto),
-          );
-        }
-
-        renderizarTabelaMensalidades(listaAUsar, true);
+        const lista = termo
+          ? state.mensalidadesAtuais.filter((m) =>
+              (m.socios?.nome || "").toLowerCase().includes(termo),
+            )
+          : state.mensalidadesAtuais;
+        renderizarTabelaMensalidades(lista, true);
         return;
       }
 
       const btnEdit = e.target.closest(".btn-edit-mensalidade");
-      const btnDelete = e.target.closest(".btn-delete-mensalidade");
-
       if (btnEdit) {
-        const id = btnEdit.dataset.id;
-        const mensalidade = state.mensalidadesAtuais.find((m) => m.id == id);
-
-        if (mensalidade) {
-          state.idMensalidadeEmEdicao = id;
-
-          if (inputSearch) inputSearch.value = mensalidade.socios.nome;
-          if (inputId) inputId.value = mensalidade.socio_id;
-
-          document.getElementById("pagamentoMes").value = mensalidade.mes_ano;
-          document.getElementById("pagamentoValor").value = mensalidade.valor;
-          document.getElementById("pagamentoEstado").value = mensalidade.estado;
+        const m = state.mensalidadesAtuais.find(
+          (item) => item.id == btnEdit.dataset.id,
+        );
+        if (m) {
+          state.idMensalidadeEmEdicao = m.id;
+          inputSearch.value = m.socios.nome;
+          inputId.value = m.socio_id;
+          document.getElementById("pagamentoMes").value = m.mes_ano;
+          document.getElementById("pagamentoValor").value = m.valor;
+          document.getElementById("pagamentoEstado").value = m.estado;
           document.getElementById("pagamentoTipo").value =
-            mensalidade.tipo || "Mensalidade";
-
+            m.tipo || "Mensalidade";
           tituloModalPagamento.innerHTML =
             "<i class='bx bx-edit'></i> Editar Pagamento";
           modalPagamento.classList.remove("hidden");
         }
       }
 
-      if (btnDelete) {
-        mensalidadeIdParaEliminar = btnDelete.dataset.id;
+      const btnDel = e.target.closest(".btn-delete-mensalidade");
+      if (btnDel) {
+        mensalidadeIdParaEliminar = btnDel.dataset.id;
         modalDeleteMensalidade.classList.remove("hidden");
       }
     });
 
-  // Fechar Modal Delete
-  btnCancelarDeleteMens?.addEventListener("click", () => {
-    modalDeleteMensalidade.classList.add("hidden");
-    mensalidadeIdParaEliminar = null;
-  });
-
-  // Confirmar Delete
-  btnConfirmarDeleteMens?.addEventListener("click", async () => {
-    if (!mensalidadeIdParaEliminar) return;
-
-    const { error } = await supabase
-      .from("mensalidades")
-      .delete()
-      .eq("id", mensalidadeIdParaEliminar);
-
-    if (!error) {
-      mostrarAviso("Eliminado", "Registo apagado com sucesso.", "sucesso");
-      modalDeleteMensalidade.classList.add("hidden");
-      carregarMensalidades();
-    } else {
-      mostrarAviso("Erro", "Falha ao apagar registo.", "erro");
-    }
-    mensalidadeIdParaEliminar = null;
-  });
-  // ==========================================================
-
-  if (inputSearch && inputId) {
-    inputSearch.addEventListener("input", (e) => {
-      const val = e.target.value;
-      const datalist = document.getElementById("listaSocios");
-      if (!datalist) return;
-      const options = Array.from(datalist.options);
-
-      const selectedOption = options.find((opt) => opt.value === val);
-
-      if (selectedOption) {
-        inputId.value = selectedOption.getAttribute("data-id");
-      } else {
-        inputId.value = "";
+  document
+    .getElementById("btnCancelarDeleteMensalidade")
+    ?.addEventListener("click", () =>
+      modalDeleteMensalidade.classList.add("hidden"),
+    );
+  document
+    .getElementById("btnConfirmarDeleteMensalidade")
+    ?.addEventListener("click", async () => {
+      if (mensalidadeIdParaEliminar) {
+        const { error } = await supabase
+          .from("mensalidades")
+          .delete()
+          .eq("id", mensalidadeIdParaEliminar);
+        if (!error) {
+          mostrarAviso("Eliminado", "Registo apagado.", "sucesso");
+          modalDeleteMensalidade.classList.add("hidden");
+          carregarMensalidades();
+        }
       }
     });
-  }
 
-  document
-    .getElementById("pagamentoMes")
-    ?.addEventListener("change", prepararSelectSocios);
+  inputSearch?.addEventListener("input", (e) => {
+    const opt = Array.from(
+      document.getElementById("listaSocios")?.options || [],
+    ).find((o) => o.value === e.target.value);
+    inputId.value = opt ? opt.getAttribute("data-id") : "";
+  });
 
   document
     .getElementById("btnAddPagamento")
     ?.addEventListener("click", async () => {
       state.idMensalidadeEmEdicao = null;
       formNovoPagamento.reset();
-      if (inputId) inputId.value = "";
-      document.getElementById("pagamentoMes").value = filtroMes.value;
+      inputId.value = "";
+      document.getElementById("pagamentoMes").value = document.getElementById(
+        "filtroMesMensalidade",
+      ).value;
       tituloModalPagamento.innerHTML =
         "<i class='bx bx-euro'></i> Registar Pagamento";
       await prepararSelectSocios();
       modalPagamento.classList.remove("hidden");
     });
 
-  // ==========================================================
-  // 🥊 LÓGICA DE SUBMISSÃO E NOTIFICAÇÕES (RESTAURADA NA ÍNTEGRA)
-  // ==========================================================
   formNovoPagamento?.addEventListener("submit", async (e) => {
     e.preventDefault();
-
     if (!inputId.value) {
-      mostrarAviso(
-        "Atenção",
-        "Tens de selecionar um Sócio válido da lista!",
-        "erro",
-      );
+      mostrarAviso("Atenção", "Sócio inválido!", "erro");
       return;
     }
 
-    // 🥊 BLINDAGEM: Limpar o Preço antes de inserir via Modal Manual
-    let valorDigitadoManual = document.getElementById("pagamentoValor").value;
-    const valorLimpoManual = parseFloat(
-      valorDigitadoManual.replace("€", "").replace(",", ".").trim(),
-    );
-
+    const isEdicao = !!state.idMensalidadeEmEdicao; // 🥊 IDENTIFICA SE É EDIÇÃO
     const dados = {
       socio_id: inputId.value,
       mes_ano: document.getElementById("pagamentoMes").value,
-      valor: valorLimpoManual,
+      valor: parseFloat(
+        document
+          .getElementById("pagamentoValor")
+          .value.toString()
+          .replace("€", "")
+          .replace(",", ".")
+          .trim(),
+      ),
       estado: document.getElementById("pagamentoEstado").value,
       tipo: document.getElementById("pagamentoTipo").value,
     };
 
     try {
-      if (state.idMensalidadeEmEdicao) {
-        const { error } = await supabase
+      if (isEdicao) {
+        await supabase
           .from("mensalidades")
           .update(dados)
           .eq("id", state.idMensalidadeEmEdicao);
-
-        if (error) throw error;
       } else {
-        const { error } = await supabase.from("mensalidades").insert([dados]);
-
-        if (error) throw error;
+        await supabase.from("mensalidades").insert([dados]);
       }
 
       if (dados.estado === "Pago") {
@@ -385,47 +290,41 @@ export function initMensalidadesEvents() {
           .update({ estado: "Ativo" })
           .eq("id", dados.socio_id);
 
-        try {
-          const tituloNotif = "Mensalidade Validada";
-          const mensagemNotif = `O teu pagamento referente a ${dados.mes_ano} foi validado com sucesso.`;
-
-          const { error: notifError } = await supabase
+        // 🥊 SÓ ENVIA NOTIFICAÇÃO SE FOR UM NOVO REGISTO
+        if (!isEdicao) {
+          const t = "Mensalidade Validada";
+          const m = `O teu pagamento referente a ${dados.mes_ano} foi validado.`;
+          await supabase
             .from("notificacoes")
             .insert([
-              {
-                socio_id: dados.socio_id,
-                titulo: tituloNotif,
-                mensagem: mensagemNotif,
-                lida: false,
-              },
+              { socio_id: dados.socio_id, titulo: t, mensagem: m, lida: false },
             ]);
-
-          if (notifError) throw notifError;
-
           try {
             await supabase.functions.invoke("notificar-alvo", {
               body: {
                 socio_id: parseInt(dados.socio_id),
-                titulo: tituloNotif,
-                mensagem: mensagemNotif,
+                titulo: t,
+                mensagem: m,
               },
             });
-          } catch (erroPush) {
-            console.warn("Aviso: Falha na chamada do Push.", erroPush);
-          }
-        } catch (err) {
-          console.error("Falha ao guardar notificação de pagamento:", err);
-        }
+          } catch (e) {}
 
+          mostrarAviso(
+            "Faturado!",
+            "Mensalidade registada e atleta notificado.",
+            "sucesso",
+          );
+        } else {
+          mostrarAviso(
+            "Atualizado",
+            "Dados da mensalidade atualizados com sucesso.",
+            "sucesso",
+          );
+        }
+      } else {
         mostrarAviso(
-          "Faturado!",
-          "Mensalidade paga com sucesso e notificação entregue ao atleta.",
-          "sucesso",
-        );
-      } else if (dados.estado === "Pendente") {
-        mostrarAviso(
-          "Registado",
-          "Dívida registada no sistema. O atleta poderá consultá-la no seu Portal.",
+          "Sucesso",
+          isEdicao ? "Atualizado com sucesso." : "Dívida registada.",
           "sucesso",
         );
       }

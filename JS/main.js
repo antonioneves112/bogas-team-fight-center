@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   if (error || !session) {
     window.location.replace("login.html");
-    return; // Agora sim, o return é legal porque está dentro da função do EventListener!
+    return;
   }
 
   // 2. RECUPERA O NOME DO TREINADOR LOGADO
@@ -261,7 +261,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // =======================================================================
-  // PESQUISAS DINÂMICAS NAS TABELAS
+  // PESQUISAS DINÂMICAS NAS TABELAS (Com restauro do clique fora)
   // =======================================================================
   const filtroNome = document.getElementById("filtroNomeSocio");
   const btnLimparSocio = document.getElementById("limparSocio");
@@ -283,6 +283,19 @@ document.addEventListener("DOMContentLoaded", async () => {
       renderizarTabelaSocios(state.guerreirosAtuais);
       filtroNome.focus();
     });
+
+    // 🥊 O RESTAURO: Limpar ao clicar fora (Sócios Ativos)
+    document.addEventListener("click", (e) => {
+      if (filtroNome.value.trim() !== "") {
+        const isClickInside =
+          filtroNome.contains(e.target) || btnLimparSocio?.contains(e.target);
+        if (!isClickInside) {
+          filtroNome.value = "";
+          if (btnLimparSocio) btnLimparSocio.style.display = "none";
+          renderizarTabelaSocios(state.guerreirosAtuais);
+        }
+      }
+    });
   }
 
   const filtroInativo = document.getElementById("filtroNomeInativo");
@@ -303,6 +316,20 @@ document.addEventListener("DOMContentLoaded", async () => {
       filtroInativo.value = "";
       btnLimparInativo.style.display = "none";
       renderizarTabelaInativos(state.inativosAtuais);
+    });
+
+    // 🥊 O RESTAURO: Limpar ao clicar fora (Inativos)
+    document.addEventListener("click", (e) => {
+      if (filtroInativo.value.trim() !== "") {
+        const isClickInside =
+          filtroInativo.contains(e.target) ||
+          btnLimparInativo?.contains(e.target);
+        if (!isClickInside) {
+          filtroInativo.value = "";
+          if (btnLimparInativo) btnLimparInativo.style.display = "none";
+          renderizarTabelaInativos(state.inativosAtuais);
+        }
+      }
     });
   }
 
@@ -327,6 +354,20 @@ document.addEventListener("DOMContentLoaded", async () => {
       filtroNomeMensalidade.value = "";
       btnLimparMensalidade.style.display = "none";
       renderizarTabelaMensalidades(state.mensalidadesAtuais);
+    });
+
+    // 🥊 O RESTAURO: Limpar ao clicar fora (Mensalidades)
+    document.addEventListener("click", (e) => {
+      if (filtroNomeMensalidade.value.trim() !== "") {
+        const isClickInside =
+          filtroNomeMensalidade.contains(e.target) ||
+          btnLimparMensalidade?.contains(e.target);
+        if (!isClickInside) {
+          filtroNomeMensalidade.value = "";
+          if (btnLimparMensalidade) btnLimparMensalidade.style.display = "none";
+          renderizarTabelaMensalidades(state.mensalidadesAtuais);
+        }
+      }
     });
   }
 
@@ -371,7 +412,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       btnConfirma.disabled = true;
       await executarLogout();
     });
-});
+}); // 🥊 CORREÇÃO DO ERRO DE SINTAXE: Aqui estava };); em vez de });
 
 // =========================================================================
 // 🥊 FUNÇÕES DE AULAS E DESPESAS (Declaradas fora para estarem disponíveis)
@@ -437,7 +478,6 @@ function configurarAprovacaoAula() {
         },
       ]);
 
-      // 🥊 CORREÇÃO DO BUG ESCONDIDO: 'dados' não existia aqui, agora usamos 'socioId'
       try {
         await supabase.functions.invoke("notificar-alvo", {
           body: {
