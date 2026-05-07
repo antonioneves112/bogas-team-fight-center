@@ -1,9 +1,9 @@
 /* JS/mensalidades.js - GESTÃO DE MENSALIDADES (Modais Premium) */
 import { supabase } from "./supabase.js";
 import { state } from "./state.js";
-import { formatarNomeCurto, extrairPreco, debounce } from "./helpers.js"; // 🥊 IMPORT: Agrupado e adicionado o debounce
+import { formatarNomeCurto, extrairPreco, debounce } from "./helpers.js";
 import { carregarGuerreiros } from "./socios.js";
-import { mostrarAviso } from "./main.js"; // 🥊 IMPORTAMOS OS AVISOS VISUAIS
+import { mostrarAviso } from "./main.js";
 
 export function renderizarTabelaMensalidades(lista) {
   const tabelaMensalidades = document.getElementById("tabelaMensalidades");
@@ -49,7 +49,6 @@ export function renderizarTabelaMensalidades(lista) {
           <button class="btn-acao btn-delete-mensalidade" data-id="${m.id}"><i class='bx bx-trash'></i></button>
       </td>`;
 
-    // 🥊 OTIMIZAÇÃO: Adiciona a row ao fragmento na memória
     fragment.appendChild(tr);
   });
 
@@ -61,10 +60,7 @@ export function renderizarTabelaMensalidades(lista) {
     <td colspan="2"></td>
   `;
 
-  // 🥊 OTIMIZAÇÃO: Adiciona a row totalizadora ao fragmento
   fragment.appendChild(trTotal);
-
-  // 🥊 OTIMIZAÇÃO: Injeta todo o conteúdo de uma só vez no DOM real
   tabelaMensalidades.appendChild(fragment);
 }
 
@@ -110,7 +106,7 @@ export async function carregarMensalidades() {
       (m) => m.socios?.estado !== "Inativo",
     );
 
-    // 🥊 ORDENAÇÃO ALFABÉTICA
+    // 🥊 ORDENAÇÃO ALFABÉTICA INTELIGENTE
     apenasAtivos.sort((a, b) => {
       const nomeA = a.socios?.nome || "";
       const nomeB = b.socios?.nome || "";
@@ -194,6 +190,69 @@ export function initMensalidadesEvents() {
   const inputSearch = document.getElementById("pagamentoSocioSearch");
   const inputId = document.getElementById("pagamentoSocioId");
 
+  // ==========================================================
+  // 🥊 NOVO: DELEGAÇÃO DE EVENTOS PARA EDITAR E ELIMINAR
+  // ==========================================================
+  document
+    .getElementById("tabelaMensalidades")
+    ?.addEventListener("click", async (e) => {
+      const btnEdit = e.target.closest(".btn-edit-mensalidade");
+      const btnDelete = e.target.closest(".btn-delete-mensalidade");
+
+      if (btnEdit) {
+        const id = btnEdit.dataset.id;
+        const mensalidade = state.mensalidadesAtuais.find((m) => m.id == id);
+
+        if (mensalidade) {
+          state.idMensalidadeEmEdicao = id;
+
+          if (inputSearch) inputSearch.value = mensalidade.socios.nome;
+          if (inputId) inputId.value = mensalidade.socio_id;
+
+          document.getElementById("pagamentoMes").value = mensalidade.mes_ano;
+          document.getElementById("pagamentoValor").value = mensalidade.valor;
+          document.getElementById("pagamentoEstado").value = mensalidade.estado;
+          document.getElementById("pagamentoTipo").value =
+            mensalidade.tipo || "Mensalidade";
+
+          tituloModalPagamento.innerHTML =
+            "<i class='bx bx-edit'></i> Editar Pagamento";
+          modalPagamento.classList.remove("hidden");
+        }
+      }
+
+      if (btnDelete) {
+        mensalidadeIdParaEliminar = btnDelete.dataset.id;
+        modalDeleteMensalidade.classList.remove("hidden");
+      }
+    });
+
+  // Fechar Modal Delete
+  btnCancelarDeleteMens?.addEventListener("click", () => {
+    modalDeleteMensalidade.classList.add("hidden");
+    mensalidadeIdParaEliminar = null;
+  });
+
+  // Confirmar Delete
+  btnConfirmarDeleteMens?.addEventListener("click", async () => {
+    if (!mensalidadeIdParaEliminar) return;
+
+    const { error } = await supabase
+      .from("mensalidades")
+      .delete()
+      .eq("id", mensalidadeIdParaEliminar);
+
+    if (!error) {
+      mostrarAviso("Eliminado", "Registo apagado com sucesso.", "sucesso");
+      modalDeleteMensalidade.classList.add("hidden");
+      carregarMensalidades();
+    } else {
+      mostrarAviso("Erro", "Falha ao apagar registo.", "erro");
+    }
+    mensalidadeIdParaEliminar = null;
+  });
+  // ==========================================================
+
   if (inputSearch && inputId) {
     inputSearch.addEventListener("input", (e) => {
       const val = e.target.value;
@@ -228,6 +287,9 @@ export function initMensalidadesEvents() {
       modalPagamento.classList.remove("hidden");
     });
 
+  // ==========================================================
+  // 🥊 LÓGICA DE SUBMISSÃO E NOTIFICAÇÕES (RESTAURADA NA ÍNTEGRA)
+  // ==========================================================
   formNovoPagamento?.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -309,6 +371,12 @@ export function initMensalidadesEvents() {
         mostrarAviso(
           "Faturado!",
           "Mensalidade paga com sucesso e notificação entregue ao atleta.",
+          "sucesso",
+        );
+      } else if (dados.estado === "Pendente") {
+        mostrarAviso(
+          "Registado",
+          "Dívida registada no sistema. O atleta poderá consultá-la no seu Portal.",
           "sucesso",
         );
       }

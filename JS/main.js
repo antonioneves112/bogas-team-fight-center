@@ -1,4 +1,4 @@
-/* JS/main.js - O CÉREBRO DA APLICAÇÃO (Versão Blindada) */
+/* JS/main.js - O CÉREBRO DA APLICAÇÃO (Versão Blindada 2.0) */
 import { supabase } from "./supabase.js";
 import { state } from "./state.js";
 import { formatarNomeCurto } from "./helpers.js";
@@ -30,7 +30,6 @@ export function mostrarAviso(titulo, mensagem, tipo = "sucesso") {
 
   const toast = document.createElement("div");
   toast.className = `toast toast-${tipo}`;
-
   const icone = tipo === "sucesso" ? "bx-check-circle" : "bx-error-circle";
 
   toast.innerHTML = `
@@ -42,10 +41,7 @@ export function mostrarAviso(titulo, mensagem, tipo = "sucesso") {
   `;
 
   container.appendChild(toast);
-
-  requestAnimationFrame(() => {
-    toast.classList.add("show");
-  });
+  requestAnimationFrame(() => toast.classList.add("show"));
 
   setTimeout(() => {
     toast.classList.remove("show");
@@ -53,33 +49,42 @@ export function mostrarAviso(titulo, mensagem, tipo = "sucesso") {
   }, 4000);
 }
 
-// A ponte AutoTable (Para gerar os PDFs)
 if (window.jspdf && window.jspdf.jsPDF && !window.jsPDF) {
   window.jsPDF = window.jspdf.jsPDF;
 }
 
+// =========================================================================
+// 🥊 ARRANQUE DO MOTOR (ESPERA QUE O ECRÃ CARREGUE)
+// =========================================================================
 document.addEventListener("DOMContentLoaded", async () => {
-  atualizarBadgeAulasPendentes();
+  // 1. VERIFICAÇÃO DE SESSÃO REAL (BLINDAGEM)
+  const {
+    data: { session },
+    error,
+  } = await supabase.auth.getSession();
 
-  // 🥊 LÓGICA DE SESSÃO PERMANENTE
-  const isTreinadorLogado = localStorage.getItem("bogas_treinador_ativo");
-
-  if (!isTreinadorLogado) {
+  if (error || !session) {
     window.location.replace("login.html");
-    return;
+    return; // Agora sim, o return é legal porque está dentro da função do EventListener!
   }
 
+  // 2. RECUPERA O NOME DO TREINADOR LOGADO
   state.treinadorAtual =
     localStorage.getItem("bogas_treinador_nome") || "Bogas";
 
+  // 3. INICIALIZAR EVENTOS E MÓDULOS DE UI
   inicializarTabs();
   inicializarFechoModais();
   initSociosEvents();
   initMensalidadesEvents();
   initAulasEvents();
 
+  configurarAprovacaoAula();
+  configurarPagamentoDiretoAula();
+  configurarRegistoDespesas();
+
   // =======================================================================
-  // 🥊 BOTÃO VERMELHO DO PAINEL (ABRIR INATIVOS)
+  // CONTROLO DE TABS (INATIVOS) E MODAIS
   // =======================================================================
   const btnParceirosAdmin = document.getElementById("btnParceirosAdmin");
   if (btnParceirosAdmin) {
@@ -99,30 +104,23 @@ document.addEventListener("DOMContentLoaded", async () => {
         viewInativos.classList.add("active");
       }
 
-      if (state.inativosAtuais) {
-        renderizarTabelaInativos(state.inativosAtuais);
-      }
+      if (state.inativosAtuais) renderizarTabelaInativos(state.inativosAtuais);
     });
   }
 
-  // 🥊 CONTROLO DO MODAL DE BROADCAST (AVISOS)
   const modalBroadcast = document.getElementById("modalBroadcast");
-
   document
     .getElementById("btnAbrirModalBroadcast")
-    ?.addEventListener("click", () => {
-      modalBroadcast?.classList.remove("hidden");
-    });
-
+    ?.addEventListener("click", () =>
+      modalBroadcast?.classList.remove("hidden"),
+    );
   document
     .getElementById("btnFecharModalBroadcast")
-    ?.addEventListener("click", () => {
-      modalBroadcast?.classList.add("hidden");
-    });
+    ?.addEventListener("click", () => modalBroadcast?.classList.add("hidden"));
 
-  // -------------------------------------------------------------
-  // CONTROLO DE MÊS E ARRANQUE DE DADOS
-  // -------------------------------------------------------------
+  // =======================================================================
+  // CONTROLO DE DATA, ARRANQUE DE DADOS E ESTATÍSTICAS
+  // =======================================================================
   const filtroMes = document.getElementById("filtroMesMensalidade");
   const tituloMensalidade = document.getElementById("tituloMensalidade");
   const mesesPT = [
@@ -161,13 +159,38 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
+  // CARREGAMENTO INICIAL
   carregarGuerreiros();
   carregarMensalidades();
   carregarAulasParticulares();
 
-  // -------------------------------------------------------------
-  // 🥊 MOTOR DE TRANSMISSÃO GLOBAL (METRALHADORA PUSH)
-  // -------------------------------------------------------------
+  // =======================================================================
+  // ATALHOS DE CARDS (DASHBOARD)
+  // =======================================================================
+  const cardPendentes = document.getElementById("cardPendentes");
+  if (cardPendentes) {
+    cardPendentes.addEventListener("click", () => {
+      document.querySelector('.tab-btn[data-target="view-socios"]')?.click();
+      const pendentes = state.guerreirosAtuais.filter((s) => {
+        const isInativo = s.estado === "Inativo";
+        const estaPago = !isInativo && state.idsPagosGlobal.includes(s.id);
+        return !isInativo && !estaPago;
+      });
+      renderizarTabelaSocios(pendentes);
+    });
+  }
+
+  const cardTotalSocios = document.getElementById("cardTotalSocios");
+  if (cardTotalSocios) {
+    cardTotalSocios.addEventListener("click", () => {
+      document.querySelector('.tab-btn[data-target="view-socios"]')?.click();
+      renderizarTabelaSocios(state.guerreirosAtuais);
+    });
+  }
+
+  // =======================================================================
+  // MOTOR DE TRANSMISSÃO GLOBAL (METRALHADORA PUSH)
+  // =======================================================================
   const btnAvisar = document.getElementById("btnAvisarGeral");
   if (btnAvisar) {
     btnAvisar.addEventListener("click", async () => {
@@ -223,10 +246,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         );
         document.getElementById("tituloNotificacao").value = "";
         document.getElementById("mensagemNotificacao").value = "";
-
         modalBroadcast?.classList.add("hidden");
       } catch (erro) {
-        console.error("Erro na Metralhadora:", erro);
         mostrarAviso(
           "Erro no Disparo",
           `O golpe bateu na guarda: ${erro.message || "Erro desconhecido."}`,
@@ -239,9 +260,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  // -------------------------------------------------------------
-  // FILTROS E PESQUISAS (ATIVOS E INATIVOS)
-  // -------------------------------------------------------------
+  // =======================================================================
+  // PESQUISAS DINÂMICAS NAS TABELAS
+  // =======================================================================
   const filtroNome = document.getElementById("filtroNomeSocio");
   const btnLimparSocio = document.getElementById("limparSocio");
 
@@ -256,25 +277,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       renderizarTabelaSocios(filtrados);
     });
 
-    if (btnLimparSocio) {
-      btnLimparSocio.addEventListener("click", () => {
-        filtroNome.value = "";
-        btnLimparSocio.style.display = "none";
-        renderizarTabelaSocios(state.guerreirosAtuais);
-        filtroNome.focus();
-      });
-    }
-
-    document.addEventListener("click", (e) => {
-      if (filtroNome.value.trim() !== "") {
-        const isClickInside =
-          filtroNome.contains(e.target) || btnLimparSocio?.contains(e.target);
-        if (!isClickInside) {
-          filtroNome.value = "";
-          if (btnLimparSocio) btnLimparSocio.style.display = "none";
-          renderizarTabelaSocios(state.guerreirosAtuais);
-        }
-      }
+    btnLimparSocio?.addEventListener("click", () => {
+      filtroNome.value = "";
+      btnLimparSocio.style.display = "none";
+      renderizarTabelaSocios(state.guerreirosAtuais);
+      filtroNome.focus();
     });
   }
 
@@ -292,26 +299,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       renderizarTabelaInativos(filtrados);
     });
 
-    if (btnLimparInativo) {
-      btnLimparInativo.addEventListener("click", () => {
-        filtroInativo.value = "";
-        btnLimparInativo.style.display = "none";
-        renderizarTabelaInativos(state.inativosAtuais);
-        filtroInativo.focus();
-      });
-    }
-
-    document.addEventListener("click", (e) => {
-      if (filtroInativo.value.trim() !== "") {
-        const isClickInside =
-          filtroInativo.contains(e.target) ||
-          btnLimparInativo?.contains(e.target);
-        if (!isClickInside) {
-          filtroInativo.value = "";
-          if (btnLimparInativo) btnLimparInativo.style.display = "none";
-          renderizarTabelaInativos(state.inativosAtuais);
-        }
-      }
+    btnLimparInativo?.addEventListener("click", () => {
+      filtroInativo.value = "";
+      btnLimparInativo.style.display = "none";
+      renderizarTabelaInativos(state.inativosAtuais);
     });
   }
 
@@ -332,56 +323,16 @@ document.addEventListener("DOMContentLoaded", async () => {
       renderizarTabelaMensalidades(filtrados);
     });
 
-    if (btnLimparMensalidade) {
-      btnLimparMensalidade.addEventListener("click", () => {
-        filtroNomeMensalidade.value = "";
-        btnLimparMensalidade.style.display = "none";
-        renderizarTabelaMensalidades(state.mensalidadesAtuais);
-        filtroNomeMensalidade.focus();
-      });
-    }
-
-    document.addEventListener("click", (e) => {
-      if (filtroNomeMensalidade.value.trim() !== "") {
-        const isClickInside =
-          filtroNomeMensalidade.contains(e.target) ||
-          btnLimparMensalidade?.contains(e.target);
-        if (!isClickInside) {
-          filtroNomeMensalidade.value = "";
-          if (btnLimparMensalidade) btnLimparMensalidade.style.display = "none";
-          renderizarTabelaMensalidades(state.mensalidadesAtuais);
-        }
-      }
+    btnLimparMensalidade?.addEventListener("click", () => {
+      filtroNomeMensalidade.value = "";
+      btnLimparMensalidade.style.display = "none";
+      renderizarTabelaMensalidades(state.mensalidadesAtuais);
     });
   }
 
-  // -------------------------------------------------------------
-  // ATALHOS DE ESTATÍSTICAS
-  // -------------------------------------------------------------
-  const cardPendentes = document.getElementById("cardPendentes");
-  if (cardPendentes) {
-    cardPendentes.addEventListener("click", () => {
-      document.querySelector('.tab-btn[data-target="view-socios"]')?.click();
-      const pendentes = state.guerreirosAtuais.filter((s) => {
-        const isInativo = s.estado === "Inativo";
-        const estaPago = !isInativo && state.idsPagosGlobal.includes(s.id);
-        return !isInativo && !estaPago;
-      });
-      renderizarTabelaSocios(pendentes);
-    });
-  }
-
-  const cardTotalSocios = document.getElementById("cardTotalSocios");
-  if (cardTotalSocios) {
-    cardTotalSocios.addEventListener("click", () => {
-      document.querySelector('.tab-btn[data-target="view-socios"]')?.click();
-      renderizarTabelaSocios(state.guerreirosAtuais);
-    });
-  }
-
-  // -------------------------------------------------------------
-  // EXPORTAÇÃO DE PDFS
-  // -------------------------------------------------------------
+  // =======================================================================
+  // EXPORTAÇÃO PDF
+  // =======================================================================
   document
     .getElementById("btnExportarSociosPDF")
     ?.addEventListener("click", () => {
@@ -396,23 +347,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     );
   });
 
-  // -------------------------------------------------------------
+  // =======================================================================
   // LOGOUT DO TREINADOR
-  // -------------------------------------------------------------
+  // =======================================================================
   const btnLogout = document.getElementById("btnLogout");
   const modalConfirmLogout = document.getElementById("modalConfirmLogout");
 
-  if (btnLogout) {
-    btnLogout.addEventListener("click", () => {
-      modalConfirmLogout?.classList.remove("hidden");
-    });
-  }
-
+  btnLogout?.addEventListener("click", () =>
+    modalConfirmLogout?.classList.remove("hidden"),
+  );
   document
     .getElementById("btnCancelarLogout")
-    ?.addEventListener("click", () => {
-      modalConfirmLogout?.classList.add("hidden");
-    });
+    ?.addEventListener("click", () =>
+      modalConfirmLogout?.classList.add("hidden"),
+    );
 
   document
     .getElementById("btnConfirmarLogout")
@@ -421,14 +369,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       btnConfirma.innerHTML =
         "A sair... <i class='bx bx-loader-alt bx-spin'></i>";
       btnConfirma.disabled = true;
-
-      // 🥊 CORREÇÃO: Utilização da função global de logout
       await executarLogout();
     });
 });
 
 // =========================================================================
-// 🥊 GESTÃO DE APROVAÇÃO E FATURAÇÃO DE AULAS PARTICULARES
+// 🥊 FUNÇÕES DE AULAS E DESPESAS (Declaradas fora para estarem disponíveis)
 // =========================================================================
 
 function configurarAprovacaoAula() {
@@ -448,12 +394,10 @@ function configurarAprovacaoAula() {
     const socioId = document.getElementById("hiddenSocioIdAula").value;
     const dataAulaDb = document.getElementById("hiddenDataAula").value;
 
-    // 🥊 BLINDAGEM DO PREÇO: Limpa o '€' e guarda só o número antes de inserir
     let valorDigitado = document.getElementById("valorAulaParticular").value;
     const valorLimpo = parseFloat(
       valorDigitado.replace("€", "").replace(",", ".").trim(),
     );
-
     const mesAnoFormatado = dataAulaDb.substring(0, 7);
 
     const btnConfirmar = document.getElementById("btnConfirmarAprovacao");
@@ -463,15 +407,12 @@ function configurarAprovacaoAula() {
     btnConfirmar.disabled = true;
 
     try {
-      // 1. Atualizar o estado da aula para "Aceite"
       const { error: erroAula } = await supabase
         .from("aulas_particulares")
         .update({ estado: "Aceite", valor: valorLimpo })
         .eq("id", aulaId);
-
       if (erroAula) throw erroAula;
 
-      // 2. Inserir fatura (mensalidade) pendente COM O MÊS CERTO e VALOR LIMPO
       const { error: erroFatura } = await supabase.from("mensalidades").insert([
         {
           socio_id: socioId,
@@ -481,14 +422,13 @@ function configurarAprovacaoAula() {
           valor: valorLimpo,
         },
       ]);
-
       if (erroFatura) throw erroFatura;
 
-      // 3. Notificar aluno
       const dataLegivel = dataAulaDb.split("-").reverse().join("/");
       const tituloNotif = "Aula Aprovada ✅";
       const mensagemNotif = `O Mestre aprovou a tua aula particular do dia ${dataLegivel}. Foi adicionado um pagamento pendente de ${valorLimpo}€ ao teu portal.`;
-      const { error: erroNotif } = await supabase.from("notificacoes").insert([
+
+      await supabase.from("notificacoes").insert([
         {
           socio_id: socioId,
           titulo: tituloNotif,
@@ -497,32 +437,24 @@ function configurarAprovacaoAula() {
         },
       ]);
 
-      if (erroNotif) throw erroNotif;
-      // ==========================================================
-      // 🥊 O TIRO DO SNIPER (Acordar o telemóvel do Atleta)
-      // ==========================================================
+      // 🥊 CORREÇÃO DO BUG ESCONDIDO: 'dados' não existia aqui, agora usamos 'socioId'
       try {
-        // Chamamos uma função específica (ex: 'notificar-alvo') e passamos o ID do sócio
         await supabase.functions.invoke("notificar-alvo", {
           body: {
-            socio_id: parseInt(dados.socio_id), // 🥊 O GOLPE VITAL: Força a Número!
+            socio_id: parseInt(socioId),
             titulo: tituloNotif,
             mensagem: mensagemNotif,
           },
         });
       } catch (erroPush) {
-        // Se o push falhar (ex: telemóvel sem net), não bloqueamos o resto do código
-        console.warn(
-          "Aviso: O Push Nativo falhou, mas a notificação na App foi guardada.",
-          erroPush,
-        );
+        console.warn("Aviso Push:", erroPush);
       }
+
       mostrarAviso(
         "Nocaute Técnico",
         "Aula aprovada e faturação lançada com sucesso!",
         "sucesso",
       );
-
       modalAprovar.classList.add("hidden");
       formAprovar.reset();
 
@@ -530,7 +462,6 @@ function configurarAprovacaoAula() {
       await carregarMensalidades();
       await atualizarBadgeAulasPendentes();
     } catch (erro) {
-      console.error("Erro na aprovação:", erro);
       mostrarAviso("Erro", "O golpe falhou: " + erro.message, "erro");
     } finally {
       btnConfirmar.innerHTML = textoOriginal;
@@ -539,16 +470,9 @@ function configurarAprovacaoAula() {
   });
 }
 
-configurarAprovacaoAula();
-
-// =========================================================================
-// 🥊 GESTÃO DA LISTA DE AULAS PARTICULARES E PESQUISA
-// =========================================================================
-
 export async function carregarAulasParticulares() {
   const tabela = document.getElementById("tabelaAulasParticulares");
   if (!tabela) return;
-
   tabela.innerHTML =
     '<tr><td colspan="7">A procurar pedidos... <i class="bx bx-loader-alt bx-spin"></i></td></tr>';
 
@@ -557,16 +481,14 @@ export async function carregarAulasParticulares() {
       .from("aulas_particulares")
       .select(`id, data_aula, hora_aula, socio_id, estado, valor, pago`)
       .order("data_aula", { ascending: false });
-
     if (error) throw error;
 
     const { data: listaSocios, error: errSocios } = await supabase
       .from("socios")
       .select("id, nome");
-
     if (errSocios) throw errSocios;
 
-    const pedidosComNomes = pedidos.map((pedido) => {
+    state.aulasParticulares = pedidos.map((pedido) => {
       const socioEncontrado = listaSocios.find((s) => s.id === pedido.socio_id);
       return {
         ...pedido,
@@ -576,10 +498,8 @@ export async function carregarAulasParticulares() {
       };
     });
 
-    state.aulasParticulares = pedidosComNomes;
     renderizarTabelaAulas(state.aulasParticulares);
   } catch (err) {
-    console.error("Erro no carregamento das aulas:", err);
     tabela.innerHTML =
       '<tr><td colspan="7" style="color: #ff4d4d; text-align: center;">Erro ao carregar pedidos.</td></tr>';
   }
@@ -599,72 +519,50 @@ export function renderizarTabelaAulas(lista) {
     .map((p) => {
       const dataF = p.data_aula.split("-").reverse().join("/");
       const valorExibido = p.valor ? `${p.valor}€` : "A definir";
-
-      // Lógica Base do Estado
       const badgeClass =
         p.estado === "Aceite"
           ? "badge-ativo"
           : p.estado === "Recusada"
             ? "badge-inativo"
             : "badge-pendente";
-
-      const textoEstado = p.estado.toUpperCase();
-
-      const textoPago = p.pago ? "SIM" : "NÃO";
       const badgePagoClass = p.pago ? "badge-ativo" : "badge-inativo";
 
       let botoes = "-";
       if (p.estado === "Pendente") {
         botoes = `
-          <button class="btn-acao btn-edit btn-aceitar-aula" data-id="${p.id}" data-socio="${p.socio_id}" data-datadb="${p.data_aula}"><i class='bx bx-check'></i></button>
-          <button class="btn-acao btn-delete btn-recusar-aula" data-id="${p.id}" data-socio="${p.socio_id}" data-data="${dataF}"><i class='bx bx-x'></i></button>
-        `;
+        <button class="btn-acao btn-edit btn-aceitar-aula" data-id="${p.id}" data-socio="${p.socio_id}" data-datadb="${p.data_aula}"><i class='bx bx-check'></i></button>
+        <button class="btn-acao btn-delete btn-recusar-aula" data-id="${p.id}" data-socio="${p.socio_id}" data-data="${dataF}"><i class='bx bx-x'></i></button>
+      `;
       } else if (p.estado === "Aceite" && !p.pago) {
-        botoes = `
-          <button class="btn-tatico btn-small btn-faturar-aula-direto" 
-            data-id="${p.id}" 
-            data-socio="${p.socio_id}" 
-            data-nome="${p.socios.nome}" 
-            data-valor="${p.valor}" 
-            data-data="${dataF}"
-            data-datadb="${p.data_aula}">
-            <i class='bx bx-euro'></i> FATURAR
-          </button>
-        `;
+        botoes = `<button class="btn-tatico btn-small btn-faturar-aula-direto" data-id="${p.id}" data-socio="${p.socio_id}" data-nome="${p.socios.nome}" data-valor="${p.valor}" data-data="${dataF}" data-datadb="${p.data_aula}"><i class='bx bx-euro'></i> FATURAR</button>`;
       } else if (p.pago) {
         botoes = `<span style="color: var(--accent); font-weight: bold; font-size: 0.85rem;"><i class='bx bx-check-double' style="font-size:1.2rem; vertical-align: middle;"></i> REGULARIZADA</span>`;
       }
 
       return `
-      <tr>
-        <td data-label="SÓCIO:">${p.socios.nome.toUpperCase()}</td>
-        <td data-label="DATA:">${dataF}</td>
-        <td data-label="HORA:">${p.hora_aula.substring(0, 5)}</td>
-        <td data-label="VALOR:"><strong style="color: var(--accent);">${valorExibido}</strong></td>
-        <td data-label="ESTADO:"><span class="badge ${badgeClass}">${textoEstado}</span></td>
-        <td data-label="PAGO:"><span class="badge ${badgePagoClass}">${textoPago}</span></td>
-        <td data-label="AÇÕES:">${botoes}</td>
-      </tr>
-    `;
+    <tr>
+      <td data-label="SÓCIO:">${p.socios.nome.toUpperCase()}</td>
+      <td data-label="DATA:">${dataF}</td>
+      <td data-label="HORA:">${p.hora_aula.substring(0, 5)}</td>
+      <td data-label="VALOR:"><strong style="color: var(--accent);">${valorExibido}</strong></td>
+      <td data-label="ESTADO:"><span class="badge ${badgeClass}">${p.estado.toUpperCase()}</span></td>
+      <td data-label="PAGO:"><span class="badge ${badgePagoClass}">${p.pago ? "SIM" : "NÃO"}</span></td>
+      <td data-label="AÇÕES:">${botoes}</td>
+    </tr>`;
     })
     .join("");
 }
 
-// =========================================================================
-// 🥊 INICIALIZAR EVENTOS DA TABELA DE AULAS
-// =========================================================================
 export function initAulasEvents() {
   const tabela = document.getElementById("tabelaAulasParticulares");
   const filtroAtletaAula = document.getElementById("filtroAtletaAula");
   const limparAulaPesquisa = document.getElementById("limparAulaPesquisa");
 
-  // Pesquisa
   if (filtroAtletaAula) {
     filtroAtletaAula.addEventListener("input", () => {
       const termo = filtroAtletaAula.value.toLowerCase();
       if (limparAulaPesquisa)
         limparAulaPesquisa.style.display = termo.length > 0 ? "block" : "none";
-
       const filtrados = (state.aulasParticulares || []).filter((a) =>
         (a.socios?.nome || "").toLowerCase().includes(termo),
       );
@@ -678,12 +576,10 @@ export function initAulasEvents() {
     });
   }
 
-  if (!tabela) return;
-
-  // Cliques na Tabela
-  tabela.addEventListener("click", async (e) => {
+  tabela?.addEventListener("click", async (e) => {
     const btnAceitar = e.target.closest(".btn-aceitar-aula");
     const btnRecusar = e.target.closest(".btn-recusar-aula");
+    const btnCobrar = e.target.closest(".btn-faturar-aula-direto");
 
     if (btnAceitar) {
       document.getElementById("hiddenAulaId").value = btnAceitar.dataset.id;
@@ -703,27 +599,19 @@ export function initAulasEvents() {
         confirm(`Tens a certeza que queres RECUSAR a aula do dia ${dataAula}?`)
       ) {
         try {
-          const { error: erroUpdate } = await supabase
+          await supabase
             .from("aulas_particulares")
             .update({ estado: "Recusada" })
             .eq("id", aulaId);
-          if (erroUpdate) throw erroUpdate;
-
           await supabase.from("notificacoes").insert([
             {
               socio_id: socioId,
               titulo: "Aula Recusada ❌",
-              mensagem: `Infelizmente o Mestre não tem disponibilidade para a aula particular do dia ${dataAula}.`,
+              mensagem: `O Mestre não tem disponibilidade para dia ${dataAula}.`,
               lida: false,
             },
           ]);
-
-          mostrarAviso(
-            "Recusada",
-            "A aula foi recusada e o atleta notificado.",
-            "sucesso",
-          );
-
+          mostrarAviso("Recusada", "Aula recusada.", "sucesso");
           await carregarAulasParticulares();
           await atualizarBadgeAulasPendentes();
         } catch (err) {
@@ -732,78 +620,57 @@ export function initAulasEvents() {
       }
     }
 
-    // 🥊 AÇÃO: COBRAR AULA (NOVO MODAL DEDICADO)
-    const btnCobrar = e.target.closest(".btn-faturar-aula-direto");
     if (btnCobrar) {
       document.getElementById("faturarAulaNome").value = btnCobrar.dataset.nome;
       document.getElementById("faturarAulaData").value = btnCobrar.dataset.data;
       document.getElementById("faturarAulaValor").value =
         btnCobrar.dataset.valor + "€";
-
       document.getElementById("faturarAulaId").value = btnCobrar.dataset.id;
       document.getElementById("faturarAulaSocioId").value =
         btnCobrar.dataset.socio;
       document.getElementById("faturarAulaDataDb").value =
         btnCobrar.dataset.datadb;
-
       document.getElementById("modalFaturarAula").classList.remove("hidden");
     }
   });
 }
 
-// 🥊 FUNÇÃO PARA CONTAR AULAS PENDENTES E ATUALIZAR O BADGE
 async function atualizarBadgeAulasPendentes() {
   const badgeId = document.getElementById("badgeAulasPendentes");
   const badgeClass = document.querySelector(".badge-tab-inline");
-
   try {
-    const { count, error } = await supabase
+    const { count } = await supabase
       .from("aulas_particulares")
       .select("*", { count: "exact", head: true })
       .eq("estado", "Pendente");
-
-    if (error) throw error;
-
     const total = count || 0;
-
     if (badgeId) {
       badgeId.innerText = total;
       total > 0
         ? badgeId.classList.remove("hidden")
         : badgeId.classList.add("hidden");
     }
-
     if (badgeClass) {
       badgeClass.innerText = total;
       badgeClass.style.display = total > 0 ? "flex" : "none";
     }
   } catch (err) {
-    console.error("Erro ao buscar contagem de aulas pendentes:", err);
+    console.error(err);
   }
 }
 
-// =========================================================================
-// 🥊 GESTÃO DO NOVO MODAL DE FATURAÇÃO DIRETA DE AULAS
-// =========================================================================
-// =========================================================================
-// 🥊 GESTÃO DO NOVO MODAL DE FATURAÇÃO DIRETA DE AULAS E MENSALIDADES
-// =========================================================================
 function configurarPagamentoDiretoAula() {
   const formFaturar = document.getElementById("formFaturarAula");
   const modalFaturar = document.getElementById("modalFaturarAula");
-  const btnFecharFaturar = document.getElementById("btnFecharModalFaturarAula");
-
-  btnFecharFaturar?.addEventListener("click", () => {
-    modalFaturar.classList.add("hidden");
-  });
+  document
+    .getElementById("btnFecharModalFaturarAula")
+    ?.addEventListener("click", () => modalFaturar.classList.add("hidden"));
 
   formFaturar?.addEventListener("submit", async (e) => {
     e.preventDefault();
-
     const aulaId = document.getElementById("faturarAulaId").value;
     const socioId = document.getElementById("faturarAulaSocioId").value;
     const dataAulaDb = document.getElementById("faturarAulaDataDb").value;
-
     const mesAnoFormatado = dataAulaDb.substring(0, 7);
 
     const btnConfirmar = formFaturar.querySelector('button[type="submit"]');
@@ -813,16 +680,11 @@ function configurarPagamentoDiretoAula() {
     btnConfirmar.disabled = true;
 
     try {
-      // 1º GOLPE: Marca a Aula Particular como PAGA = TRUE
-      const { error: errAula } = await supabase
+      await supabase
         .from("aulas_particulares")
         .update({ pago: true })
         .eq("id", aulaId);
-
-      if (errAula) throw errAula;
-
-      // 2º GOLPE: Procura a mensalidade "Pendente" referente a esta aula e passa a "Pago"
-      const { error: errFatura } = await supabase
+      await supabase
         .from("mensalidades")
         .update({ estado: "Pago" })
         .eq("socio_id", socioId)
@@ -830,116 +692,67 @@ function configurarPagamentoDiretoAula() {
         .eq("mes_ano", mesAnoFormatado)
         .eq("estado", "Pendente");
 
-      if (errFatura) throw errFatura;
-
-      // ==========================================================
-      // 3º GOLPE: GUARDAR NOTIFICAÇÃO NA BD E DISPARAR O SNIPER
-      // ==========================================================
       const dataLegivel = dataAulaDb.split("-").reverse().join("/");
       const tituloPagamento = "Pagamento Recebido 🏆";
-      const mensagemPagamento = `Obrigado, guerreiro! O pagamento referente à aula particular do dia ${dataLegivel} foi liquidado e as tuas contas estão regularizadas.`;
+      const msg = `O pagamento referente à aula particular de ${dataLegivel} foi liquidado.`;
 
-      // Guarda no 'sininho' da app do atleta
-      const { error: erroNotifPagamento } = await supabase
-        .from("notificacoes")
-        .insert([
-          {
-            socio_id: socioId,
-            titulo: tituloPagamento,
-            mensagem: mensagemPagamento,
-            lida: false,
-          },
-        ]);
-
-      if (erroNotifPagamento)
-        console.warn(
-          "Erro ao guardar notificação de pagamento:",
-          erroNotifPagamento,
-        );
-
-      // Dispara para o telemóvel (Se o target estiver ativo)
+      await supabase.from("notificacoes").insert([
+        {
+          socio_id: socioId,
+          titulo: tituloPagamento,
+          mensagem: msg,
+          lida: false,
+        },
+      ]);
       try {
         await supabase.functions.invoke("notificar-alvo", {
-          body: {
-            socio_id: socioId,
-            titulo: tituloPagamento,
-            mensagem: mensagemPagamento,
-          },
+          body: { socio_id: socioId, titulo: tituloPagamento, mensagem: msg },
         });
-      } catch (erroPushPagamento) {
-        console.warn("Aviso: O Push de pagamento falhou.", erroPushPagamento);
-      }
-      // ==========================================================
+      } catch (e) {}
 
-      mostrarAviso(
-        "Nocaute!",
-        "Pagamento recebido e contas regularizadas com sucesso.",
-        "sucesso",
-      );
+      mostrarAviso("Nocaute!", "Pagamento recebido.", "sucesso");
       modalFaturar.classList.add("hidden");
-
-      // Atualiza ambas as tabelas
       await carregarAulasParticulares();
       await carregarMensalidades();
     } catch (erro) {
-      console.error("Erro na faturação:", erro);
-      mostrarAviso(
-        "Erro",
-        "Falha ao registar pagamento: " + erro.message,
-        "erro",
-      );
+      mostrarAviso("Erro", erro.message, "erro");
     } finally {
       btnConfirmar.innerHTML = textoOriginal;
       btnConfirmar.disabled = false;
     }
   });
 }
-// Inicializa o Listener
-configurarPagamentoDiretoAula();
-
-// =========================================================================
-// 🥊 GESTÃO DO NOVO MODAL DE DESPESAS GLOBAIS
-// =========================================================================
 
 function configurarRegistoDespesas() {
   const btnAbrirModal = document.getElementById("btnRegistarDespesaGlobal");
   const modalDespesa = document.getElementById("modalDespesa");
-  const btnFecharModal = document.getElementById("btnFecharModalDespesa");
   const formDespesa = document.getElementById("formNovaDespesa");
 
-  // 1. Abrir o Modal
   btnAbrirModal?.addEventListener("click", () => {
     modalDespesa?.classList.remove("hidden");
-
-    // Auto-preencher a data de hoje para facilitar a vida ao Mestre
-    const hoje = new Date().toISOString().split("T")[0];
-    document.getElementById("despesaData").value = hoje;
+    document.getElementById("despesaData").value = new Date()
+      .toISOString()
+      .split("T")[0];
   });
 
-  // 2. Fechar o Modal
-  btnFecharModal?.addEventListener("click", () => {
-    modalDespesa?.classList.add("hidden");
-    formDespesa?.reset();
-  });
+  document
+    .getElementById("btnFecharModalDespesa")
+    ?.addEventListener("click", () => {
+      modalDespesa?.classList.add("hidden");
+      formDespesa?.reset();
+    });
 
-  // 3. Submeter o Formulário
   formDespesa?.addEventListener("submit", async (e) => {
     e.preventDefault();
-
     const descricao = document.getElementById("despesaDescricao").value.trim();
     const categoria = document.getElementById("despesaCategoria").value;
     const dataDespesa = document.getElementById("despesaData").value;
-    const valorDigitado = document.getElementById("despesaValor").value;
-
-    // Converte o valor para número e garante precisão decimal
-    const valor = parseFloat(valorDigitado.replace(",", "."));
+    const valor = parseFloat(
+      document.getElementById("despesaValor").value.replace(",", "."),
+    );
 
     if (isNaN(valor) || valor <= 0) {
-      mostrarAviso(
-        "Erro",
-        "O valor da despesa deve ser maior que zero.",
-        "erro",
-      );
+      mostrarAviso("Erro", "Valor inválido.", "erro");
       return;
     }
 
@@ -950,45 +763,32 @@ function configurarRegistoDespesas() {
     btnGuardar.disabled = true;
 
     try {
-      // Usa o nome do treinador logado (Bogas) que foi guardado no init
       const treinadorLogado =
         state.treinadorAtual ||
         localStorage.getItem("bogas_treinador_nome") ||
         "Desconhecido";
-
-      const { error } = await supabase.from("despesas").insert([
+      await supabase.from("despesas").insert([
         {
-          descricao: descricao,
-          categoria: categoria,
+          descricao,
+          categoria,
           data: dataDespesa,
-          valor: valor,
+          valor,
           treinador: treinadorLogado,
         },
       ]);
 
-      if (error) throw error;
-
       mostrarAviso(
         "Despesa Registada",
-        `Despesa de ${valor.toFixed(2)}€ guardada no sistema.`,
+        `Despesa de ${valor.toFixed(2)}€ guardada.`,
         "sucesso",
       );
-
       modalDespesa.classList.add("hidden");
       formDespesa.reset();
-
-      // NOTA: Se futuramente quisermos atualizar uma tabela visível de despesas,
-      // chamaríamos aqui uma função como carregarDespesas(). Por agora, o foco
-      // será mostrar isto no PDF!
     } catch (err) {
-      console.error("Erro ao guardar despesa:", err);
-      mostrarAviso("Erro", "Falha ao registar despesa: " + err.message, "erro");
+      mostrarAviso("Erro", err.message, "erro");
     } finally {
       btnGuardar.innerHTML = textoOriginal;
       btnGuardar.disabled = false;
     }
   });
 }
-
-// Inicializa a escuta de eventos do modal de despesas
-configurarRegistoDespesas();

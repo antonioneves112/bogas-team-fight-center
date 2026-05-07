@@ -1,11 +1,6 @@
-/* JS/login.js - Autenticação Treinador (Com Chave Permanente) */
+/* JS/login.js - Autenticação Treinador (Com Segurança Oficial Supabase) */
 
-// 🥊 1. ATALHO IMEDIATO: Bloqueia o ecrã e atira para o painel antes de pestanejar
-if (localStorage.getItem("bogas_treinador_ativo") === "true") {
-  window.location.replace("dashboard.html");
-}
-
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   "use strict";
 
   const SUPABASE_URL = "https://lvtodcvtsetapgimkmtl.supabase.co";
@@ -16,6 +11,18 @@ document.addEventListener("DOMContentLoaded", () => {
     SUPABASE_ANON_KEY,
   );
 
+  // 🥊 1. VERIFICAÇÃO DE SEGURANÇA MÁXIMA (Verifica a Sessão Oficial e o Token)
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (session) {
+    // Se o Supabase confirmar que o token do Mestre é válido, entra direto!
+    window.location.replace("dashboard.html");
+    return; // Pára o resto do código
+  }
+
+  // 2. Lógica do Formulário de Login
   const loginForm = document.getElementById("loginForm");
   const emailInput = document.getElementById("emailInput");
   const passInput = document.getElementById("passInput");
@@ -34,6 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const password = passInput.value;
 
       try {
+        // 🥊 3. AUTENTICAÇÃO OFICIAL (Gera o Token JWT)
         const { error } = await supabase.auth.signInWithPassword({
           email: email,
           password: password,
@@ -46,15 +54,15 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
 
-        // 🥊 2. TRANCA A CHAVE PERMANENTE NO DISPOSITIVO (Igual aos atletas)
-        localStorage.setItem("bogas_treinador_ativo", "true");
-
         // Identifica qual treinador entrou para o Dashboard saber a quem atribuir as turmas
         if (email.toLowerCase().includes("antonio")) {
           localStorage.setItem("bogas_treinador_nome", "António");
         } else {
           localStorage.setItem("bogas_treinador_nome", "Bogas");
         }
+
+        // Mantemos a flag antiga apenas para compatibilidade visual na app
+        localStorage.setItem("bogas_treinador_ativo", "true");
 
         submitBtn.innerHTML = "<i class='bx bx-check'></i> Acesso Permitido";
         submitBtn.classList.add("is-active");
