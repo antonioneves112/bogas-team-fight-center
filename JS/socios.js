@@ -1,15 +1,21 @@
-/* JS/socios.js - GESTÃO DE SÓCIOS (Com Quadro de Inativos) */
+/* JS/socios.js - GESTÃO DE SÓCIOS (Com Quadro de Inativos e Paginação) */
 import { supabase } from "./supabase.js";
 import { state } from "./state.js";
 import { formatarNomeCurto, gerarMensagemWhatsApp } from "./helpers.js";
 import { mostrarAviso } from "./main.js";
 
+// 🥊 VARIÁVEIS DE CONTROLO DE PAGINAÇÃO
+let paginaAtualAtivos = 1;
+const ITENS_POR_PAGINA = 15;
+
 export async function carregarGuerreiros() {
   const tabelaSocios = document.getElementById("tabelaSocios");
   const filtroMes = document.getElementById("filtroMesMensalidade");
-  if (tabelaSocios)
+
+  if (tabelaSocios) {
     tabelaSocios.innerHTML =
       '<tr><td colspan="5">A carregar e a calcular...</td></tr>';
+  }
 
   const { data: todosSocios } = await supabase
     .from("socios")
@@ -26,10 +32,8 @@ export async function carregarGuerreiros() {
     .eq("mes_ano", mesAtual);
 
   if (todosSocios) {
-    // 🥊 GUARDAR TODOS PARA PODERMOS EDITAR OS INATIVOS TAMBÉM
     state.todosOsGuerreiros = todosSocios;
 
-    // 🥊 FILTRAR OS INATIVOS E ORDENAR LOGO DE A a Z
     state.inativosAtuais = todosSocios
       .filter((s) => s.estado === "Inativo")
       .sort((a, b) =>
@@ -37,9 +41,11 @@ export async function carregarGuerreiros() {
           .trim()
           .localeCompare((b.nome || "").trim(), "pt", { sensitivity: "base" }),
       );
+
     const idsFaturados = mensalidadesMes
       ? mensalidadesMes.map((m) => m.socio_id)
       : [];
+
     state.idsPagosGlobal = mensalidadesMes
       ? mensalidadesMes
           .filter((m) => m.estado === "Pago")
@@ -75,21 +81,16 @@ export async function carregarGuerreiros() {
       const pagoB = state.idsPagosGlobal.includes(b.id);
       if (pagoA !== pagoB) return pagoA ? 1 : -1;
 
-      // 🥊 ORDENAÇÃO INTELIGENTE: Primeiro e Último Nome
       const partesA = (a.nome || "").trim().toLowerCase().split(" ");
       const partesB = (b.nome || "").trim().toLowerCase().split(" ");
 
       const primeiroA = partesA[0];
       const ultimoA = partesA[partesA.length - 1];
-
       const primeiroB = partesB[0];
       const ultimoB = partesB[partesB.length - 1];
 
-      // 1. Compara o primeiro nome
       if (primeiroA < primeiroB) return -1;
       if (primeiroA > primeiroB) return 1;
-
-      // 2. Se o primeiro nome for igual, desempata pelo último apelido
       if (ultimoA < ultimoB) return -1;
       if (ultimoA > ultimoB) return 1;
 
@@ -108,21 +109,30 @@ export async function carregarGuerreiros() {
       document.getElementById("pagamentosPendentes").innerText =
         pendentesAtivos.length;
 
+    // Reset da paginação sempre que carregamos dados novos
+    paginaAtualAtivos = 1;
     renderizarTabelaSocios(socios, state.idsPagosGlobal, mesAtual);
-
-    // 🥊 RENDERIZA TAMBÉM A TABELA DE INATIVOS EM BACKGROUND
     renderizarTabelaInativos(state.inativosAtuais);
   }
 }
 
-export function renderizarTabelaSocios(lista, idsPagos = null, mesAtual = "") {
+export function renderizarTabelaSocios(
+  lista,
+  idsPagos = null,
+  mesAtual = "",
+  manterPagina = false,
+) {
   const tabelaSocios = document.getElementById("tabelaSocios");
   if (!tabelaSocios) return;
-  tabelaSocios.innerHTML = "";
+
+  // Se for uma pesquisa ou carregamento inicial, volta à primeira página
+  if (!manterPagina) paginaAtualAtivos = 1;
 
   if (!idsPagos) idsPagos = state.idsPagosGlobal || [];
   if (!mesAtual)
     mesAtual = document.getElementById("filtroMesMensalidade")?.value || "";
+
+  tabelaSocios.innerHTML = "";
 
   if (lista.length === 0) {
     tabelaSocios.innerHTML =
@@ -130,10 +140,13 @@ export function renderizarTabelaSocios(lista, idsPagos = null, mesAtual = "") {
     return;
   }
 
-  // OTIMIZAÇÃO: Criação de um fragmento de documento
+  // 🥊 A MAGIA DA PAGINAÇÃO: Corta a lista para mostrar só os necessários
+  const limiteAtual = paginaAtualAtivos * ITENS_POR_PAGINA;
+  const listaPaginada = lista.slice(0, limiteAtual);
+
   const fragment = document.createDocumentFragment();
 
-  lista.forEach((s) => {
+  listaPaginada.forEach((s) => {
     const tr = document.createElement("tr");
     const estaPago = idsPagos.includes(s.id);
     const isInativo = s.estado === "Inativo";
@@ -153,7 +166,6 @@ export function renderizarTabelaSocios(lista, idsPagos = null, mesAtual = "") {
         ? `<a href="https://wa.me/351${s.telemovel}?text=${gerarMensagemWhatsApp(s.nome, mesAtual)}" target="_blank" class="btn-acao btn-whatsapp" title="Avisar"><i class='bx bxl-whatsapp'></i></a>`
         : "";
 
-    // 🥊 CORREÇÃO: Adicionados os atributos data-label para UI Mobile
     tr.innerHTML = `
       <td data-label="Nome" style="font-weight: 600;">${formatarNomeCurto(s.nome)}</td>
       <td data-label="Modalidade">${s.modalidade}</td>
@@ -166,15 +178,24 @@ export function renderizarTabelaSocios(lista, idsPagos = null, mesAtual = "") {
           ${btnWhatsApp}
       </td>`;
 
-    // Adiciona ao fragmento (na memória) em vez do DOM real
     fragment.appendChild(tr);
   });
 
-  // Injeta tudo de uma vez no DOM real
+  // 🥊 SE AINDA HOUVER MAIS ATLETAS PARA MOSTRAR, CRIA O BOTÃO "CARREGAR MAIS"
+  if (limiteAtual < lista.length) {
+    const trMore = document.createElement("tr");
+    trMore.innerHTML = `
+      <td colspan="5" style="text-align: center; padding: 15px;">
+        <button class="btn-tatico btn-small btn-carregar-mais" style="width: 100%; border-color: var(--accent); color: var(--accent);">
+          Carregar mais atletas <i class='bx bx-chevron-down bx-fade-down'></i>
+        </button>
+      </td>`;
+    fragment.appendChild(trMore);
+  }
+
   tabelaSocios.appendChild(fragment);
 }
 
-// 🥊 NOVA FUNÇÃO: RENDERIZAR TABELA DE INATIVOS
 export function renderizarTabelaInativos(lista) {
   const tabela = document.getElementById("tabelaInativos");
   if (!tabela) return;
@@ -186,7 +207,6 @@ export function renderizarTabelaInativos(lista) {
     return;
   }
 
-  // 🥊 CORREÇÃO: Fragmento adicionado para evitar reflows múltiplos
   const fragment = document.createDocumentFragment();
 
   lista.forEach((s) => {
@@ -195,7 +215,6 @@ export function renderizarTabelaInativos(lista) {
       ? s.data_inativo.split("-").reverse().join("/")
       : "N/D";
 
-    // 🥊 CORREÇÃO: Adicionados os atributos data-label para UI Mobile
     tr.innerHTML = `
       <td data-label="Nome" style="font-weight: 600;">${formatarNomeCurto(s.nome)}</td>
       <td data-label="Modalidade">${s.modalidade}</td>
@@ -206,11 +225,9 @@ export function renderizarTabelaInativos(lista) {
           <button class="btn-acao btn-delete" data-id="${s.id}" title="Eliminar"><i class='bx bx-trash'></i></button>
       </td>`;
 
-    // Anexa ao fragmento
     fragment.appendChild(tr);
   });
 
-  // Injeta de uma só vez
   tabela.appendChild(fragment);
 }
 
@@ -289,7 +306,7 @@ export function initSociosEvents() {
           .upload(fileName, file);
         if (uploadError)
           throw new Error(
-            "Erro a carregar a foto! Bucket 'fotos_socios' não existe ou não tem permissões.",
+            "Erro a carregar a foto! Verifique permissões do bucket.",
           );
 
         const { data: urlData } = supabase.storage
@@ -310,7 +327,6 @@ export function initSociosEvents() {
       }
 
       modalSocio.classList.add("hidden");
-      // 🥊 CORREÇÃO: Await adicionado para garantir que a tabela só atualiza quando a DB confirmar
       await carregarGuerreiros();
       mostrarAviso(
         "Sócio Atualizado",
@@ -325,11 +341,29 @@ export function initSociosEvents() {
     }
   });
 
-  // 🥊 NOVO: DELEGAÇÃO DE EVENTOS CENTRALIZADA PARA AS DUAS TABELAS (ATIVOS E INATIVOS)
   const handleAcoesTabela = async (e) => {
+    // 🥊 VIGIA DO BOTÃO CARREGAR MAIS (Paginação)
+    const btnCarregarMais = e.target.closest(".btn-carregar-mais");
+    if (btnCarregarMais) {
+      paginaAtualAtivos++;
+      // Re-desenha a tabela mantendo a nova página (true) e os filtros atuais
+      const filtroAtivo = document
+        .getElementById("filtroNomeSocio")
+        ?.value.toLowerCase();
+      let listaAUsar = state.guerreirosAtuais;
+
+      if (filtroAtivo) {
+        listaAUsar = state.guerreirosAtuais.filter((s) =>
+          s.nome.toLowerCase().includes(filtroAtivo),
+        );
+      }
+
+      renderizarTabelaSocios(listaAUsar, state.idsPagosGlobal, null, true);
+      return;
+    }
+
     const btnEdit = e.target.closest(".btn-edit");
     if (btnEdit) {
-      // 🥊 Usa o todosOsGuerreiros para encontrar o sócio, mesmo que seja inativo
       const socio = state.todosOsGuerreiros?.find(
         (s) => s.id == btnEdit.dataset.id,
       );
@@ -396,58 +430,36 @@ export function initSociosEvents() {
     btnConfirmarDelete.disabled = true;
 
     try {
-      // 🥊 1. OTIMIZAÇÃO: PROCURAR O SÓCIO NA MEMÓRIA (Sem query à BD)
       const socio = state.todosOsGuerreiros?.find(
         (s) => s.id == socioIdParaEliminar,
       );
 
-      // 🥊 2. LIMPEZA: APAGAR A FOTOGRAFIA FÍSICA NO STORAGE (Se existir)
       if (socio && socio.foto_url) {
-        // Extrai apenas o nome do ficheiro no fim do URL
         const fileName = socio.foto_url.split("/").pop();
-
         if (fileName) {
           const { error: storageError } = await supabase.storage
             .from("fotos_socios")
             .remove([fileName]);
-
-          if (storageError) {
+          if (storageError)
             console.warn(
               "Aviso: A foto não pôde ser apagada do Storage:",
               storageError,
             );
-            // Nota: Não usamos 'throw' aqui para garantir que se o ficheiro já não
-            // existir (ou der erro de cache), o Sócio será apagado da BD na mesma.
-          } else {
-            console.log("Ficheiro de imagem limpo do Storage.");
-          }
         }
       }
 
-      // 🥊 3. TIRO FINAL: APAGAR NA BASE DE DADOS (Dispara ON DELETE CASCADE)
       const { data, error } = await supabase
         .from("socios")
         .delete()
         .eq("id", socioIdParaEliminar)
         .select();
-
       if (error) throw error;
-
-      if (!data || data.length === 0) {
-        throw new Error(
-          "A base de dados bloqueou a eliminação. Verifica permissões (RLS)!",
-        );
-      }
+      if (!data || data.length === 0)
+        throw new Error("A BD bloqueou a eliminação. Verifica RLS!");
 
       modalDeleteSocio.classList.add("hidden");
-
-      // Sincroniza as tabelas com os dados mais recentes
       await carregarGuerreiros();
-      mostrarAviso(
-        "Atleta Eliminado",
-        "Registo e fotografia apagados com sucesso.",
-        "sucesso",
-      );
+      mostrarAviso("Atleta Eliminado", "Registo e foto apagados.", "sucesso");
     } catch (erro) {
       mostrarAviso("Erro ao eliminar", erro.message, "erro");
     } finally {
