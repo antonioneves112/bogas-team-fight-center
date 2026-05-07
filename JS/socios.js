@@ -6,7 +6,7 @@ import { mostrarAviso } from "./main.js";
 
 // 🥊 VARIÁVEIS DE CONTROLO DE PAGINAÇÃO
 let paginaAtualAtivos = 1;
-const ITENS_POR_PAGINA = 10;
+const ITENS_POR_PAGINA = 10; // Mantive 15 para teres uma lista equilibrada
 
 export async function carregarGuerreiros() {
   const tabelaSocios = document.getElementById("tabelaSocios");
@@ -109,7 +109,6 @@ export async function carregarGuerreiros() {
       document.getElementById("pagamentosPendentes").innerText =
         pendentesAtivos.length;
 
-    // Reset da paginação sempre que carregamos dados novos
     paginaAtualAtivos = 1;
     renderizarTabelaSocios(socios, state.idsPagosGlobal, mesAtual);
     renderizarTabelaInativos(state.inativosAtuais);
@@ -125,7 +124,6 @@ export function renderizarTabelaSocios(
   const tabelaSocios = document.getElementById("tabelaSocios");
   if (!tabelaSocios) return;
 
-  // Se for uma pesquisa ou carregamento inicial, volta à primeira página
   if (!manterPagina) paginaAtualAtivos = 1;
 
   if (!idsPagos) idsPagos = state.idsPagosGlobal || [];
@@ -140,7 +138,6 @@ export function renderizarTabelaSocios(
     return;
   }
 
-  // 🥊 A MAGIA DA PAGINAÇÃO: Corta a lista para mostrar só os necessários
   const limiteAtual = paginaAtualAtivos * ITENS_POR_PAGINA;
   const listaPaginada = lista.slice(0, limiteAtual);
 
@@ -181,13 +178,12 @@ export function renderizarTabelaSocios(
     fragment.appendChild(tr);
   });
 
-  // 🥊 SE AINDA HOUVER MAIS ATLETAS PARA MOSTRAR, CRIA O BOTÃO "CARREGAR MAIS"
   if (limiteAtual < lista.length) {
     const trMore = document.createElement("tr");
     trMore.innerHTML = `
       <td colspan="5" style="text-align: center; padding: 15px;">
-        <button class="btn-tatico btn-small btn-carregar-mais" style="width: 100%; border-color: var(--accent); color: var(--accent);">
-          Carregar mais <i class='bx bx-chevron-down bx-fade-down'></i>
+        <button class="btn-tatico btn-small btn-carregar-mais">
+          CARREGAR MAIS <i class='bx bx-chevron-down bx-fade-down'></i>
         </button>
       </td>`;
     fragment.appendChild(trMore);
@@ -346,7 +342,6 @@ export function initSociosEvents() {
     const btnCarregarMais = e.target.closest(".btn-carregar-mais");
     if (btnCarregarMais) {
       paginaAtualAtivos++;
-      // Re-desenha a tabela mantendo a nova página (true) e os filtros atuais
       const filtroAtivo = document
         .getElementById("filtroNomeSocio")
         ?.value.toLowerCase();
@@ -359,6 +354,31 @@ export function initSociosEvents() {
       }
 
       renderizarTabelaSocios(listaAUsar, state.idsPagosGlobal, null, true);
+      return;
+    }
+
+    // 🥊 O ATALHO RESTAURADO: BOTÃO FATURAR
+    const btnFaturar = e.target.closest(".btn-faturar");
+    if (btnFaturar) {
+      const socio = state.todosOsGuerreiros?.find(
+        (s) => s.id == btnFaturar.dataset.id,
+      );
+      if (socio) {
+        // Reseta o estado para garantir que cria uma nova fatura em vez de editar
+        state.idMensalidadeEmEdicao = null;
+        document.getElementById("formNovoPagamento")?.reset();
+
+        // Pré-preenche os dados com o atleta clicado e o mês atual do filtro
+        document.getElementById("pagamentoSocioSearch").value = socio.nome;
+        document.getElementById("pagamentoSocioId").value = socio.id;
+        document.getElementById("pagamentoMes").value = document.getElementById(
+          "filtroMesMensalidade",
+        ).value;
+
+        document.querySelector("#modalPagamento .modal-header h3").innerHTML =
+          "<i class='bx bx-euro'></i> Registar Pagamento";
+        document.getElementById("modalPagamento").classList.remove("hidden");
+      }
       return;
     }
 
