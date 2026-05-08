@@ -1,7 +1,7 @@
 /* JS/portal.js - MOTOR DO PORTAL (VERSÃO FINAL E AFINADA) */
 import { supabase } from "./supabase.js";
 import { formatarNomeCurto } from "./helpers.js";
-import { executarLogout } from "./auth.js"; // 🥊 IMPORT: Autenticação Centralizada
+// 🥊 CORREÇÃO DE NOCAUTE: Retirado o import do auth.js! Os sócios usam "falsa" sessão (LocalStorage).
 
 // 🥊 VARIÁVEIS DE NÍVEL DE MÓDULO
 let atletaLogadoId = null;
@@ -224,12 +224,13 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
+    // 🥊 O LOGIN É SÓ MUDAR SECÇÕES, NUNCA REDIRECIONAR!
     loginSection.classList.add("hidden");
     portalSection.classList.remove("hidden");
 
     verificarRegulamento(socio);
     verificarNecessidadeDeNotificacoes(socio.id);
-    buscarProximaAula(socio.id); // 🥊 AGORA FUNCIONA!
+    buscarProximaAula(socio.id);
 
     const diaAtual = hoje.getDate();
     if ((!pagamento || pagamento.estado !== "Pago") && diaAtual > 8) {
@@ -274,7 +275,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function tentarAutoLogin() {
     const idGuardado = localStorage.getItem("bogas_atleta_id");
-    if (!idGuardado) return;
+    if (!idGuardado) {
+      // Se não tem ID, MOSTRA apenas o painel de Login do atleta (já no ficheiro portal.html)
+      loginSection.classList.remove("hidden");
+      portalSection.classList.add("hidden");
+      return;
+    }
+
     loginSection.classList.add("hidden");
     try {
       const { data: socio, error } = await supabase
@@ -285,12 +292,14 @@ document.addEventListener("DOMContentLoaded", () => {
       if (error || !socio) {
         localStorage.removeItem("bogas_atleta_id");
         loginSection.classList.remove("hidden");
+        portalSection.classList.add("hidden");
         return;
       }
       await iniciarPortalParaAtleta(socio);
     } catch (err) {
       localStorage.removeItem("bogas_atleta_id");
       loginSection.classList.remove("hidden");
+      portalSection.classList.add("hidden");
     }
   }
   tentarAutoLogin();
@@ -371,8 +380,24 @@ document.addEventListener("DOMContentLoaded", () => {
         btnConfirma.disabled = true;
       }
 
-      // 🥊 CORREÇÃO: Utilização da função global de logout
-      await executarLogout();
+      // 🥊 O NOVO LOGOUT EXCLUSIVO DOS ATLETAS:
+      localStorage.removeItem("bogas_atleta_id"); // Apaga apenas o atleta
+      atletaLogadoId = null;
+
+      // Esconde o portal e volta a mostrar a caixa de login do atleta
+      modalConfirmLogout?.classList.add("hidden");
+      portalSection.classList.add("hidden");
+      loginSection.classList.remove("hidden");
+
+      if (formLogin) formLogin.reset();
+
+      if (btnConfirma) {
+        btnConfirma.innerHTML = "Sim, Sair";
+        btnConfirma.disabled = false;
+      }
+
+      // 🥊 OPCIONAL: Se quiseres que ele volte ao início de tudo:
+      // window.location.replace("gateway.html");
     });
 
   document.getElementById("btnRegulamento")?.addEventListener("click", () => {
