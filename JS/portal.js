@@ -63,12 +63,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const hoje = new Date();
     const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}`;
 
-    const { data: pagamento } = await supabase
+    // 🥊 CORREÇÃO: Procura todas as faturas do mês para não rebentar se houver aulas particulares
+    const { data: faturasMes } = await supabase
       .from("mensalidades")
-      .select("estado")
+      .select("estado, tipo")
       .eq("socio_id", socio.id)
-      .eq("mes_ano", mesAtual)
-      .maybeSingle();
+      .eq("mes_ano", mesAtual);
+
+    // 🥊 Separa as águas: Procura especificamente qual destas faturas é a "Mensalidade" normal
+    const pagamento = faturasMes
+      ? faturasMes.find((p) => !p.tipo || p.tipo === "Mensalidade")
+      : null;
 
     // Preenchimento de dados do portal
     const elNome = document.getElementById("atletaNome");
