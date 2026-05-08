@@ -575,6 +575,9 @@ export function renderizarTabelaAulas(lista) {
             : "badge-pendente";
       const badgePagoClass = p.pago ? "badge-ativo" : "badge-inativo";
 
+      // 🥊 AQUI ESTÁ A CORREÇÃO: Usa a nossa função para extrair 1º e Último Nome!
+      const nomeCurto = formatarNomeCurto(p.socios.nome).toUpperCase();
+
       let botoes = "-";
       if (p.estado === "Pendente") {
         botoes = `
@@ -589,7 +592,7 @@ export function renderizarTabelaAulas(lista) {
 
       return `
     <tr>
-      <td data-label="SÓCIO:">${p.socios.nome.toUpperCase()}</td>
+      <td data-label="SÓCIO:">${nomeCurto}</td>
       <td data-label="DATA:">${dataF}</td>
       <td data-label="HORA:">${p.hora_aula.substring(0, 5)}</td>
       <td data-label="VALOR:"><strong style="color: var(--accent);">${valorExibido}</strong></td>
