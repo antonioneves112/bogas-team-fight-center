@@ -99,15 +99,31 @@ export async function carregarGuerreiros() {
 
     state.guerreirosAtuais = socios;
 
-    const pendentesAtivos = socios.filter(
-      (s) => !state.idsPagosGlobal.includes(s.id),
-    );
+    // 🥊 NOVA LÓGICA DE CÁLCULO DE PENDENTES (MENSALIDADES + AULAS)
+    // 1. Criamos uma lista de IDs que têm QUALQUER coisa pendente nas faturas deste mês
+    const idsComDividaAtiva = mensalidadesMes
+      ? mensalidadesMes
+          .filter((m) => m.estado === "Pendente")
+          .map((m) => m.socio_id)
+      : [];
 
+    // 2. Os "Pendentes Ativos" são atletas que:
+    //    - Ou têm uma fatura marcada como "Pendente" (Mensalidade ou Aula)
+    //    - Ou são Ativos e ainda nem sequer têm fatura gerada (ainda não foram faturados)
+    const pendentesReais = socios.filter((s) => {
+      const temFaturaPendente = idsComDividaAtiva.includes(s.id);
+      const naoTemNenhumaFatura = !idsFaturados.includes(s.id);
+
+      return temFaturaPendente || naoTemNenhumaFatura;
+    });
+
+    // 3. Atualiza os números no ecrã principal
     if (document.getElementById("totalSocios"))
       document.getElementById("totalSocios").innerText = socios.length;
+
     if (document.getElementById("pagamentosPendentes"))
       document.getElementById("pagamentosPendentes").innerText =
-        pendentesAtivos.length;
+        pendentesReais.length;
 
     paginaAtualAtivos = 1;
     renderizarTabelaSocios(socios, state.idsPagosGlobal, mesAtual);
