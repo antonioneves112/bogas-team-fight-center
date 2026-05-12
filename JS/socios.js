@@ -1,12 +1,12 @@
 /* JS/socios.js - GESTÃO DE SÓCIOS (Com Quadro de Inativos e Paginação) */
 import { supabase } from "./supabase.js";
 import { state } from "./state.js";
-import { formatarNomeCurto, gerarMensagemWhatsApp } from "./helpers.js";
+import { formatarNomeCurto } from "./helpers.js";
 import { mostrarAviso } from "./main.js";
 
 // 🥊 VARIÁVEIS DE CONTROLO DE PAGINAÇÃO
 let paginaAtualAtivos = 1;
-const ITENS_POR_PAGINA = 10; // Mantive 15 para teres uma lista equilibrada
+const ITENS_POR_PAGINA = 10;
 
 export async function carregarGuerreiros() {
   const tabelaSocios = document.getElementById("tabelaSocios");
@@ -26,13 +26,15 @@ export async function carregarGuerreiros() {
     ? filtroMes.value
     : new Date().toISOString().slice(0, 7);
 
+  // 🥊 PUXA TAMBÉM O TIPO (MENSALIDADE VS AULA)
   const { data: mensalidadesMes } = await supabase
     .from("mensalidades")
-    .select("socio_id, estado")
+    .select("socio_id, estado, tipo")
     .eq("mes_ano", mesAtual);
 
   if (todosSocios) {
     state.todosOsGuerreiros = todosSocios;
+    state.faturasMesAtual = mensalidadesMes || []; // Guarda no state para a tabela ler
 
     state.inativosAtuais = todosSocios
       .filter((s) => s.estado === "Inativo")
@@ -42,15 +44,15 @@ export async function carregarGuerreiros() {
           .localeCompare((b.nome || "").trim(), "pt", { sensitivity: "base" }),
       );
 
-    const idsFaturados = mensalidadesMes
-      ? mensalidadesMes.map((m) => m.socio_id)
-      : [];
+    const faturasMensais = state.faturasMesAtual.filter(
+      (m) => !m.tipo || m.tipo === "Mensalidade",
+    );
+    const todosIdsFaturados = state.faturasMesAtual.map((m) => m.socio_id);
 
-    state.idsPagosGlobal = mensalidadesMes
-      ? mensalidadesMes
-          .filter((m) => m.estado === "Pago")
-          .map((m) => m.socio_id)
-      : [];
+    // Identifica quem já pagou apenas a Mensalidade (exclui as PTs)
+    state.idsPagosGlobal = faturasMensais
+      .filter((m) => m.estado === "Pago")
+      .map((m) => m.socio_id);
 
     const socios = todosSocios.filter((s) => {
       const mesInscricao = s.data_inscricao
@@ -67,13 +69,14 @@ export async function carregarGuerreiros() {
       if (
         mesAtual > mesSaida &&
         mesAtual < mesReentrada &&
-        !idsFaturados.includes(s.id)
+        !todosIdsFaturados.includes(s.id)
       )
         return false;
-      if (s.modalidade === "Aulas Particulares")
-        return idsFaturados.includes(s.id);
 
-      return s.estado === "Ativo" || idsFaturados.includes(s.id);
+      if (s.modalidade === "Aulas Particulares")
+        return todosIdsFaturados.includes(s.id);
+
+      return s.estado === "Ativo" || todosIdsFaturados.includes(s.id);
     });
 
     socios.sort((a, b) => {
@@ -99,25 +102,22 @@ export async function carregarGuerreiros() {
 
     state.guerreirosAtuais = socios;
 
-    // 🥊 NOVA LÓGICA DE CÁLCULO DE PENDENTES (MENSALIDADES + AULAS)
-    // 1. Criamos uma lista de IDs que têm QUALQUER coisa pendente nas faturas deste mês
-    const idsComDividaAtiva = mensalidadesMes
-      ? mensalidadesMes
+    // 🥊 LÓGICA DE CÁLCULO DE PENDENTES (MENSALIDADES + AULAS)
+    const idsComDividaAtiva = state.faturasMesAtual
+      ? state.faturasMesAtual
           .filter((m) => m.estado === "Pendente")
           .map((m) => m.socio_id)
       : [];
 
-    // 2. Os "Pendentes Ativos" são atletas que:
-    //    - Ou têm uma fatura marcada como "Pendente" (Mensalidade ou Aula)
-    //    - Ou são Ativos e ainda nem sequer têm fatura gerada (ainda não foram faturados)
     const pendentesReais = socios.filter((s) => {
       const temFaturaPendente = idsComDividaAtiva.includes(s.id);
-      const naoTemNenhumaFatura = !idsFaturados.includes(s.id);
+      const naoTemMensalidade =
+        !state.idsPagosGlobal.includes(s.id) &&
+        s.modalidade !== "Aulas Particulares";
 
-      return temFaturaPendente || naoTemNenhumaFatura;
+      return temFaturaPendente || naoTemMensalidade;
     });
 
-    // 3. Atualiza os números no ecrã principal
     if (document.getElementById("totalSocios"))
       document.getElementById("totalSocios").innerText = socios.length;
 
@@ -142,7 +142,6 @@ export function renderizarTabelaSocios(
 
   if (!manterPagina) paginaAtualAtivos = 1;
 
-  if (!idsPagos) idsPagos = state.idsPagosGlobal || [];
   if (!mesAtual)
     mesAtual = document.getElementById("filtroMesMensalidade")?.value || "";
 
@@ -161,34 +160,123 @@ export function renderizarTabelaSocios(
 
   listaPaginada.forEach((s) => {
     const tr = document.createElement("tr");
-    const estaPago = idsPagos.includes(s.id);
     const isInativo = s.estado === "Inativo";
 
-    const badgeMensalidade = estaPago
-      ? "badge-pago"
-      : isInativo
-        ? "badge-inativo"
-        : "badge-pendente";
-    const textoMensalidade = estaPago ? "Pago" : isInativo ? "N/A" : "Pendente";
-    const btnFaturar =
-      !estaPago && !isInativo
-        ? `<button class="btn-acao btn-faturar" data-id="${s.id}" title="Faturar"><i class='bx bx-euro'></i></button>`
-        : "";
+    const faturasDoSocio = (state.faturasMesAtual || []).filter(
+      (m) => m.socio_id === s.id,
+    );
+    const faturaMensalidade = faturasDoSocio.find(
+      (m) => !m.tipo || m.tipo === "Mensalidade",
+    );
+    const aulasPendentes = faturasDoSocio.filter(
+      (m) => m.tipo === "Aula Particular" && m.estado === "Pendente",
+    );
+
+    let badgeMensalidade = "";
+    let textoMensalidade = "";
+    let mostrarEuro = false;
+    let modalidadeExibida = s.modalidade;
+    let isPendentePT = false; // 🥊 Flag invisível para o WhatsApp saber o que cobrar
+
+    if (isInativo) {
+      badgeMensalidade = "badge-inativo";
+      textoMensalidade = "N/A";
+    } else {
+      const isPTOnly = s.modalidade === "Aulas Particulares";
+
+      if (isPTOnly) {
+        if (aulasPendentes.length > 0) {
+          badgeMensalidade = "badge-pendente";
+          textoMensalidade = "PENDENTE"; // 🥊 Alterado para ficar limpo
+          isPendentePT = true;
+        } else {
+          badgeMensalidade = "badge-pago";
+          textoMensalidade = "PAGO";
+        }
+      } else {
+        const mensalidadePaga =
+          faturaMensalidade && faturaMensalidade.estado === "Pago";
+
+        if (!mensalidadePaga) {
+          badgeMensalidade = "badge-pendente";
+          textoMensalidade = "PENDENTE";
+          mostrarEuro = true;
+        } else if (aulasPendentes.length > 0) {
+          badgeMensalidade = "badge-pendente";
+          textoMensalidade = "PENDENTE"; // 🥊 Alterado para ficar limpo
+          modalidadeExibida = "Aula Particular";
+          mostrarEuro = false;
+          isPendentePT = true;
+        } else {
+          badgeMensalidade = "badge-pago";
+          textoMensalidade = "PAGO";
+        }
+      }
+    }
+
+    const btnFaturar = mostrarEuro
+      ? `<button class="btn-acao btn-faturar" data-id="${s.id}" title="Faturar"><i class='bx bx-euro'></i></button>`
+      : "";
+
+    // =======================================================================
+    // 🥊 MENSAGEM DE WHATSAPP DINÂMICA (MENSALIDADE VS AULA PARTICULAR)
+    // =======================================================================
+    let msgWhatsApp = "";
+    const nomeCortado = formatarNomeCurto(s.nome);
+
+    if (isPendentePT) {
+      // 🥊 Agora usa a flag invisível em vez do texto visual
+      // Procura a aula pendente no estado global para saber a data e hora exatas
+      const ptPendente = (state.aulasParticulares || []).find(
+        (a) => a.socio_id === s.id && a.estado === "Aceite" && !a.pago,
+      );
+
+      if (ptPendente) {
+        const dataF = ptPendente.data_aula.split("-").reverse().join("/");
+        const horaF = ptPendente.hora_aula.substring(0, 5);
+        msgWhatsApp = `Caro(a) ${nomeCortado}. Verificamos nos nossos registos que a Aula Particular do dia ${dataF} às ${horaF} se encontra pendente. Solicitamos, por favor, a regularização da mesma com a maior brevidade possível.`;
+      } else {
+        // Fallback caso a aula específica não esteja ainda carregada na memória
+        msgWhatsApp = `Caro(a) ${nomeCortado}. Verificamos nos nossos registos que uma Aula Particular se encontra pendente. Solicitamos, por favor, a regularização da mesma com a maior brevidade possível.`;
+      }
+    } else {
+      // Mensagem para a mensalidade normal
+      const mesesPT = [
+        "Janeiro",
+        "Fevereiro",
+        "Março",
+        "Abril",
+        "Maio",
+        "Junho",
+        "Julho",
+        "Agosto",
+        "Setembro",
+        "Outubro",
+        "Novembro",
+        "Dezembro",
+      ];
+      const [ano, mes] = mesAtual.split("-");
+      const nomeMes = mesesPT[parseInt(mes) - 1];
+      msgWhatsApp = `Caro(a) ${nomeCortado}. Verificamos nos nossos registos que a mensalidade de ${nomeMes} de ${ano} se encontra atualmente pendente. Solicitamos, por favor, a regularização da mesma com a maior brevidade possível.`;
+    }
+
     const btnWhatsApp =
-      !estaPago && !isInativo && s.telemovel
-        ? `<a href="https://wa.me/351${s.telemovel}?text=${gerarMensagemWhatsApp(s.nome, mesAtual)}" target="_blank" class="btn-acao btn-whatsapp" title="Avisar"><i class='bx bxl-whatsapp'></i></a>`
+      textoMensalidade === "PENDENTE" && s.telemovel // 🥊 Simplificado
+        ? `<a href="https://wa.me/351${s.telemovel}?text=${encodeURIComponent(msgWhatsApp)}" target="_blank" class="btn-acao btn-whatsapp" title="Avisar"><i class='bx bxl-whatsapp'></i></a>`
         : "";
 
     tr.innerHTML = `
-      <td data-label="Nome" style="font-weight: 600;">${formatarNomeCurto(s.nome)}</td>
-      <td data-label="Modalidade">${s.modalidade}</td>
+      <td data-label="Nome" style="font-weight: 600;">${nomeCortado}</td>
+      <td data-label="Modalidade">${modalidadeExibida}</td>
       <td data-label="Estado"><span class="badge ${isInativo ? "badge-inativo" : "badge-ativo"}">${s.estado}</span></td>
       <td data-label="Mensalidade"><span class="badge ${badgeMensalidade}">${textoMensalidade}</span></td>
       <td data-label="Ações">
+        <div style="display:flex; gap: 6px; align-items:center; justify-content: center;">
           <button class="btn-acao btn-edit" data-id="${s.id}" title="Editar"><i class='bx bx-edit'></i></button>
           <button class="btn-acao btn-delete" data-id="${s.id}" title="Eliminar"><i class='bx bx-trash'></i></button>
           ${btnFaturar}
           ${btnWhatsApp}
+        </div>
       </td>`;
 
     fragment.appendChild(tr);
@@ -233,8 +321,10 @@ export function renderizarTabelaInativos(lista) {
       <td data-label="Estado"><span class="badge badge-inativo">${s.estado}</span></td>
       <td data-label="Data de Saída" style="color: #ff4d4d; font-weight: 600;">${dataSaida}</td>
       <td data-label="Ações">
+        <div style="display:flex; gap: 6px; align-items:center; justify-content: center;">
           <button class="btn-acao btn-edit" data-id="${s.id}" title="Editar"><i class='bx bx-edit'></i></button>
           <button class="btn-acao btn-delete" data-id="${s.id}" title="Eliminar"><i class='bx bx-trash'></i></button>
+        </div>
       </td>`;
 
     fragment.appendChild(tr);
@@ -380,11 +470,9 @@ export function initSociosEvents() {
         (s) => s.id == btnFaturar.dataset.id,
       );
       if (socio) {
-        // Reseta o estado para garantir que cria uma nova fatura em vez de editar
         state.idMensalidadeEmEdicao = null;
         document.getElementById("formNovoPagamento")?.reset();
 
-        // Pré-preenche os dados com o atleta clicado e o mês atual do filtro
         document.getElementById("pagamentoSocioSearch").value = socio.nome;
         document.getElementById("pagamentoSocioId").value = socio.id;
         document.getElementById("pagamentoMes").value = document.getElementById(

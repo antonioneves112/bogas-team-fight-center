@@ -593,6 +593,74 @@
         </div>
     </div>
 
+    <div id="modalEditarAula" class="modal-overlay hidden modal-z-index">
+        <div class="modal-content glass-panel">
+            <div class="modal-header">
+                <h3><i class='bx bx-edit'></i> Editar Pedido de Aula</h3>
+                <button id="btnFecharModalEditarAula" class="btn-fechar"><i class='bx bx-x'></i></button>
+            </div>
+
+            <form id="formEditarAula" class="dash-form">
+                <input type="hidden" id="editAulaId">
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Data da Aula</label>
+                        <input type="date" id="editAulaData" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Hora</label>
+                        <input type="time" id="editAulaHora" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Valor Cobrado (€)</label>
+                        <div class="input-wrapper-tatico">
+                            <input type="number" id="editAulaValor" step="0.50" min="0" placeholder="0.00">
+                            <i class='bx bx-euro'></i>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Estado do Pedido</label>
+                        <select id="editAulaEstado" required>
+                            <option value="Pendente">Pendente</option>
+                            <option value="Aceite">Aceite</option>
+                            <option value="Recusada">Recusada</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Situação do Pagamento</label>
+                    <select id="editAulaPago" required>
+                        <option value="false">Ainda não pagou</option>
+                        <option value="true">Pagamento Regularizado</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn-tatico btn-full-width" id="btnGuardarEdicaoAula">
+                    Guardar Alterações <i class='bx bx-save'></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div id="modalConfirmDeleteAula" class="modal-overlay hidden">
+        <div class="modal-content glass-panel modal-confirm-box">
+            <i class='bx bx-trash bx-tada icon-confirm-warning'></i>
+            <h2 class="title-confirm">Eliminar Aula?</h2>
+            <p class="desc-confirm">Tens a certeza que queres eliminar este pedido? O registo desaparecerá completamente
+                do
+                sistema.</p>
+            <div class="actions-confirm">
+                <button id="btnCancelarDeleteAula" class="btn-tatico btn-outline-muted">Cancelar</button>
+                <button id="btnConfirmarDeleteAula" class="btn-tatico btn-danger-action">Sim, Eliminar</button>
+            </div>
+        </div>
+    </div>
+
     <script src="./JS/app-routing.js" defer></script>
     <script>
         if ('serviceWorker' in navigator) {

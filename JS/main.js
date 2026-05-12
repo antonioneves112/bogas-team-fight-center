@@ -170,11 +170,26 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (cardPendentes) {
     cardPendentes.addEventListener("click", () => {
       document.querySelector('.tab-btn[data-target="view-socios"]')?.click();
+
+      // 🥊 NOVA LÓGICA: Sincronizada com o contador inteligente!
+      const faturasMes = state.mensalidadesAtuais || [];
+      const idsComDivida = faturasMes
+        .filter((m) => m.estado === "Pendente")
+        .map((m) => m.socio_id);
+      const idsFaturados = faturasMes.map((m) => m.socio_id);
+
       const pendentes = state.guerreirosAtuais.filter((s) => {
-        const isInativo = s.estado === "Inativo";
-        const estaPago = !isInativo && state.idsPagosGlobal.includes(s.id);
-        return !isInativo && !estaPago;
+        if (s.estado === "Inativo") return false;
+
+        // Tem alguma fatura pendente neste mês (Mensalidade ou PT)?
+        const temFaturaPendente = idsComDivida.includes(s.id);
+
+        // Ou ainda nem sequer foi faturado (e é um atleta ativo)?
+        const naoTemNenhumaFatura = !idsFaturados.includes(s.id);
+
+        return temFaturaPendente || naoTemNenhumaFatura;
       });
+
       renderizarTabelaSocios(pendentes);
     });
   }
@@ -553,6 +568,9 @@ export async function carregarAulasParticulares() {
   }
 }
 
+// =========================================================================
+// 🥊 INÍCIO DA ZONA DE ALTERAÇÕES - RENDERIZAÇÃO E EVENTOS DE AULAS
+// =========================================================================
 export function renderizarTabelaAulas(lista) {
   const tabela = document.getElementById("tabelaAulasParticulares");
   if (!tabela) return;
@@ -575,20 +593,28 @@ export function renderizarTabelaAulas(lista) {
             : "badge-pendente";
       const badgePagoClass = p.pago ? "badge-ativo" : "badge-inativo";
 
-      // 🥊 AQUI ESTÁ A CORREÇÃO: Usa a nossa função para extrair 1º e Último Nome!
       const nomeCurto = formatarNomeCurto(p.socios.nome).toUpperCase();
 
-      let botoes = "-";
+      // 🥊 BOTÕES BASE (Sempre visíveis em todas as aulas: Editar e Eliminar)
+      const btnAcoesBase = `
+        <button class="btn-acao btn-edit btn-edit-aula" data-id="${p.id}" title="Editar Pedido"><i class='bx bx-edit'></i></button>
+        <button class="btn-acao btn-delete btn-delete-aula" data-id="${p.id}" title="Eliminar Aula"><i class='bx bx-trash'></i></button>
+      `;
+
+      // 🥊 BOTÕES CONTEXTUAIS (Aprovar, Recusar, Faturar)
+      let botoesContexto = "";
       if (p.estado === "Pendente") {
-        botoes = `
-        <button class="btn-acao btn-edit btn-aceitar-aula" data-id="${p.id}" data-socio="${p.socio_id}" data-datadb="${p.data_aula}"><i class='bx bx-check'></i></button>
-        <button class="btn-acao btn-delete btn-recusar-aula" data-id="${p.id}" data-socio="${p.socio_id}" data-data="${dataF}"><i class='bx bx-x'></i></button>
+        botoesContexto = `
+        <button class="btn-acao btn-edit btn-aceitar-aula" data-id="${p.id}" data-socio="${p.socio_id}" data-datadb="${p.data_aula}" title="Aprovar Aula"><i class='bx bx-check'></i></button>
+        <button class="btn-acao btn-delete btn-recusar-aula" data-id="${p.id}" data-socio="${p.socio_id}" data-data="${dataF}" title="Recusar Aula"><i class='bx bx-x'></i></button>
       `;
       } else if (p.estado === "Aceite" && !p.pago) {
-        botoes = `<button class="btn-tatico btn-small btn-faturar-aula-direto" data-id="${p.id}" data-socio="${p.socio_id}" data-nome="${p.socios.nome}" data-valor="${p.valor}" data-data="${dataF}" data-datadb="${p.data_aula}"><i class='bx bx-euro'></i> FATURAR</button>`;
+        botoesContexto = `<button class="btn-tatico btn-small btn-faturar-aula-direto" data-id="${p.id}" data-socio="${p.socio_id}" data-nome="${p.socios.nome}" data-valor="${p.valor}" data-data="${dataF}" data-datadb="${p.data_aula}"><i class='bx bx-euro'></i> FATURAR</button>`;
       } else if (p.pago) {
-        botoes = `<span style="color: var(--accent); font-weight: bold; font-size: 0.85rem;"><i class='bx bx-check-double' style="font-size:1.2rem; vertical-align: middle;"></i> REGULARIZADA</span>`;
+        botoesContexto = `<span style="color: var(--accent); font-weight: bold; font-size: 0.85rem; margin-left: 5px;"><i class='bx bx-check-double' style="font-size:1.2rem; vertical-align: middle;"></i> REGULARIZADA</span>`;
       }
+
+      const todosBotoes = `<div style="display:flex; gap: 6px; align-items:center; justify-content: flex-end;">${btnAcoesBase} ${botoesContexto}</div>`;
 
       return `
     <tr>
@@ -598,7 +624,7 @@ export function renderizarTabelaAulas(lista) {
       <td data-label="VALOR:"><strong style="color: var(--accent);">${valorExibido}</strong></td>
       <td data-label="ESTADO:"><span class="badge ${badgeClass}">${p.estado.toUpperCase()}</span></td>
       <td data-label="PAGO:"><span class="badge ${badgePagoClass}">${p.pago ? "SIM" : "NÃO"}</span></td>
-      <td data-label="AÇÕES:">${botoes}</td>
+      <td data-label="AÇÕES:">${todosBotoes}</td>
     </tr>`;
     })
     .join("");
@@ -609,8 +635,10 @@ export function initAulasEvents() {
   const filtroAtletaAula = document.getElementById("filtroAtletaAula");
   const limparAulaPesquisa = document.getElementById("limparAulaPesquisa");
 
+  // =========================================================
+  // 🥊 PESQUISA (DEBOUNCE)
+  // =========================================================
   if (filtroAtletaAula) {
-    // 🥊 DEBOUNCE TAMBÉM NAS AULAS PARTICULARES
     const renderizaFiltroAula = debounce((termo) => {
       const filtrados = (state.aulasParticulares || []).filter((a) =>
         (a.socios?.nome || "").toLowerCase().includes(termo),
@@ -632,11 +660,22 @@ export function initAulasEvents() {
     });
   }
 
+  // =========================================================
+  // 🥊 CLIQUES NA TABELA (DELEGAÇÃO DE EVENTOS UNIFICADA)
+  // =========================================================
+  const modalEditarAula = document.getElementById("modalEditarAula");
+  const formEditarAula = document.getElementById("formEditarAula");
+  const modalDeleteAula = document.getElementById("modalConfirmDeleteAula");
+  let aulaIdParaEliminar = null;
+
   tabela?.addEventListener("click", async (e) => {
     const btnAceitar = e.target.closest(".btn-aceitar-aula");
     const btnRecusar = e.target.closest(".btn-recusar-aula");
     const btnCobrar = e.target.closest(".btn-faturar-aula-direto");
+    const btnEditar = e.target.closest(".btn-edit-aula");
+    const btnApagar = e.target.closest(".btn-delete-aula");
 
+    // 1. APROVAR
     if (btnAceitar) {
       document.getElementById("hiddenAulaId").value = btnAceitar.dataset.id;
       document.getElementById("hiddenSocioIdAula").value =
@@ -646,6 +685,7 @@ export function initAulasEvents() {
       document.getElementById("modalAprovarAula").classList.remove("hidden");
     }
 
+    // 2. RECUSAR
     if (btnRecusar) {
       const aulaId = btnRecusar.dataset.id;
       const socioId = btnRecusar.dataset.socio;
@@ -676,6 +716,7 @@ export function initAulasEvents() {
       }
     }
 
+    // 3. COBRAR
     if (btnCobrar) {
       document.getElementById("faturarAulaNome").value = btnCobrar.dataset.nome;
       document.getElementById("faturarAulaData").value = btnCobrar.dataset.data;
@@ -688,8 +729,130 @@ export function initAulasEvents() {
         btnCobrar.dataset.datadb;
       document.getElementById("modalFaturarAula").classList.remove("hidden");
     }
+
+    // 4. EDITAR AULA
+    if (btnEditar) {
+      const aulaId = btnEditar.dataset.id;
+      const aula = state.aulasParticulares.find((a) => a.id == aulaId);
+      if (aula) {
+        document.getElementById("editAulaId").value = aula.id;
+        document.getElementById("editAulaData").value = aula.data_aula;
+        document.getElementById("editAulaHora").value = aula.hora_aula;
+        document.getElementById("editAulaValor").value = aula.valor || "";
+        document.getElementById("editAulaEstado").value = aula.estado;
+        document.getElementById("editAulaPago").value = aula.pago
+          ? "true"
+          : "false";
+        modalEditarAula?.classList.remove("hidden");
+      }
+    }
+
+    // 5. APAGAR AULA
+    if (btnApagar) {
+      aulaIdParaEliminar = btnApagar.dataset.id;
+      modalDeleteAula?.classList.remove("hidden");
+    }
   });
+
+  // =========================================================
+  // 🥊 LÓGICA DO FORMULÁRIO DE EDIÇÃO
+  // =========================================================
+  document
+    .getElementById("btnFecharModalEditarAula")
+    ?.addEventListener("click", () => {
+      modalEditarAula?.classList.add("hidden");
+    });
+
+  formEditarAula?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const aulaId = document.getElementById("editAulaId").value;
+    const valorInput = document.getElementById("editAulaValor").value;
+
+    const dados = {
+      data_aula: document.getElementById("editAulaData").value,
+      hora_aula: document.getElementById("editAulaHora").value,
+      valor: valorInput ? parseFloat(valorInput) : null,
+      estado: document.getElementById("editAulaEstado").value,
+      pago: document.getElementById("editAulaPago").value === "true",
+    };
+
+    const btnGuardar = document.getElementById("btnGuardarEdicaoAula");
+    const textoOriginal = btnGuardar.innerHTML;
+    btnGuardar.innerHTML =
+      "A atualizar... <i class='bx bx-loader-alt bx-spin'></i>";
+    btnGuardar.disabled = true;
+
+    try {
+      const { error } = await supabase
+        .from("aulas_particulares")
+        .update(dados)
+        .eq("id", aulaId);
+      if (error) throw error;
+
+      mostrarAviso(
+        "Nocaute",
+        "Dados da aula atualizados com sucesso.",
+        "sucesso",
+      );
+      modalEditarAula.classList.add("hidden");
+      await carregarAulasParticulares();
+      await atualizarBadgeAulasPendentes();
+    } catch (err) {
+      mostrarAviso("Erro", err.message, "erro");
+    } finally {
+      btnGuardar.innerHTML = textoOriginal;
+      btnGuardar.disabled = false;
+    }
+  });
+
+  // =========================================================
+  // 🥊 LÓGICA DE ELIMINAÇÃO DE AULA
+  // =========================================================
+  document
+    .getElementById("btnCancelarDeleteAula")
+    ?.addEventListener("click", () => {
+      modalDeleteAula?.classList.add("hidden");
+      aulaIdParaEliminar = null;
+    });
+
+  document
+    .getElementById("btnConfirmarDeleteAula")
+    ?.addEventListener("click", async () => {
+      if (!aulaIdParaEliminar) return;
+
+      const btnConfirma = document.getElementById("btnConfirmarDeleteAula");
+      const textoOriginal = btnConfirma.innerHTML;
+      btnConfirma.innerHTML =
+        "A apagar... <i class='bx bx-loader-alt bx-spin'></i>";
+      btnConfirma.disabled = true;
+
+      try {
+        const { error } = await supabase
+          .from("aulas_particulares")
+          .delete()
+          .eq("id", aulaIdParaEliminar);
+        if (error) throw error;
+
+        mostrarAviso(
+          "Eliminada",
+          "O registo da aula foi apagado do sistema.",
+          "sucesso",
+        );
+        modalDeleteAula.classList.add("hidden");
+        await carregarAulasParticulares();
+        await atualizarBadgeAulasPendentes();
+      } catch (err) {
+        mostrarAviso("Erro", err.message, "erro");
+      } finally {
+        btnConfirma.innerHTML = textoOriginal;
+        btnConfirma.disabled = false;
+        aulaIdParaEliminar = null;
+      }
+    });
 }
+// =========================================================================
+// 🥊 FIM DA ZONA DE ALTERAÇÕES
+// =========================================================================
 
 async function atualizarBadgeAulasPendentes() {
   const badgeId = document.getElementById("badgeAulasPendentes");
@@ -729,6 +892,12 @@ function configurarPagamentoDiretoAula() {
     const dataAulaDb = document.getElementById("faturarAulaDataDb").value;
     const mesAnoFormatado = dataAulaDb.substring(0, 7);
 
+    // 🥊 CAPTURA E LIMPA O VALOR EXATO QUE ESTÁ A SER COBRADO
+    const valorCampo = document.getElementById("faturarAulaValor").value;
+    const valorLimpo = parseFloat(
+      valorCampo.replace("€", "").replace(",", ".").trim(),
+    );
+
     const btnConfirmar = formFaturar.querySelector('button[type="submit"]');
     const textoOriginal = btnConfirmar.innerHTML;
     btnConfirmar.innerHTML =
@@ -736,22 +905,45 @@ function configurarPagamentoDiretoAula() {
     btnConfirmar.disabled = true;
 
     try {
-      await supabase
+      // 1. Marca a Aula Particular como paga no painel das Aulas
+      const { error: errAula } = await supabase
         .from("aulas_particulares")
         .update({ pago: true })
         .eq("id", aulaId);
-      await supabase
+      if (errAula) throw errAula;
+
+      // 2. VIGILANTE: Procura se a fatura já existe no controlo de mensalidades!
+      const { data: faturaExistente } = await supabase
         .from("mensalidades")
-        .update({ estado: "Pago" })
+        .select("id")
         .eq("socio_id", socioId)
         .eq("tipo", "Aula Particular")
         .eq("mes_ano", mesAnoFormatado)
-        .eq("estado", "Pendente");
+        .maybeSingle(); // Pode encontrar uma ou nenhuma
+
+      // 3. A MAGIA: Se a fatura existe, atualiza. Se não existe, CRIA COMO PAGA!
+      if (faturaExistente) {
+        await supabase
+          .from("mensalidades")
+          .update({ estado: "Pago", valor: valorLimpo })
+          .eq("id", faturaExistente.id);
+      } else {
+        await supabase.from("mensalidades").insert([
+          {
+            socio_id: socioId,
+            mes_ano: mesAnoFormatado,
+            tipo: "Aula Particular",
+            estado: "Pago",
+            valor: valorLimpo,
+          },
+        ]);
+      }
 
       const dataLegivel = dataAulaDb.split("-").reverse().join("/");
       const tituloPagamento = "Pagamento Recebido 🏆";
       const msg = `O pagamento referente à aula particular de ${dataLegivel} foi liquidado.`;
 
+      // 4. Notifica o atleta
       await supabase.from("notificacoes").insert([
         {
           socio_id: socioId,
@@ -762,12 +954,22 @@ function configurarPagamentoDiretoAula() {
       ]);
       try {
         await supabase.functions.invoke("notificar-alvo", {
-          body: { socio_id: socioId, titulo: tituloPagamento, mensagem: msg },
+          body: {
+            socio_id: parseInt(socioId),
+            titulo: tituloPagamento,
+            mensagem: msg,
+          },
         });
       } catch (e) {}
 
-      mostrarAviso("Nocaute!", "Pagamento recebido.", "sucesso");
+      mostrarAviso(
+        "Nocaute!",
+        "Pagamento recebido e fatura lançada com sucesso.",
+        "sucesso",
+      );
       modalFaturar.classList.add("hidden");
+
+      // 5. Atualiza os dois quadros para mostrar os dados frescos
       await carregarAulasParticulares();
       await carregarMensalidades();
     } catch (erro) {

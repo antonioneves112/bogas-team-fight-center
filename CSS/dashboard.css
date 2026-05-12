@@ -1317,3 +1317,111 @@ table tr:has(.btn-carregar-mais-mens) td::before {
   box-shadow: 0 0 20px rgba(37, 211, 102, 0.4) !important;
   transform: translateY(-2px) !important;
 }
+
+/* =========================================================
+   🥊 ATUALIZAÇÃO DE ELITE: UNIFICAÇÃO DOS BOTÕES NO MOBILE
+   ========================================================= */
+@media (max-width: 899px) {
+  /* 1. Contentor Principal das Ações no Fundo do Card */
+  table td:last-child {
+    display: flex;
+    justify-content: center; /* Centra a barra no card */
+    padding-top: 15px;
+    padding-bottom: 5px;
+    border-bottom: none;
+    margin-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05); /* Linha divisória subtil */
+  }
+
+  /* 2. A "Armadura" Unificada (Onde estão todos os botões) */
+  table td:last-child > div {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 2px !important; /* Quase colados para parecer uma peça única */
+
+    /* Estilo Glass Tático */
+    background: rgba(255, 255, 255, 0.03) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    padding: 2px !important;
+    border-radius: 50px !important; /* Forma de pílula unificada */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+  }
+
+  /* 3. Padronização dos Botões de Ícone (Editar, Apagar) */
+  .btn-acao {
+    width: 38px !important;
+    height: 38px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: transparent !important; /* Remove fundos anteriores */
+    border: none !important; /* Remove bordas individuais */
+    border-radius: 50% !important;
+    color: var(--muted) !important; /* Cor mais discreta por defeito */
+    transition: all 0.2s ease !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .btn-acao i {
+    font-size: 1.1rem !important;
+  }
+
+  /* Hover Tático para Ícones */
+  .btn-acao.btn-edit:hover {
+    color: #fff !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+  }
+  .btn-acao.btn-delete:hover {
+    color: #ff4d4d !important;
+    background: rgba(255, 77, 77, 0.1) !important;
+  }
+
+  /* 4. Remodelagem do Botão "Faturar" e Status "Regularizada" */
+  /* Removemos a borda branca grossa e o estilo de caixa antiga */
+  .btn-tatico.btn-small.btn-faturar-aula-direto,
+  table td:last-child span[style*="color: var(--accent)"] {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 38px !important; /* Mesma altura dos ícones */
+    padding: 0 15px !important; /* Respiro lateral para o texto */
+    margin: 0 0 0 4px !important; /* Pequeno respiro do lixo */
+    border-radius: 50px !important;
+    font-size: 0.7rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.5px !important;
+    text-transform: uppercase !important;
+    white-space: nowrap !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Estilo Específico para "REGULARIZADA" */
+  table td:last-child span[style*="color: var(--accent)"] {
+    background: rgba(37, 211, 102, 0.1) !important;
+    border: 1px solid rgba(37, 211, 102, 0.3) !important;
+    color: var(--accent) !important;
+    text-shadow: 0 0 10px rgba(37, 211, 102, 0.4) !important;
+  }
+
+  /* Estilo Específico para "€ FATURAR" */
+  .btn-tatico.btn-small.btn-faturar-aula-direto {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #fff !important;
+  }
+
+  .btn-tatico.btn-small.btn-faturar-aula-direto i {
+    font-size: 0.95rem !important;
+    margin-right: 5px !important;
+  }
+
+  /* Efeito Hover no Faturar */
+  .btn-tatico.btn-small.btn-faturar-aula-direto:hover {
+    background: rgba(37, 211, 102, 0.15) !important;
+    border-color: var(--accent) !important;
+    color: var(--accent) !important;
+    box-shadow: 0 0 10px rgba(37, 211, 102, 0.2) !important;
+  }
+}

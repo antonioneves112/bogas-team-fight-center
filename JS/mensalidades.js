@@ -52,8 +52,10 @@ export function renderizarTabelaMensalidades(lista, manterPagina = false) {
       <td data-label="Valor" class="${classeNeon}">${m.valor}€</td>
       <td data-label="Estado"><span class="badge ${badgeClass}">${m.estado}</span></td>
       <td data-label="Ações">
+        <div style="display:flex; gap: 6px; align-items:center; justify-content: center;">
           <button class="btn-acao btn-edit-mensalidade" data-id="${m.id}"><i class='bx bx-edit'></i></button>
           <button class="btn-acao btn-delete-mensalidade" data-id="${m.id}"><i class='bx bx-trash'></i></button>
+        </div>
       </td>`;
     fragment.appendChild(tr);
   });
