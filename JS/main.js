@@ -19,13 +19,18 @@ import {
   exportarGuerreirosPDF,
   exportarMensalidadesPDF,
 } from "./pdfManager.js";
-
 // =========================================================================
 // 🥊 FUNÇÃO GLOBAL DE TOAST (AVISOS VISUAIS DE ELITE)
 // =========================================================================
 export function mostrarAviso(titulo, mensagem, tipo = "sucesso") {
   const container = document.getElementById("toast-container");
   if (!container) return;
+
+  // 🥊 BLINDAGEM ANTI-SPAM: Impede que o ecrã acumule demasiados alertas.
+  // Se já houver 2 alertas no ecrã, apaga o mais antigo antes de mostrar o novo.
+  while (container.children.length >= 2) {
+    container.removeChild(container.firstChild);
+  }
 
   const toast = document.createElement("div");
   toast.className = `toast toast-${tipo}`;
@@ -403,13 +408,17 @@ document.addEventListener("DOMContentLoaded", async () => {
       exportarGuerreirosPDF(state.guerreirosAtuais);
     });
 
-  document.getElementById("btnExportarPDF")?.addEventListener("click", () => {
-    exportarMensalidadesPDF(
-      state.mensalidadesAtuais,
-      tituloMensalidade?.innerText,
-      filtroMes?.value,
-    );
-  });
+  // Procura esta parte no final do teu DOMContentLoaded:
+  document
+    .getElementById("btnExportarPDF")
+    ?.addEventListener("click", async () => {
+      // Adicionei o 'async' ali em cima ^
+      await exportarMensalidadesPDF(
+        state.mensalidadesAtuais,
+        tituloMensalidade?.innerText,
+        filtroMes?.value,
+      );
+    });
 
   // =======================================================================
   // LOGOUT DO TREINADOR
@@ -435,7 +444,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       btnConfirma.disabled = true;
       await executarLogout();
     });
-});
+}); // 🥊 CORREÇÃO AQUI: Estava "};);" o que gerava um erro fatal de sintaxe.
 
 // =========================================================================
 // 🥊 FUNÇÕES DE AULAS E DESPESAS (Declaradas fora para estarem disponíveis)
@@ -535,20 +544,36 @@ function configurarAprovacaoAula() {
 
 export async function carregarAulasParticulares() {
   const tabela = document.getElementById("tabelaAulasParticulares");
+  const filtroMes = document.getElementById("filtroMesMensalidade"); // 🥊 1. LÊ O SELETOR DE MÊS
+
   if (!tabela) return;
   tabela.innerHTML =
     '<tr><td colspan="7">A procurar pedidos... <i class="bx bx-loader-alt bx-spin"></i></td></tr>';
 
   try {
+    // 🥊 2. CALCULA OS LIMITES DO MÊS SELECIONADO
+    const mesReferencia =
+      filtroMes?.value || new Date().toISOString().substring(0, 7);
+    const [ano, mesNum] = mesReferencia.split("-");
+    const ultimoDia = new Date(parseInt(ano), parseInt(mesNum), 0).getDate();
+
+    const dataInicio = `${mesReferencia}-01`;
+    const dataFim = `${mesReferencia}-${ultimoDia}`;
+
+    // 🥊 3. SUPABASE FILTRA AS DATAS AUTOMATICAMENTE
     const { data: pedidos, error } = await supabase
       .from("aulas_particulares")
       .select(`id, data_aula, hora_aula, socio_id, estado, valor, pago`)
+      .gte("data_aula", dataInicio) // Maior ou igual ao 1º dia do mês
+      .lte("data_aula", dataFim) // Menor ou igual ao último dia do mês
       .order("data_aula", { ascending: false });
+
     if (error) throw error;
 
     const { data: listaSocios, error: errSocios } = await supabase
       .from("socios")
       .select("id, nome");
+
     if (errSocios) throw errSocios;
 
     state.aulasParticulares = pedidos.map((pedido) => {
@@ -982,38 +1007,56 @@ function configurarPagamentoDiretoAula() {
 }
 
 function configurarRegistoDespesas() {
-  const btnAbrirModal = document.getElementById("btnRegistarDespesaGlobal");
-  const modalDespesa = document.getElementById("modalDespesa");
-  const formDespesa = document.getElementById("formNovaDespesa");
+  const btnPrincipal = document.getElementById("btnRegistarDespesaGlobal");
+  const modalOpcoes = document.getElementById("modalOpcoesDespesa");
+  const modalNova = document.getElementById("modalDespesa");
+  const modalHistorico = document.getElementById("modalHistoricoDespesas");
+  const formNova = document.getElementById("formNovaDespesa");
 
-  btnAbrirModal?.addEventListener("click", () => {
-    modalDespesa?.classList.remove("hidden");
-    document.getElementById("despesaData").value = new Date()
-      .toISOString()
-      .split("T")[0];
+  // 1. Abrir Menu de Escolha
+  btnPrincipal?.addEventListener("click", () => {
+    modalOpcoes?.classList.remove("hidden");
   });
 
+  // Fechar Menu Opções
+  document
+    .getElementById("btnFecharOpcoesDespesa")
+    ?.addEventListener("click", () => modalOpcoes?.classList.add("hidden"));
+
+  // Opção: Registar Nova
+  document
+    .getElementById("btnOpcaoNovaDespesa")
+    ?.addEventListener("click", () => {
+      modalOpcoes?.classList.add("hidden");
+      modalNova?.classList.remove("hidden");
+      document.getElementById("despesaData").value = new Date()
+        .toISOString()
+        .split("T")[0];
+    });
+
+  // Opção: Ver Histórico
+  document
+    .getElementById("btnOpcaoHistoricoDespesa")
+    ?.addEventListener("click", async () => {
+      modalOpcoes?.classList.add("hidden");
+      modalHistorico?.classList.remove("hidden");
+      await carregarHistoricoDespesas();
+    });
+
+  // Lógica de Fechar Modal de Registo
   document
     .getElementById("btnFecharModalDespesa")
     ?.addEventListener("click", () => {
-      modalDespesa?.classList.add("hidden");
-      formDespesa?.reset();
+      modalNova?.classList.add("hidden");
+      formNova?.reset();
     });
 
-  formDespesa?.addEventListener("submit", async (e) => {
+  // Lógica de Submissão Original de Nova Despesa
+  formNova?.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const descricao = document.getElementById("despesaDescricao").value.trim();
-    const categoria = document.getElementById("despesaCategoria").value;
-    const dataDespesa = document.getElementById("despesaData").value;
     const valor = parseFloat(
       document.getElementById("despesaValor").value.replace(",", "."),
     );
-
-    if (isNaN(valor) || valor <= 0) {
-      mostrarAviso("Erro", "Valor inválido.", "erro");
-      return;
-    }
-
     const btnGuardar = document.getElementById("btnGuardarDespesa");
     const textoOriginal = btnGuardar.innerHTML;
     btnGuardar.innerHTML =
@@ -1021,27 +1064,25 @@ function configurarRegistoDespesas() {
     btnGuardar.disabled = true;
 
     try {
-      const treinadorLogado =
-        state.treinadorAtual ||
-        localStorage.getItem("bogas_treinador_nome") ||
-        "Desconhecido";
       await supabase.from("despesas").insert([
         {
-          descricao,
-          categoria,
-          data: dataDespesa,
+          descricao: document.getElementById("despesaDescricao").value.trim(),
+          categoria: document.getElementById("despesaCategoria").value,
+          data: document.getElementById("despesaData").value,
           valor,
-          treinador: treinadorLogado,
+          treinador:
+            state.treinadorAtual ||
+            localStorage.getItem("bogas_treinador_nome"),
         },
       ]);
 
       mostrarAviso(
         "Despesa Registada",
-        `Despesa de ${valor.toFixed(2)}€ guardada.`,
+        `Saída de ${valor.toFixed(2)}€ guardada.`,
         "sucesso",
       );
-      modalDespesa.classList.add("hidden");
-      formDespesa.reset();
+      modalNova?.classList.add("hidden");
+      formNova.reset();
     } catch (err) {
       mostrarAviso("Erro", err.message, "erro");
     } finally {
@@ -1049,4 +1090,137 @@ function configurarRegistoDespesas() {
       btnGuardar.disabled = false;
     }
   });
+}
+
+// 🥊 NOVA FUNÇÃO: CARREGAR HISTÓRICO
+async function carregarHistoricoDespesas() {
+  const tabela = document.getElementById("tabelaHistoricoDespesas");
+  if (!tabela) return;
+  tabela.innerHTML =
+    '<tr><td colspan="5" class="table-empty-state">A consultar...</td></tr>';
+
+  try {
+    const { data: despesas, error } = await supabase
+      .from("despesas")
+      .select("*")
+      .order("data", { ascending: false });
+    if (error) throw error;
+
+    state.despesasCache = despesas; // Cache temporária para edição
+
+    if (!despesas || despesas.length === 0) {
+      tabela.innerHTML =
+        '<tr><td colspan="5" class="table-empty-state">Sem despesas registadas.</td></tr>';
+      return;
+    }
+
+    tabela.innerHTML = despesas
+      .map((d) => {
+        const dataF = d.data.split("-").reverse().join("/");
+        return `
+            <tr>
+                <td data-label="Data:">${dataF}</td>
+                <td data-label="Descrição:">${d.descricao}</td>
+                <td data-label="Categoria:">${d.categoria}</td>
+                <td data-label="Valor:"><strong>${d.valor.toFixed(2)}€</strong></td>
+                <td data-label="Ações:">
+                    <div style="display:flex; gap: 6px; align-items:center; justify-content: center;">
+                        <button class="btn-acao btn-edit btn-edit-despesa" data-id="${d.id}"><i class='bx bx-edit'></i></button>
+                        <button class="btn-acao btn-delete btn-delete-despesa" data-id="${d.id}"><i class='bx bx-trash'></i></button>
+                    </div>
+                </td>
+            </tr>`;
+      })
+      .join("");
+
+    configurarAcoesHistoricoDespesas();
+  } catch (err) {
+    tabela.innerHTML =
+      '<tr><td colspan="5" style="color: #ff4d4d;">Erro ao carregar histórico.</td></tr>';
+  }
+}
+
+// 🥊 NOVA FUNÇÃO: AÇÕES DO HISTÓRICO (EDIT/DELETE)
+function configurarAcoesHistoricoDespesas() {
+  const tabela = document.getElementById("tabelaHistoricoDespesas");
+  const modalEditar = document.getElementById("modalEditarDespesa");
+  const formEditar = document.getElementById("formEditarDespesa");
+  const modalDelete = document.getElementById("modalConfirmDeleteDespesa");
+  let idParaEliminar = null;
+
+  tabela?.addEventListener("click", (e) => {
+    const btnEdit = e.target.closest(".btn-edit-despesa");
+    const btnDel = e.target.closest(".btn-delete-despesa");
+
+    if (btnEdit) {
+      const despesa = state.despesasCache.find(
+        (d) => d.id == btnEdit.dataset.id,
+      );
+      if (despesa) {
+        document.getElementById("editDespesaId").value = despesa.id;
+        document.getElementById("editDespesaDescricao").value =
+          despesa.descricao;
+        document.getElementById("editDespesaCategoria").value =
+          despesa.categoria;
+        document.getElementById("editDespesaData").value = despesa.data;
+        document.getElementById("editDespesaValor").value = despesa.valor;
+        modalEditar?.classList.remove("hidden");
+      }
+    }
+    if (btnDel) {
+      idParaEliminar = btnDel.dataset.id;
+      modalDelete?.classList.remove("hidden");
+    }
+  });
+
+  document
+    .getElementById("btnFecharModalEditarDespesa")
+    ?.addEventListener("click", () => modalEditar?.classList.add("hidden"));
+  document
+    .getElementById("btnFecharHistoricoDespesas")
+    ?.addEventListener("click", () =>
+      document
+        .getElementById("modalHistoricoDespesas")
+        ?.classList.add("hidden"),
+    );
+  document
+    .getElementById("btnCancelarDeleteDespesa")
+    ?.addEventListener("click", () => modalDelete?.classList.add("hidden"));
+
+  formEditar?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const id = document.getElementById("editDespesaId").value;
+    const dados = {
+      descricao: document.getElementById("editDespesaDescricao").value.trim(),
+      categoria: document.getElementById("editDespesaCategoria").value,
+      data: document.getElementById("editDespesaData").value,
+      valor: parseFloat(document.getElementById("editDespesaValor").value),
+    };
+    try {
+      await supabase.from("despesas").update(dados).eq("id", id);
+      mostrarAviso("Atualizada", "Dados da despesa corrigidos.", "sucesso");
+      modalEditar?.classList.add("hidden");
+      await carregarHistoricoDespesas();
+    } catch (err) {
+      mostrarAviso("Erro", err.message, "erro");
+    }
+  });
+
+  document
+    .getElementById("btnConfirmarDeleteDespesa")
+    ?.addEventListener("click", async () => {
+      if (!idParaEliminar) return;
+      try {
+        await supabase.from("despesas").delete().eq("id", idParaEliminar);
+        mostrarAviso(
+          "Eliminada",
+          "Registo removido permanentemente.",
+          "sucesso",
+        );
+        modalDelete?.classList.add("hidden");
+        await carregarHistoricoDespesas();
+      } catch (err) {
+        mostrarAviso("Erro", err.message, "erro");
+      }
+    });
 }

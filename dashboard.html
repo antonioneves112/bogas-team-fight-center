@@ -399,6 +399,7 @@
                     <select id="pagamentoTipo" required>
                         <option value="Mensalidade" selected>Mensalidade</option>
                         <option value="Aula Particular">Aula Particular</option>
+                        <option value="Rendimento">Rendimento</option>
                     </select>
                 </div>
 
@@ -661,6 +662,102 @@
         </div>
     </div>
 
+    <div id="modalOpcoesDespesa" class="modal-overlay hidden modal-z-index">
+        <div class="modal-content glass-panel modal-opcoes-slim">
+            <div class="modal-header">
+                <h3><i class='bx bx-trending-down'></i> Gestão de Despesas</h3>
+                <button id="btnFecharOpcoesDespesa" class="btn-fechar"><i class='bx bx-x'></i></button>
+            </div>
+
+            <div class="opcoes-grid">
+                <button id="btnOpcaoNovaDespesa" class="btn-tatico btn-full-width">
+                    <i class='bx bx-plus-circle'></i> Registar Nova
+                </button>
+                <button id="btnOpcaoHistoricoDespesa" class="btn-tatico btn-outline btn-full-width">
+                    <i class='bx bx-history'></i> Ver Histórico
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalHistoricoDespesas" class="modal-overlay hidden modal-z-index">
+        <div class="modal-content glass-panel" style="max-width: 800px; width: 95%;">
+            <div class="modal-header">
+                <h3><i class='bx bx-history'></i> Histórico de Despesas</h3>
+                <button id="btnFecharHistoricoDespesas" class="btn-fechar"><i class='bx bx-x'></i></button>
+            </div>
+
+            <div class="table-responsive" style="margin-top: 20px; max-height: 60vh; overflow-y: auto;">
+                <table class="dash-table">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Descrição</th>
+                            <th>Categoria</th>
+                            <th>Valor</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaHistoricoDespesas">
+                        <tr>
+                            <td colspan="5" class="table-empty-state">A carregar despesas...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalEditarDespesa" class="modal-overlay hidden modal-z-index">
+        <div class="modal-content glass-panel">
+            <div class="modal-header">
+                <h3><i class='bx bx-edit'></i> Editar Despesa</h3>
+                <button id="btnFecharModalEditarDespesa" class="btn-fechar"><i class='bx bx-x'></i></button>
+            </div>
+
+            <form id="formEditarDespesa" class="dash-form">
+                <input type="hidden" id="editDespesaId">
+                <div class="form-group">
+                    <label>Descrição</label>
+                    <input type="text" id="editDespesaDescricao" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Categoria</label>
+                        <select id="editDespesaCategoria" required>
+                            <option value="Espaço">Renda</option>
+                            <option value="Outros">Outras Despesas</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Data</label>
+                        <input type="date" id="editDespesaData" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Valor Pago (€)</label>
+                    <div class="input-wrapper-tatico">
+                        <input type="number" id="editDespesaValor" step="0.01" min="0" required>
+                        <i class='bx bx-euro'></i>
+                    </div>
+                </div>
+                <button type="submit" class="btn-tatico btn-full-width">Guardar Alterações <i
+                        class='bx bx-save'></i></button>
+            </form>
+        </div>
+    </div>
+
+    <div id="modalConfirmDeleteDespesa" class="modal-overlay hidden modal-z-index">
+        <div class="modal-content glass-panel modal-confirm-box">
+            <i class='bx bx-trash bx-tada icon-confirm-warning'></i>
+            <h2 class="title-confirm">Eliminar Despesa?</h2>
+            <p class="desc-confirm">Esta ação não pode ser desfeita. Queres mesmo remover este registo do sistema?</p>
+            <div class="actions-confirm">
+                <button id="btnCancelarDeleteDespesa" class="btn-tatico btn-outline-muted">Cancelar</button>
+                <button id="btnConfirmarDeleteDespesa" class="btn-tatico btn-danger-action">Sim, Eliminar</button>
+            </div>
+        </div>
+    </div>
     <script src="./JS/app-routing.js" defer></script>
     <script>
         if ('serviceWorker' in navigator) {

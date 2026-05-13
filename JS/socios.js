@@ -1,10 +1,9 @@
-/* JS/socios.js - GESTÃO DE SÓCIOS (Com Quadro de Inativos e Paginação) */
+/* JS/socios.js - GESTÃO DE SÓCIOS (Parcerias como Obrigação Mensal) */
 import { supabase } from "./supabase.js";
 import { state } from "./state.js";
 import { formatarNomeCurto } from "./helpers.js";
 import { mostrarAviso } from "./main.js";
 
-// 🥊 VARIÁVEIS DE CONTROLO DE PAGINAÇÃO
 let paginaAtualAtivos = 1;
 const ITENS_POR_PAGINA = 10;
 
@@ -26,7 +25,6 @@ export async function carregarGuerreiros() {
     ? filtroMes.value
     : new Date().toISOString().slice(0, 7);
 
-  // 🥊 PUXA TAMBÉM O TIPO (MENSALIDADE VS AULA)
   const { data: mensalidadesMes } = await supabase
     .from("mensalidades")
     .select("socio_id, estado, tipo")
@@ -34,7 +32,7 @@ export async function carregarGuerreiros() {
 
   if (todosSocios) {
     state.todosOsGuerreiros = todosSocios;
-    state.faturasMesAtual = mensalidadesMes || []; // Guarda no state para a tabela ler
+    state.faturasMesAtual = mensalidadesMes || [];
 
     state.inativosAtuais = todosSocios
       .filter((s) => s.estado === "Inativo")
@@ -44,12 +42,12 @@ export async function carregarGuerreiros() {
           .localeCompare((b.nome || "").trim(), "pt", { sensitivity: "base" }),
       );
 
+    // 🥊 AGORA CONSIDERA "RENDIMENTO" COMO UMA MENSALIDADE VÁLIDA PARA EFEITOS DE CONTA
     const faturasMensais = state.faturasMesAtual.filter(
-      (m) => !m.tipo || m.tipo === "Mensalidade",
+      (m) => !m.tipo || m.tipo === "Mensalidade" || m.tipo === "Rendimento",
     );
     const todosIdsFaturados = state.faturasMesAtual.map((m) => m.socio_id);
 
-    // Identifica quem já pagou apenas a Mensalidade (exclui as PTs)
     state.idsPagosGlobal = faturasMensais
       .filter((m) => m.estado === "Pago")
       .map((m) => m.socio_id);
@@ -86,7 +84,6 @@ export async function carregarGuerreiros() {
 
       const partesA = (a.nome || "").trim().toLowerCase().split(" ");
       const partesB = (b.nome || "").trim().toLowerCase().split(" ");
-
       const primeiroA = partesA[0];
       const ultimoA = partesA[partesA.length - 1];
       const primeiroB = partesB[0];
@@ -102,7 +99,6 @@ export async function carregarGuerreiros() {
 
     state.guerreirosAtuais = socios;
 
-    // 🥊 LÓGICA DE CÁLCULO DE PENDENTES (MENSALIDADES + AULAS)
     const idsComDividaAtiva = state.faturasMesAtual
       ? state.faturasMesAtual
           .filter((m) => m.estado === "Pendente")
@@ -111,12 +107,18 @@ export async function carregarGuerreiros() {
 
     const pendentesReais = socios.filter((s) => {
       const temFaturaPendente = idsComDividaAtiva.includes(s.id);
-      const naoTemMensalidade =
-        !state.idsPagosGlobal.includes(s.id) &&
-        s.modalidade !== "Aulas Particulares";
 
-      return temFaturaPendente || naoTemMensalidade;
+      // 🥊 PARCERIAS AGORA SÃO TRATADAS COMO ATLETAS PARA GERAR DÍVIDA ATÉ FATURAREM
+      const isObrigatorioMensal =
+        s.estado === "Ativo" && s.modalidade !== "Aulas Particulares";
+
+      const naoTemFatura =
+        isObrigatorioMensal && !state.idsPagosGlobal.includes(s.id);
+
+      return temFaturaPendente || naoTemFatura;
     });
+
+    state.guerreirosPendentes = pendentesReais;
 
     if (document.getElementById("totalSocios"))
       document.getElementById("totalSocios").innerText = socios.length;
@@ -149,7 +151,7 @@ export function renderizarTabelaSocios(
 
   if (lista.length === 0) {
     tabelaSocios.innerHTML =
-      '<tr><td colspan="5" style="text-align: center; color: #888;">Nenhum guerreiro registado neste mês.</td></tr>';
+      '<tr><td colspan="5" style="text-align: center; color: #888;">Nenhum guerreiro encontrado.</td></tr>';
     return;
   }
 
@@ -165,8 +167,9 @@ export function renderizarTabelaSocios(
     const faturasDoSocio = (state.faturasMesAtual || []).filter(
       (m) => m.socio_id === s.id,
     );
+    // 🥊 Procura por Mensalidade ou Rendimento
     const faturaMensalidade = faturasDoSocio.find(
-      (m) => !m.tipo || m.tipo === "Mensalidade",
+      (m) => !m.tipo || m.tipo === "Mensalidade" || m.tipo === "Rendimento",
     );
     const aulasPendentes = faturasDoSocio.filter(
       (m) => m.tipo === "Aula Particular" && m.estado === "Pendente",
@@ -175,25 +178,45 @@ export function renderizarTabelaSocios(
     let badgeMensalidade = "";
     let textoMensalidade = "";
     let mostrarEuro = false;
+
     let modalidadeExibida = s.modalidade;
-    let isPendentePT = false; // 🥊 Flag invisível para o WhatsApp saber o que cobrar
+    if (
+      modalidadeExibida === "Aulas Particulares" ||
+      modalidadeExibida === "Aula Particular"
+    ) {
+      modalidadeExibida = "PT";
+    }
+
+    let isPendentePT = false;
 
     if (isInativo) {
       badgeMensalidade = "badge-inativo";
       textoMensalidade = "N/A";
     } else {
       const isPTOnly = s.modalidade === "Aulas Particulares";
+      const isParceria =
+        s.modalidade === "Rendimento" ||
+        (s.nome || "").toUpperCase().includes("GYM");
 
       if (isPTOnly) {
-        if (aulasPendentes.length > 0) {
+        const temPendente =
+          aulasPendentes.length > 0 ||
+          faturasDoSocio.some((f) => f.estado === "Pendente");
+        const temPago = faturasDoSocio.some((f) => f.estado === "Pago");
+
+        if (temPendente) {
           badgeMensalidade = "badge-pendente";
-          textoMensalidade = "PENDENTE"; // 🥊 Alterado para ficar limpo
+          textoMensalidade = "PENDENTE";
           isPendentePT = true;
-        } else {
+        } else if (temPago) {
           badgeMensalidade = "badge-pago";
-          textoMensalidade = "PAGO";
+          textoMensalidade = "REGULARIZADO";
+        } else {
+          badgeMensalidade = "badge-inativo";
+          textoMensalidade = "S/ AULAS";
         }
       } else {
+        // 🥊 LÓGICA UNIFICADA PARA ATLETAS E PARCERIAS
         const mensalidadePaga =
           faturaMensalidade && faturaMensalidade.estado === "Pago";
 
@@ -203,13 +226,13 @@ export function renderizarTabelaSocios(
           mostrarEuro = true;
         } else if (aulasPendentes.length > 0) {
           badgeMensalidade = "badge-pendente";
-          textoMensalidade = "PENDENTE"; // 🥊 Alterado para ficar limpo
-          modalidadeExibida = "Aula Particular";
+          textoMensalidade = "PENDENTE";
+          modalidadeExibida = "PT";
           mostrarEuro = false;
           isPendentePT = true;
         } else {
           badgeMensalidade = "badge-pago";
-          textoMensalidade = "PAGO";
+          textoMensalidade = isParceria ? "REGULARIZADO" : "PAGO";
         }
       }
     }
@@ -218,15 +241,10 @@ export function renderizarTabelaSocios(
       ? `<button class="btn-acao btn-faturar" data-id="${s.id}" title="Faturar"><i class='bx bx-euro'></i></button>`
       : "";
 
-    // =======================================================================
-    // 🥊 MENSAGEM DE WHATSAPP DINÂMICA (MENSALIDADE VS AULA PARTICULAR)
-    // =======================================================================
     let msgWhatsApp = "";
     const nomeCortado = formatarNomeCurto(s.nome);
 
     if (isPendentePT) {
-      // 🥊 Agora usa a flag invisível em vez do texto visual
-      // Procura a aula pendente no estado global para saber a data e hora exatas
       const ptPendente = (state.aulasParticulares || []).find(
         (a) => a.socio_id === s.id && a.estado === "Aceite" && !a.pago,
       );
@@ -236,11 +254,9 @@ export function renderizarTabelaSocios(
         const horaF = ptPendente.hora_aula.substring(0, 5);
         msgWhatsApp = `Caro(a) ${nomeCortado}. Verificamos nos nossos registos que a Aula Particular do dia ${dataF} às ${horaF} se encontra pendente. Solicitamos, por favor, a regularização da mesma com a maior brevidade possível.`;
       } else {
-        // Fallback caso a aula específica não esteja ainda carregada na memória
         msgWhatsApp = `Caro(a) ${nomeCortado}. Verificamos nos nossos registos que uma Aula Particular se encontra pendente. Solicitamos, por favor, a regularização da mesma com a maior brevidade possível.`;
       }
     } else {
-      // Mensagem para a mensalidade normal
       const mesesPT = [
         "Janeiro",
         "Fevereiro",
@@ -261,7 +277,9 @@ export function renderizarTabelaSocios(
     }
 
     const btnWhatsApp =
-      textoMensalidade === "PENDENTE" && s.telemovel // 🥊 Simplificado
+      textoMensalidade === "PENDENTE" &&
+      s.telemovel &&
+      s.modalidade !== "Rendimento"
         ? `<a href="https://wa.me/351${s.telemovel}?text=${encodeURIComponent(msgWhatsApp)}" target="_blank" class="btn-acao btn-whatsapp" title="Avisar"><i class='bx bxl-whatsapp'></i></a>`
         : "";
 
@@ -315,9 +333,17 @@ export function renderizarTabelaInativos(lista) {
       ? s.data_inativo.split("-").reverse().join("/")
       : "N/D";
 
+    let modalidadeExibida = s.modalidade;
+    if (
+      modalidadeExibida === "Aulas Particulares" ||
+      modalidadeExibida === "Aula Particular"
+    ) {
+      modalidadeExibida = "PT";
+    }
+
     tr.innerHTML = `
       <td data-label="Nome" style="font-weight: 600;">${formatarNomeCurto(s.nome)}</td>
-      <td data-label="Modalidade">${s.modalidade}</td>
+      <td data-label="Modalidade">${modalidadeExibida}</td>
       <td data-label="Estado"><span class="badge badge-inativo">${s.estado}</span></td>
       <td data-label="Data de Saída" style="color: #ff4d4d; font-weight: 600;">${dataSaida}</td>
       <td data-label="Ações">
@@ -444,7 +470,6 @@ export function initSociosEvents() {
   });
 
   const handleAcoesTabela = async (e) => {
-    // 🥊 VIGIA DO BOTÃO CARREGAR MAIS (Paginação)
     const btnCarregarMais = e.target.closest(".btn-carregar-mais");
     if (btnCarregarMais) {
       paginaAtualAtivos++;
@@ -463,7 +488,6 @@ export function initSociosEvents() {
       return;
     }
 
-    // 🥊 O ATALHO RESTAURADO: BOTÃO FATURAR
     const btnFaturar = e.target.closest(".btn-faturar");
     if (btnFaturar) {
       const socio = state.todosOsGuerreiros?.find(
@@ -478,6 +502,18 @@ export function initSociosEvents() {
         document.getElementById("pagamentoMes").value = document.getElementById(
           "filtroMesMensalidade",
         ).value;
+
+        const comboTipo = document.getElementById("pagamentoTipo");
+        if (comboTipo) {
+          if (
+            socio.modalidade === "Rendimento" ||
+            (socio.nome || "").toUpperCase().includes("GYM")
+          ) {
+            comboTipo.value = "Rendimento";
+          } else {
+            comboTipo.value = "Mensalidade";
+          }
+        }
 
         document.querySelector("#modalPagamento .modal-header h3").innerHTML =
           "<i class='bx bx-euro'></i> Registar Pagamento";

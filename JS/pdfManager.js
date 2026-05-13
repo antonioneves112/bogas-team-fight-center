@@ -1,16 +1,43 @@
-/* JS/pdfManager.js - GESTOR ESPECIALIZADO DE PDFs (Agora com Relatório Financeiro Completo) */
-import { formatarNomeCurto, extrairPreco } from "./helpers.js";
-import { supabase } from "./supabase.js"; // 🥊 NOVO: Precisamos de chamar a BD para ler as despesas
+/* JS/pdfManager.js - GESTOR FINANCEIRO COMPLETO E BLINDADO (Agora com Filtro de Rendimentos) */
+import { formatarNomeCurto } from "./helpers.js";
+import { supabase } from "./supabase.js";
 
-// 🥊 Função Base de Geração (Mantida para a lista de Sócios)
+// 🥊 Função auxiliar de Limpeza Matemática
+function limparValorNumerico(valor) {
+  if (valor === null || valor === undefined || valor === "") return 0;
+  if (typeof valor === "number") return valor;
+  const formatado = String(valor)
+    .replace(/€/g, "")
+    .replace(/ /g, "")
+    .replace(",", ".");
+  return parseFloat(formatado) || 0;
+}
+
+// ============================================================================
+// 🥊 1. FUNÇÃO BASE DE TABELAS
+// ============================================================================
 export function exportarPDF(titulo, rows, colunas, filename, footerRow = null) {
   try {
     const doc = new window.jspdf.jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+
     doc.setFontSize(18);
     doc.text("Bogas Team Fight Center", 14, 20);
     doc.setFontSize(12);
-    doc.text(titulo, 14, 30);
-    doc.text(`Gerado em: ${new Date().toLocaleDateString()}`, 14, 38);
+    doc.text(titulo || "Documento", 14, 30);
+
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "italic");
+    doc.setTextColor(120, 120, 120);
+    doc.text(
+      `Data de Emissão: ${new Date().toLocaleDateString()}`,
+      pageWidth - 14,
+      38,
+      { align: "right" },
+    );
+
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(0, 0, 0);
 
     const opcoesTabela = {
       startY: 45,
@@ -29,11 +56,7 @@ export function exportarPDF(titulo, rows, colunas, filename, footerRow = null) {
 
     if (typeof doc.autoTable === "function") {
       doc.autoTable(opcoesTabela);
-    } else if (
-      window.jspdf &&
-      window.jspdf.jsPDF &&
-      typeof window.jspdf.jsPDF.autoTable === "function"
-    ) {
+    } else if (window.jspdf?.jsPDF?.autoTable) {
       window.jspdf.jsPDF.autoTable(doc, opcoesTabela);
     }
 
@@ -44,10 +67,12 @@ export function exportarPDF(titulo, rows, colunas, filename, footerRow = null) {
   }
 }
 
-// 🥊 Especialista na Lista de Sócios (Mantido igual)
+// ============================================================================
+// 🥊 2. ESPECIALISTA NA LISTA DE SÓCIOS
+// ============================================================================
 export function exportarGuerreirosPDF(guerreiros) {
   const rows = guerreiros.map((s) => [
-    formatarNomeCurto(s.nome),
+    s.nome ? formatarNomeCurto(s.nome) : "Desconhecido",
     s.modalidade || "-",
     s.graduacao || "-",
     s.federacao || "Não Regularizada",
@@ -62,151 +87,221 @@ export function exportarGuerreirosPDF(guerreiros) {
   );
 }
 
-// 🥊 ESPECIALISTA FINANCEIRO: Mensalidades + Despesas + Balanço
-export async function exportarMensalidadesPDF(mensalidades, titulo, filtroMes) {
+// ============================================================================
+// 🥊 3. ESPECIALISTA FINANCEIRO (Mês Extenso + Parcerias + Despesas)
+// ============================================================================
+export async function exportarMensalidadesPDF(lista, titulo, mesReferencia) {
+  if (!lista || lista.length === 0) {
+    alert("Sem dados para exportar neste mês.");
+    return;
+  }
+
+  if (!mesReferencia) {
+    const hoje = new Date();
+    mesReferencia = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}`;
+  }
+
   try {
-    // 1. Ir à Base de Dados buscar as DESPESAS APENAS DESTE MÊS (Correção de Tipo de Dados)
-    const ano = parseInt(filtroMes.split("-")[0]);
-    const mes = parseInt(filtroMes.split("-")[1]);
+    const mesesPT = [
+      "Janeiro",
+      "Fevereiro",
+      "Março",
+      "Abril",
+      "Maio",
+      "Junho",
+      "Julho",
+      "Agosto",
+      "Setembro",
+      "Outubro",
+      "Novembro",
+      "Dezembro",
+    ];
 
-    // Constrói o dia 1 e o último dia do mês (o JS é inteligente e sabe se tem 28, 30 ou 31 dias)
-    const dataInicio = `${filtroMes}-01`;
-    const ultimoDia = new Date(ano, mes, 0).getDate();
-    const dataFim = `${filtroMes}-${ultimoDia}`;
+    const [ano, mesNum] = mesReferencia.split("-");
+    const nomeMesExtenso = `${mesesPT[parseInt(mesNum) - 1] || "Mês Desconhecido"} de ${ano || "Ano Desconhecido"}`;
 
-    const { data: despesas, error } = await supabase
-      .from("despesas")
-      .select("descricao, valor, data, categoria")
-      .gte("data", dataInicio) // Data Maior ou Igual ao 1º dia
-      .lte("data", dataFim); // Data Menor ou Igual ao último dia
-
-    if (error) throw error;
-
-    // 2. Cálculos Matemáticos Base
-    const totalFaturado = mensalidades
-      .filter((m) => m.estado === "Pago")
-      .reduce((soma, m) => soma + extrairPreco(m.valor), 0);
-
-    const totalDespesas = (despesas || []).reduce(
-      (soma, d) => soma + parseFloat(d.valor),
-      0,
-    );
-
-    const saldoLiquido = totalFaturado - totalDespesas;
-
-    // 3. Iniciar o Documento PDF
     const doc = new window.jspdf.jsPDF();
-    doc.setFontSize(18);
-    doc.text("Bogas Team Fight Center", 14, 20);
-    doc.setFontSize(12);
-    doc.text(titulo || "Relatório Financeiro", 14, 30);
-    doc.text(
-      `Mês de Referência: ${filtroMes} | Gerado a: ${new Date().toLocaleDateString()}`,
-      14,
-      38,
-    );
+    const pageWidth = doc.internal.pageSize.getWidth();
 
-    // 4. TABELA 1: ENTRADAS (Mensalidades e Aulas)
-    const rowsReceitas = mensalidades.map((m) => [
-      m.mes_ano,
-      formatarNomeCurto(m.socios?.nome),
-      m.tipo,
-      m.socios?.modalidade || "-",
-      `${m.valor} €`,
-      m.estado,
-    ]);
+    const ultimoDia = new Date(parseInt(ano), parseInt(mesNum), 0).getDate();
+    const dataInicio = `${mesReferencia}-01`;
+    const dataFim = `${mesReferencia}-${ultimoDia}`;
 
-    doc.setFontSize(14);
-    doc.setTextColor(37, 211, 102); // Título a Verde
-    doc.text("Entradas (Receitas)", 14, 48);
+    const { data: despesasMes, error: erroDespesas } = await supabase
+      .from("despesas")
+      .select("*")
+      .filter("data", "gte", dataInicio)
+      .filter("data", "lte", dataFim);
 
-    doc.autoTable({
-      startY: 52,
-      head: [["Mês", "Sócio", "Tipo", "Modalidade", "Valor", "Estado"]],
-      body: rowsReceitas,
-      theme: "striped",
-      headStyles: { fillColor: [37, 211, 102] }, // Cabeçalho Verde Bogas
-      styles: { font: "helvetica", fontSize: 10 },
-      margin: { bottom: 20 },
+    if (erroDespesas) {
+      console.warn("Aviso: Falha ao procurar despesas do mês.", erroDespesas);
+    }
+
+    const desenharTabela = (opcoes) => {
+      if (typeof doc.autoTable === "function") {
+        doc.autoTable(opcoes);
+      } else {
+        window.jspdf.jsPDF.autoTable(doc, opcoes);
+      }
+    };
+
+    // 🥊 MAGIA AQUI: Agora ele separa como "Parceria" se o nome for Gym/Parceria OU se o Tipo for "Rendimento"
+    const parcerias = lista.filter((m) => {
+      const nomeUpper = (m.socios?.nome || "").toUpperCase();
+      const tipoUpper = (m.tipo || "").toUpperCase();
+
+      return (
+        nomeUpper.includes("GYM") ||
+        nomeUpper.includes("PARCERIA") ||
+        tipoUpper.includes("RENDIMENTO")
+      );
     });
 
-    let finalY = doc.lastAutoTable.finalY + 15;
+    // Os restantes são os atletas normais do Bogas Team
+    const atletas = lista.filter((m) => !parcerias.includes(m));
 
-    // 5. TABELA 2: SAÍDAS (Despesas) - Só desenha se houver despesas neste mês!
-    if (despesas && despesas.length > 0) {
-      // Se não houver espaço na página para a tabela, cria página nova
-      if (finalY > 230) {
-        doc.addPage();
-        finalY = 20;
-      }
-
-      const rowsDespesas = despesas.map((d) => [
-        d.data.split("-").reverse().join("/"),
-        d.descricao,
-        d.categoria,
-        `${parseFloat(d.valor).toFixed(2)} €`,
-      ]);
-
-      doc.setFontSize(14);
-      doc.setTextColor(255, 77, 77); // Título a Vermelho
-      doc.text("Saídas (Despesas)", 14, finalY);
-
-      doc.autoTable({
-        startY: finalY + 5,
-        head: [["Data", "Descrição", "Categoria", "Valor"]],
-        body: rowsDespesas,
-        theme: "striped",
-        headStyles: { fillColor: [255, 77, 77] }, // Cabeçalho Vermelho Perigo
-        styles: { font: "helvetica", fontSize: 10 },
-      });
-      finalY = doc.lastAutoTable.finalY + 15;
-    }
-
-    // 6. CAIXA FINAL: RESUMO DO MÊS
-    // Verifica se a caixa de resumo cabe no fundo da folha, senão muda de folha
-    if (finalY > 240) {
-      doc.addPage();
-      finalY = 20;
-    }
-
-    // Desenhar um retângulo cinza claro para destacar o resumo
-    doc.setFillColor(240, 240, 240);
-    doc.rect(14, finalY, 180, 38, "F");
-
-    doc.setFontSize(12);
-    doc.setTextColor(0, 0, 0);
     doc.setFont("helvetica", "bold");
-    doc.text("BALANÇO FINAL DO MÊS", 20, finalY + 8);
+    doc.setFontSize(18);
+    doc.text(
+      `BOGAS TEAM - RELATÓRIO DE ${nomeMesExtenso.toUpperCase()}`,
+      pageWidth / 2,
+      15,
+      { align: "center" },
+    );
+
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "italic");
+    doc.setTextColor(120, 120, 120);
+    doc.text(
+      `Data de Emissão: ${new Date().toLocaleDateString()}`,
+      pageWidth - 14,
+      22,
+      { align: "right" },
+    );
 
     doc.setFont("helvetica", "normal");
-    doc.text(
-      `Total Faturado (Bruto): ${totalFaturado.toFixed(2)} €`,
-      20,
-      finalY + 16,
-    );
-    doc.text(
-      `Total Gasto (Despesas): ${totalDespesas.toFixed(2)} €`,
-      20,
-      finalY + 22,
-    );
+    doc.setTextColor(0, 0, 0);
 
-    // O VEREDICTO (Saldo Líquido)
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    if (saldoLiquido >= 0) {
-      doc.setTextColor(37, 211, 102); // Verde se houver lucro!
-    } else {
-      doc.setTextColor(255, 77, 77); // Vermelho se houver prejuízo
+    let finalY = 30;
+
+    // --- TABELA ATLETAS (VERDE BOGAS ORIGINAL) ---
+    if (atletas.length > 0) {
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(0, 100, 0);
+      doc.text("RECEITAS: ATLETAS", 14, finalY);
+      doc.setTextColor(0, 0, 0);
+      desenharTabela({
+        startY: finalY + 2,
+        head: [["Atleta", "Tipo", "Estado", "Valor"]],
+        body: atletas.map((m) => [
+          m.socios?.nome || "N/A",
+          m.tipo || "Mensalidade",
+          m.estado || "-",
+          `${limparValorNumerico(m.valor).toFixed(2)}€`,
+        ]),
+        theme: "striped",
+        headStyles: { fillColor: [37, 211, 102] },
+        margin: { left: 14, right: 14 },
+      });
+      finalY = doc.lastAutoTable.finalY + 10;
     }
-    doc.text(
-      `SALDO LÍQUIDO (Caixa): ${saldoLiquido.toFixed(2)} €`,
-      20,
-      finalY + 32,
-    );
 
-    doc.save(`Fluxo_Caixa_BogasTeam_${filtroMes}.pdf`);
-  } catch (e) {
-    console.error("Erro PDF:", e);
-    alert("Erro ao gerar o Relatório Financeiro.");
+    // --- TABELA PARCERIAS / RENDIMENTOS (VERDE ESCURO) ---
+    if (parcerias.length > 0) {
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(0, 128, 0);
+      doc.text("RECEITAS: PARCERIAS E RENDIMENTOS EXTERNOS", 14, finalY);
+      doc.setTextColor(0, 0, 0);
+      desenharTabela({
+        startY: finalY + 2,
+        head: [["Entidade / Origem", "Descrição", "Estado", "Valor"]],
+        body: parcerias.map((m) => [
+          m.socios?.nome || "Entidade Externa",
+          m.tipo || "Prestação de Serviços", // Se for "Rendimento", vai aparecer a palavra Rendimento aqui!
+          m.estado || "-",
+          `${limparValorNumerico(m.valor).toFixed(2)}€`,
+        ]),
+        theme: "grid",
+        headStyles: { fillColor: [0, 150, 0] },
+        margin: { left: 14, right: 14 },
+      });
+      finalY = doc.lastAutoTable.finalY + 10;
+    }
+
+    // --- TABELA DESPESAS (VERMELHO) ---
+    let totalDespesas = 0;
+    if (despesasMes && despesasMes.length > 0) {
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(200, 0, 0);
+      doc.text("SAÍDAS: DESPESAS E CUSTOS", 14, finalY);
+      doc.setTextColor(0, 0, 0);
+      desenharTabela({
+        startY: finalY + 2,
+        head: [["Data", "Descrição", "Categoria", "Valor"]],
+        body: despesasMes.map((d) => {
+          totalDespesas += limparValorNumerico(d.valor);
+          return [
+            d.data ? d.data.split("-").reverse().join("/") : "-",
+            d.descricao || "-",
+            d.categoria || "-",
+            `${limparValorNumerico(d.valor).toFixed(2)}€`,
+          ];
+        }),
+        theme: "striped",
+        headStyles: { fillColor: [200, 0, 0] },
+        margin: { left: 14, right: 14 },
+      });
+      finalY = doc.lastAutoTable.finalY + 10;
+    }
+
+    // --- CÁLCULOS E RODAPÉ ---
+    const totalAtletas = atletas.reduce(
+      (acc, cur) => acc + limparValorNumerico(cur.valor),
+      0,
+    );
+    const totalParcerias = parcerias.reduce(
+      (acc, cur) => acc + limparValorNumerico(cur.valor),
+      0,
+    );
+    const totalReceitas = totalAtletas + totalParcerias;
+    const balancoFinal = totalReceitas - totalDespesas;
+
+    if (finalY > 240) doc.addPage();
+
+    doc.setFont("helvetica", "bold");
+    doc.line(14, finalY, pageWidth - 14, finalY);
+    finalY += 8;
+
+    doc.setFontSize(11);
+    doc.text(`(+) Total Receitas (${nomeMesExtenso}):`, 14, finalY);
+    doc.text(`${totalReceitas.toFixed(2)}€`, pageWidth - 40, finalY, {
+      align: "right",
+    });
+
+    finalY += 6;
+    doc.text(`(-) Total Saídas (Despesas):`, 14, finalY);
+    doc.text(`${totalDespesas.toFixed(2)}€`, pageWidth - 40, finalY, {
+      align: "right",
+    });
+
+    finalY += 10;
+    doc.setFontSize(14);
+
+    if (balancoFinal >= 0) {
+      doc.setTextColor(0, 120, 0);
+    } else {
+      doc.setTextColor(200, 0, 0);
+    }
+
+    doc.text(`LUCRO LÍQUIDO MENSAL:`, 14, finalY);
+    doc.text(`${balancoFinal.toFixed(2)}€`, pageWidth - 40, finalY, {
+      align: "right",
+    });
+
+    const nomeFicheiro = `Financeiro_${nomeMesExtenso.replace(/ /g, "_")}.pdf`;
+    doc.save(nomeFicheiro);
+  } catch (erro) {
+    console.error("Erro PDF:", erro);
+    alert("Erro ao processar balanço: " + erro.message);
   }
 }

@@ -1425,3 +1425,23 @@ table tr:has(.btn-carregar-mais-mens) td::before {
     box-shadow: 0 0 10px rgba(37, 211, 102, 0.2) !important;
   }
 }
+
+/* =========================================================================
+   🥊 AJUSTES DO MODAL SLIM (OPÇÕES DE DESPESA)
+   ========================================================================= */
+#modalOpcoesDespesa .modal-content {
+  max-width: 350px;
+  min-height: auto !important; /* Corta a altura mínima herdada */
+  padding-bottom: 25px; /* Reduz o espaço no fundo */
+}
+
+#modalOpcoesDespesa .modal-header {
+  margin-bottom: 10px; /* Aproxima o título dos botões */
+  padding-bottom: 10px;
+}
+
+#modalOpcoesDespesa .opcoes-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* Reduz o espaço entre os dois botões */
+}
