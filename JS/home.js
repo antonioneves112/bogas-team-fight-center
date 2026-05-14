@@ -1,4 +1,4 @@
-/* JS/home.js - Versão Final Unificada (Sintaxe Corrigida com iOS Fix) */
+/* JS/home.js - Versão Final Unificada (Instalador PWA Blindado com Memória) */
 
 document.addEventListener("DOMContentLoaded", () => {
   "use strict";
@@ -47,7 +47,6 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentSlide = 0;
   let autoSlideInterval;
 
-  // Mostrar o modal apenas 1 vez por sessão
   if (modalWelcome && !sessionStorage.getItem("welcomeShown")) {
     setTimeout(() => {
       modalWelcome.classList.remove("hidden");
@@ -105,7 +104,6 @@ document.addEventListener("DOMContentLoaded", () => {
       modalWelcome.classList.add("hidden");
       clearInterval(autoSlideInterval);
 
-      // Pára qualquer vídeo que esteja a tocar no carrossel
       const videos = modalWelcome.querySelectorAll("video");
       videos.forEach((vid) => vid.pause());
     }
@@ -120,28 +118,34 @@ document.addEventListener("DOMContentLoaded", () => {
       if (e.target === modalWelcome) fecharModalWelcome();
     });
   }
-}); // 🥊 AQUI ESTÁ A PORTA CORRETAMENTE FECHADA!
-
+});
 // =========================================================================
-// 🥊 LÓGICA TÁTICA DO BOTÃO DE INSTALAR A APP (PWA)
+// 🥊 LÓGICA TÁTICA DO BOTÃO DE INSTALAR A APP (ALTA DISPONIBILIDADE)
 // =========================================================================
 let eventoInstalacaoGuardado;
 const btnInstalar = document.getElementById("btnInstalarApp");
 
 if (btnInstalar) {
-  // 1. Deteção: Vê se já está na App, se é telemóvel e se é Apple (iOS)
+  // 1. Verifica se JÁ ESTAMOS dentro da app instalada
   const estaNaApp =
     window.matchMedia("(display-mode: standalone)").matches ||
     window.navigator.standalone;
-  const eTelemovel = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-  const isIOS =
-    /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
-  // Elementos do Modal iOS
+  // 🥊 DEFESA ABSOLUTA: Se já está na App, esconde. SE NÃO, MOSTRA SEMPRE!
+  if (estaNaApp) {
+    btnInstalar.style.display = "none";
+  } else {
+    btnInstalar.style.display = "inline-flex"; // Garante que NUNCA desaparece no site
+  }
+
   const iosModal = document.getElementById("ios-install-modal");
   const closeIosBtn = document.getElementById("close-ios-modal");
 
-  // Lógica para fechar o Modal iOS
+  // Elementos internos do Modal para podermos alterar os textos dinamicamente
+  const modalTitle = iosModal?.querySelector("h3");
+  const modalP = iosModal?.querySelector("p");
+  const modalOl = iosModal?.querySelector("ol");
+
   if (closeIosBtn && iosModal) {
     closeIosBtn.addEventListener("click", () =>
       iosModal.classList.add("hidden"),
@@ -151,38 +155,40 @@ if (btnInstalar) {
     });
   }
 
-  // 🥊 BLOQUEIO: Se já está na App OU se NÃO é telemóvel (é PC), esconde logo de raiz!
-  if (estaNaApp || !eTelemovel) {
-    btnInstalar.style.display = "none";
-  } else {
-    // Se é iOS, força o botão a aparecer logo (pois o beforeinstallprompt da Google não existe lá)
+  // 2. Ouve silenciosamente se o Google Chrome permite o Pop-up automático
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    eventoInstalacaoGuardado = e; // Guarda a "chave" mágica
+  });
+
+  // 3. Quando o Mestre clica no botão verde
+  btnInstalar.addEventListener("click", async (e) => {
+    e.preventDefault();
+
+    const isIOS =
+      /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+    // 🥊 SE FOR iPHONE (Apresenta o Modal original)
     if (isIOS) {
-      btnInstalar.style.display = "inline-flex";
-    } else {
-      // Se é Android, espera pelo evento oficial da Google
-      window.addEventListener("beforeinstallprompt", (e) => {
-        e.preventDefault();
-        eventoInstalacaoGuardado = e;
-        btnInstalar.style.display = "inline-flex";
-      });
+      if (iosModal) {
+        if (modalTitle)
+          modalTitle.innerHTML =
+            "Instalar no iPhone <i class='bx bxl-apple'></i>";
+        if (modalP)
+          modalP.innerHTML = "Para instalares a App Bogas Team no teu iPhone:";
+        if (modalOl)
+          modalOl.innerHTML = `
+          <li>Toca no ícone de <strong>Partilhar</strong> <i class='bx bx-upload'></i> na barra inferior do Safari.</li>
+          <li>Desliza para baixo e escolhe <strong>"Ecrã Principal"</strong> (Add to Home Screen).</li>
+          <li>Clica em <strong>"Adicionar"</strong> no canto superior direito.</li>
+        `;
+        iosModal.classList.remove("hidden");
+      }
+      return;
     }
 
-    btnInstalar.addEventListener("click", async (e) => {
-      // Se for iPhone, previne bugs, abre o nosso Modal e pára a execução por aqui
-      if (isIOS) {
-        e.preventDefault();
-        if (iosModal) iosModal.classList.remove("hidden");
-        return;
-      }
-
-      // Se for Android, corre a lógica normal de instalação
-      if (!eventoInstalacaoGuardado) {
-        alert(
-          "Mestre, a App já está pronta! Procura o ícone de instalação na barra de endereço!",
-        );
-        return;
-      }
-
+    // Se o Android DEIXOU mostrar o Pop-up automático oficial:
+    if (eventoInstalacaoGuardado) {
       try {
         await eventoInstalacaoGuardado.prompt();
         const { outcome } = await eventoInstalacaoGuardado.userChoice;
@@ -194,11 +200,24 @@ if (btnInstalar) {
       } finally {
         eventoInstalacaoGuardado = null;
       }
-    });
-
-    window.addEventListener("appinstalled", () => {
-      btnInstalar.style.display = "none";
-      eventoInstalacaoGuardado = null;
-    });
-  }
+    }
+    // 🥊 SE O ANDROID BLOQUEOU O ATALHO MÁGICO (Apresenta o Modal adaptado para Android!)
+    else {
+      if (iosModal) {
+        if (modalTitle)
+          modalTitle.innerHTML =
+            "Instalar no Android <i class='bx bxl-android'></i>";
+        if (modalP)
+          modalP.innerHTML =
+            "O Chrome bloqueou o atalho temporariamente. Instala manualmente:";
+        if (modalOl)
+          modalOl.innerHTML = `
+          <li>Clica nos <strong>3 pontinhos</strong> verticais (Menu) no canto superior direito do Chrome.</li>
+          <li>Seleciona a opção <strong>"Instalar Aplicação"</strong> ou <strong>"Adicionar ao Ecrã Principal"</strong>.</li>
+          <li>Confirma em <strong>"Instalar"</strong>.</li>
+        `;
+        iosModal.classList.remove("hidden");
+      }
+    }
+  });
 }

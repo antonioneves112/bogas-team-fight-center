@@ -1,10 +1,11 @@
 // =========================================================================
 // 🥊 MOTOR DA APP (SERVICE WORKER) - BOGAS TEAM - V14
 // =========================================================================
-const CACHE_NAME = "bogas-team-v63";
+const CACHE_NAME = "bogas-team-v67";
 
 const ASSETS_TO_CACHE = [
   "./",
+  "./dashboard.html",
   "./index.html",
   "./portal.html",
   "./CSS/theme.css",
@@ -13,7 +14,8 @@ const ASSETS_TO_CACHE = [
   "./CSS/dashboard.css",
   "./JS/main.js",
   "./JS/portal.js",
-  "./faviicon.png",
+  "./load3.png",
+  "./manifest.json",
 ];
 
 self.addEventListener("install", (event) => {
