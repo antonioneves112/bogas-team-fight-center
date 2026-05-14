@@ -1,7 +1,5 @@
 /* JS/portal.js - MOTOR DO PORTAL (VERSÃO FINAL E AFINADA) */
 import { supabase } from "./supabase.js";
-import { formatarNomeCurto } from "./helpers.js";
-// 🥊 CORREÇÃO DE NOCAUTE: Retirado o import do auth.js! Os sócios usam "falsa" sessão (LocalStorage).
 
 // 🥊 VARIÁVEIS DE NÍVEL DE MÓDULO
 let atletaLogadoId = null;
@@ -9,7 +7,7 @@ let notificacaoParaApagarId = null;
 let mensagensAtleta = [];
 
 // =========================================================================
-// 🥊 FUNÇÃO GLOBAL (MOVIDA PARA FORA PARA EVITAR ERRO DE "NOT DEFINED")
+// 🥊 FUNÇÃO GLOBAL
 // =========================================================================
 async function buscarProximaAula(atletaId) {
   const elTexto = document.getElementById("atletaProximaAula");
@@ -59,18 +57,85 @@ document.addEventListener("DOMContentLoaded", () => {
   async function iniciarPortalParaAtleta(socio) {
     atletaLogadoId = socio.id;
     localStorage.setItem("bogas_atleta_id", socio.id);
+    // ========================================================================
+    // 🥊 1. PREENCHIMENTO DOS DADOS NO ECRÃ
+    // ========================================================================
+    const elNome = document.getElementById("atletaNome");
+    if (elNome) elNome.innerText = socio.nome;
 
+    const elFoto = document.getElementById("atletaFoto");
+    if (elFoto && socio.foto_url) elFoto.src = socio.foto_url;
+
+    const elMod = document.getElementById("atletaModalidade");
+    if (elMod)
+      elMod.innerHTML = `<i class='bx bx-medal'></i> ${socio.modalidade || "---"}`;
+
+    const elDataInsc = document.getElementById("atletaDataInscricao");
+    if (elDataInsc)
+      elDataInsc.innerText = socio.data_inscricao
+        ? socio.data_inscricao.split("-").reverse().join("/")
+        : "--/--/----";
+
+    // --- LÓGICA DA GRADUAÇÃO (Fim do "Verificando..." Infinito) ---
+    const elGrad = document.getElementById("atletaGraduacao");
+    const badgeGrad = document.getElementById("statusAptidao");
+    const elDataUltimaGrad = document.getElementById("labelUltimaGrad");
+
+    if (elGrad) elGrad.innerText = socio.graduacao || "---";
+
+    if (
+      socio.graduacao === "N/A" ||
+      socio.graduacao === "Não Aplicável" ||
+      !socio.graduacao
+    ) {
+      if (badgeGrad) badgeGrad.classList.add("hidden"); // Esconde o crachá
+      if (elDataUltimaGrad) elDataUltimaGrad.innerText = "Última: N/A";
+    } else {
+      if (badgeGrad) badgeGrad.classList.add("hidden");
+      if (elDataUltimaGrad) {
+        elDataUltimaGrad.innerText = socio.data_ultima_graduacao
+          ? `Última: ${socio.data_ultima_graduacao.split("-").reverse().join("/")}`
+          : "Última: --/--/----";
+      }
+    }
+
+    // --- LÓGICA DA FEDERAÇÃO (O Cartão Vermelho) ---
+    const elFed = document.getElementById("atletaFederacao");
+    if (elFed) {
+      // 🥊 Tática: Procura por 'federacao' ou 'estado_federacao'. Se estiver vazio/nulo, assume logo que não está regularizado!
+      const estadoFedRaw =
+        socio.federacao || socio.estado_federacao || "Não Regularizada";
+
+      // Se por algum motivo o valor vier como "---", forçamos o aviso real
+      const estadoFed =
+        estadoFedRaw === "---" ? "Não Regularizada" : estadoFedRaw;
+
+      elFed.innerText = estadoFed;
+
+      // Puxar o cartão inteiro (a div 'info-card') e acender o alarme vermelho!
+      const cardFed = elFed.closest(".info-card");
+      if (cardFed) {
+        if (
+          estadoFed === "Não Regularizada" ||
+          estadoFed === "Não Regularizado"
+        ) {
+          cardFed.classList.add("card-alerta-vermelho");
+        } else {
+          cardFed.classList.remove("card-alerta-vermelho");
+        }
+      }
+    }
+
+    // 🥊 2. VERIFICAÇÃO DE MENSALIDADES E DÍVIDAS
     const hoje = new Date();
     const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}`;
 
-    // 🥊 PESQUISA TODAS AS FATURAS DO MÊS
     const { data: faturasMes } = await supabase
       .from("mensalidades")
       .select("estado, tipo")
       .eq("socio_id", socio.id)
       .eq("mes_ano", mesAtual);
 
-    // 🥊 IDENTIFICA OS TIPOS DE DÍVIDA
     const faturaMensalidade = faturasMes
       ? faturasMes.find((p) => !p.tipo || p.tipo === "Mensalidade")
       : null;
@@ -82,11 +147,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let statusTexto = "PAGO";
     let isDivida = false;
-    let tipoDivida = ""; // "mensalidade" ou "aula"
+    let tipoDivida = "";
 
-    // Hierarquia: A mensalidade em atraso tem prioridade no aviso
     if (!faturaMensalidade || faturaMensalidade.estado !== "Pago") {
-      statusTexto = "MENSALIDADE N PAGA";
+      statusTexto = "N PAGA";
       isDivida = true;
       tipoDivida = "mensalidade";
     } else if (faturaAulaPendente) {
@@ -95,16 +159,31 @@ document.addEventListener("DOMContentLoaded", () => {
       tipoDivida = "aula";
     }
 
-    // ... (Preenchimento de Nome, Foto, Graduação e Federação permanecem iguais)
-
-    // ========================================================================
-    // 🥊 ATUALIZAÇÃO DO CARTÃO DE ESTADO (UI PRINCIPAL)
-    // ========================================================================
+    // 🥊 3. ATUALIZAÇÃO DO CARTÃO DE MENSALIDADE
     const cardMensalidade = document.getElementById("cardMensalidade");
-    if (cardMensalidade) {
-      const statusH1 = document.getElementById("statusMensalidade");
-      const iconMensalidade = document.getElementById("iconeMensalidade");
+    const statusH1 = document.getElementById("statusMensalidade");
+    const iconMensalidade = document.getElementById("iconeMensalidade");
+    const labelMesRef = document.getElementById("mesReferencia");
 
+    if (labelMesRef) {
+      const mesesTexto = [
+        "Janeiro",
+        "Fevereiro",
+        "Março",
+        "Abril",
+        "Maio",
+        "Junho",
+        "Julho",
+        "Agosto",
+        "Setembro",
+        "Outubro",
+        "Novembro",
+        "Dezembro",
+      ];
+      labelMesRef.innerText = `Referente a ${mesesTexto[hoje.getMonth()]}`;
+    }
+
+    if (cardMensalidade) {
       if (!isDivida) {
         cardMensalidade.classList.remove("pendente", "card-alerta-vermelho");
         if (statusH1) {
@@ -118,7 +197,7 @@ document.addEventListener("DOMContentLoaded", () => {
         cardMensalidade.classList.add("pendente", "card-alerta-vermelho");
         if (statusH1) {
           statusH1.className = "status-em-divida";
-          statusH1.innerText = statusTexto; // Exibe "MENSALIDADE N PAGA" ou "AULA N PAGA"
+          statusH1.innerText = statusTexto;
         }
         if (iconMensalidade)
           iconMensalidade.innerHTML =
@@ -126,11 +205,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // ... (restante do código: notificações, aulas agendadas)
-
-    // ========================================================================
-    // 🥊 MODAL DE COBRANÇA (AO ABRIR O PORTAL)
-    // ========================================================================
+    // 🥊 4. MODAL DE COBRANÇA
     const diaAtual = hoje.getDate();
     if (isDivida && diaAtual > 8) {
       const modalCobranca = document.getElementById("modalCobranca");
@@ -152,10 +227,12 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
+    verificarRegulamento(socio);
     buscarNotificacoes(socio.id);
+    buscarProximaAula(socio.id);
   }
 
-  // 🥊 FUNÇÃO DE VERIFICAÇÃO DO REGULAMENTO (MANTIDA NO SCOPE LOCAL)
+  // 🥊 FUNÇÃO DE VERIFICAÇÃO DO REGULAMENTO
   function verificarRegulamento(socio) {
     const modalReg = document.getElementById("modalRegulamento");
     const btnFecharX = document.getElementById("btnFecharRegulamentoX");
@@ -189,7 +266,6 @@ document.addEventListener("DOMContentLoaded", () => {
   async function tentarAutoLogin() {
     const idGuardado = localStorage.getItem("bogas_atleta_id");
     if (!idGuardado) {
-      // Se não tem ID, MOSTRA apenas o painel de Login do atleta (já no ficheiro portal.html)
       loginSection.classList.remove("hidden");
       portalSection.classList.add("hidden");
       return;
@@ -209,6 +285,10 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
       await iniciarPortalParaAtleta(socio);
+
+      // 🥊 AQUI ESTÁ A CORREÇÃO DE NOCAUTE:
+      // Garante que o portal fica visível depois de confirmar os dados no Auto-login!
+      portalSection.classList.remove("hidden");
     } catch (err) {
       localStorage.removeItem("bogas_atleta_id");
       loginSection.classList.remove("hidden");
@@ -228,6 +308,7 @@ document.addEventListener("DOMContentLoaded", () => {
         .value.trim();
       const btnSubmit = formLogin.querySelector("button[type='submit']");
       const textoOriginal = btnSubmit.innerHTML;
+
       btnSubmit.innerHTML =
         "A verificar... <i class='bx bx-loader-alt bx-spin'></i>";
       btnSubmit.disabled = true;
@@ -238,7 +319,9 @@ document.addEventListener("DOMContentLoaded", () => {
           .select("*")
           .ilike("email", emailInserido)
           .maybeSingle();
+
         if (error) throw error;
+
         if (!socio) {
           mostrarAviso(
             "Acesso Negado",
@@ -247,9 +330,11 @@ document.addEventListener("DOMContentLoaded", () => {
           );
           return;
         }
+
         let passCorreta = socio.password
           ? passInserida === socio.password
           : passInserida === socio.telemovel?.toString().trim();
+
         if (!passCorreta) {
           mostrarAviso(
             "Acesso Negado",
@@ -258,7 +343,12 @@ document.addEventListener("DOMContentLoaded", () => {
           );
           return;
         }
+
         await iniciarPortalParaAtleta(socio);
+
+        // 🥊 Trocar as vistas (Esconde Login -> Mostra Portal)
+        loginSection.classList.add("hidden");
+        portalSection.classList.remove("hidden");
       } catch (erro) {
         mostrarAviso(
           "Erro de Sistema",
@@ -293,11 +383,9 @@ document.addEventListener("DOMContentLoaded", () => {
         btnConfirma.disabled = true;
       }
 
-      // 🥊 O NOVO LOGOUT EXCLUSIVO DOS ATLETAS:
-      localStorage.removeItem("bogas_atleta_id"); // Apaga apenas o atleta
+      localStorage.removeItem("bogas_atleta_id");
       atletaLogadoId = null;
 
-      // Esconde o portal e volta a mostrar a caixa de login do atleta
       modalConfirmLogout?.classList.add("hidden");
       portalSection.classList.add("hidden");
       loginSection.classList.remove("hidden");
@@ -308,9 +396,6 @@ document.addEventListener("DOMContentLoaded", () => {
         btnConfirma.innerHTML = "Sim, Sair";
         btnConfirma.disabled = false;
       }
-
-      // 🥊 OPCIONAL: Se quiseres que ele volte ao início de tudo:
-      // window.location.replace("gateway.html");
     });
 
   document.getElementById("btnRegulamento")?.addEventListener("click", () => {
@@ -360,7 +445,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
   // =========================================================================
-  // --- HISTÓRICO DE PAGAMENTOS (COM CORREÇÃO DE DATA E ESTADO) ---
+  // --- HISTÓRICO DE PAGAMENTOS ---
   // =========================================================================
   const btnVerPagamentos = document.getElementById("btnVerPagamentos");
   const modalHistorico = document.getElementById("modalHistorico");
@@ -388,7 +473,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 const dataRaw = p.mes_ano || "";
                 let dataDisplay = dataRaw;
 
-                // 🥊 1. FORMATO ANO / MÊS (2026/05)
                 if (dataRaw.includes("-")) {
                   const [ano, mes] = dataRaw.split("-");
                   dataDisplay = `${ano}/${mes}`;
@@ -397,12 +481,9 @@ document.addEventListener("DOMContentLoaded", () => {
                   dataDisplay = `${ano}/${mes}`;
                 }
 
-                // 🥊 2. SIMPLIFICAÇÃO DO TIPO
                 const eAula =
                   p.tipo === "Aula Particular" || dataRaw.length > 7;
                 const tipoDisplay = eAula ? "PT" : "Mensal";
-
-                // 🥊 3. ETIQUETA COM PREFIXO
                 const labelFinal = eAula ? `${dataDisplay}` : dataDisplay;
                 const rowClass =
                   p.estado === "Pendente" ? "linha-pendente-alerta" : "";
@@ -501,13 +582,12 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("modalConfirmarApagar").classList.add("hidden");
       }
     });
+
   // =========================================================================
-  // --- PUSH NOTIFICATIONS (BLINDAGEM TOTAL) ---
+  // --- PUSH NOTIFICATIONS ---
   // =========================================================================
   const PUBLIC_VAPID_KEY =
     "BDlSFCtWMO00daEMrL5sLutOo9iw7KfQ_KlxFvL24zhmvPcA2Cn-M8qez3pJgQQzgzeCi8Pwho7s8Ii1-_cDvXo";
-
-  // 🥊 GOLPE DEFENSIVO: Remove a "parede invisível" dos alertas que bloqueia os botões no telemóvel
   const toastContainer = document.getElementById("toast-container");
   if (toastContainer) toastContainer.style.pointerEvents = "none";
 
@@ -529,14 +609,14 @@ document.addEventListener("DOMContentLoaded", () => {
               "modalAvisoNotificacoes",
             );
             if (modalAviso) {
-              modalAviso.style.zIndex = "9999"; // Força o modal para a frente de tudo
+              modalAviso.style.zIndex = "9999";
               modalAviso.classList.remove("hidden");
             }
           }
         }, 1200);
       }
     } catch (err) {
-      console.log("Notificações não suportadas pelo browser atual.");
+      console.log("Notificações não suportadas.");
     }
   }
 
@@ -570,19 +650,13 @@ document.addEventListener("DOMContentLoaded", () => {
         if (box) box.style.display = "none";
         mostrarAviso("Alertas ativados com sucesso.", "sucesso");
       } else {
-        mostrarAviso(
-          "Aviso",
-          "Permissão para alertas recusada no telemóvel.",
-          "erro",
-        );
+        mostrarAviso("Aviso", "Permissão para alertas recusada.", "erro");
       }
     } catch (erro) {
       mostrarAviso("Erro", "O sistema bloqueou o pedido.", "erro");
     } finally {
-      // 🥊 GARANTIA MÁXIMA DE FECHO: O modal fecha SEMPRE, quer dê erro ou sucesso!
       const modalAviso = document.getElementById("modalAvisoNotificacoes");
       if (modalAviso) modalAviso.classList.add("hidden");
-
       const btnAtivar = document.getElementById("btnAceitarNotificacoesModal");
       if (btnAtivar) btnAtivar.innerHTML = "Ativar Agora";
     }
@@ -619,7 +693,6 @@ document.addEventListener("DOMContentLoaded", () => {
           mostrarAviso("Atenção", "Instala a aplicação primeiro!", "erro");
       };
     } else {
-      // 🥊 Ataque direto: Substitui o AddEventListener por um onclick blindado
       btn.onclick = executarAtivacaoPush;
     }
   };
@@ -627,7 +700,6 @@ document.addEventListener("DOMContentLoaded", () => {
   protegerEAtivarBotao("btnAtivarNotificacoes");
   protegerEAtivarBotao("btnAceitarNotificacoesModal");
 
-  // 🥊 BOTÃO MAIS TARDE: Ligação direta e blindada para garantir o fecho
   const btnRecusar = document.getElementById("btnRecusarNotificacoes");
   if (btnRecusar) {
     btnRecusar.onclick = () => {
@@ -728,7 +800,6 @@ document
 // =========================================================================
 // 🥊 GESTÃO DE AULAS PARTICULARES (Portal do Sócio)
 // =========================================================================
-
 document.addEventListener("DOMContentLoaded", () => {
   const modalAula = document.getElementById("modalAulaParticular");
   const btnAbrirModal = document.getElementById("btnAbrirModalParticular");
@@ -795,7 +866,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ]);
 
       mostrarAviso("Pedido Enviado", "Aguardar confirmação!", "sucesso");
-      buscarProximaAula(socioIdAtual); // 🥊 AGORA CHAMA A FUNÇÃO GLOBAL!
+      buscarProximaAula(socioIdAtual);
       modalAula.classList.add("hidden");
       formAula.reset();
     } catch (erro) {
@@ -806,40 +877,3 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
-
-// No ficheiro JS do Portal do Atleta:
-export function renderizarHistorico(lista) {
-  const tabela = document.getElementById("tabelaCorpoHistorico");
-  if (!tabela) return;
-  tabela.innerHTML = "";
-
-  lista.forEach((m) => {
-    const tr = document.createElement("tr");
-    const dataRaw = m.mes_ano || "";
-    let dataDisplay = dataRaw;
-
-    if (dataRaw.includes("-")) {
-      const [ano, mes] = dataRaw.split("-");
-      dataDisplay = `${ano}/${mes}`;
-    } else if (dataRaw.includes("/")) {
-      const [dia, mes, ano] = dataRaw.split("/");
-      dataDisplay = `${ano}/${mes}`;
-    }
-
-    const eAula = m.tipo === "Aula Particular" || dataRaw.length > 7;
-    const tipoDisplay = eAula ? "PT" : "Mensal";
-    const labelFinal = eAula ? `Aula: ${dataDisplay}` : dataDisplay;
-
-    if (m.estado === "Pendente") {
-      tr.classList.add("linha-pendente-alerta");
-    }
-
-    tr.innerHTML = `
-      <td>${labelFinal}</td>
-      <td style="font-weight: 600;">${tipoDisplay}</td>
-      <td style="font-weight: bold;">${m.valor}€</td>
-      <td><span class="status-badge ${m.estado.toLowerCase()}">${m.estado.toUpperCase()}</span></td>
-    `;
-    tabela.appendChild(tr);
-  });
-}

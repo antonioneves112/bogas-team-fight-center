@@ -119,9 +119,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
-
 // =========================================================================
-// 🥊 LÓGICA TÁTICA DO BOTÃO DE INSTALAR A APP (SISTEMA DE SEMÁFORO)
+// 🥊 LÓGICA TÁTICA DO BOTÃO DE INSTALAR A APP (SISTEMA DE SEMÁFORO CORRIGIDO)
 // =========================================================================
 let eventoInstalacaoGuardado = null;
 const btnInstalar = document.getElementById("btnInstalarApp");
@@ -138,7 +137,7 @@ if (btnInstalar) {
     btnInstalar.style.display = "inline-flex";
     btnInstalar.innerHTML =
       "<i class='bx bx-loader-alt bx-spin'></i> A analisar...";
-    btnInstalar.style.opacity = "0.7"; // Fica meio transparente
+    btnInstalar.style.opacity = "0.7";
   }
 
   const isIOS =
@@ -158,7 +157,7 @@ if (btnInstalar) {
     });
   }
 
-  // Se for iOS, a Apple não tem auditoria automática, por isso fica logo pronto a usar
+  // Se for iOS, a Apple não tem auditoria automática
   if (isIOS && !estaNaApp) {
     btnInstalar.innerHTML =
       "<i class='bx bx-download bx-tada'></i> Instalar App";
@@ -170,25 +169,31 @@ if (btnInstalar) {
     e.preventDefault();
     eventoInstalacaoGuardado = e; // Recebemos a "Chave Mágica"!
 
-    // Acorda o botão visualmente e mostra que está pronto!
+    // Acorda o botão visualmente
     btnInstalar.innerHTML =
       "<i class='bx bx-download bx-tada'></i> Instalar App";
     btnInstalar.style.opacity = "1";
   });
 
-  // 3. SISTEMA DE DEFESA: Se passarem 6 segundos e o Chrome não der a chave
+  // 3. SISTEMA DE DEFESA: Se passarem 6 segundos e o Chrome não der a chave (App já instalada)
   setTimeout(() => {
     if (!eventoInstalacaoGuardado && !isIOS && !estaNaApp) {
-      btnInstalar.innerHTML = "<i class='bx bx-error-circle'></i> Instalar App";
-      btnInstalar.style.opacity = "1";
+      // 🥊 MUDANÇA AQUI: Em vez de mostrar "App Instalada", o botão desaparece sem deixar rasto!
+      btnInstalar.style.display = "none";
     }
   }, 6000);
+
+  // 🥊 NOVO: Deteta quando a instalação termina e esconde logo o botão
+  window.addEventListener("appinstalled", () => {
+    btnInstalar.style.display = "none";
+    eventoInstalacaoGuardado = null;
+  });
 
   // 4. O CLIQUE DO UTILIZADOR
   btnInstalar.addEventListener("click", async (e) => {
     e.preventDefault();
 
-    // 🥊 SE FOR iPHONE
+    // SE FOR iPHONE
     if (isIOS) {
       if (iosModal) {
         if (modalTitle)
@@ -207,13 +212,13 @@ if (btnInstalar) {
       return;
     }
 
-    // 🥊 SE O CHROME JÁ DEU O SINAL VERDE (Chave recebida)
+    // SE O CHROME JÁ DEU O SINAL VERDE
     if (eventoInstalacaoGuardado) {
       try {
         await eventoInstalacaoGuardado.prompt();
         const { outcome } = await eventoInstalacaoGuardado.userChoice;
         if (outcome === "accepted") {
-          btnInstalar.style.display = "none";
+          btnInstalar.style.display = "none"; // Esconde ao aceitar
         }
       } catch (erro) {
         console.error("Erro na instalação:", erro);
@@ -221,30 +226,17 @@ if (btnInstalar) {
         eventoInstalacaoGuardado = null;
       }
     }
-    // 🥊 SE CLICOU DEMASIADO RÁPIDO OU HÁ BLOQUEIO REAL
+    // SE CLICOU DEMASIADO RÁPIDO
     else {
       if (iosModal) {
         if (modalTitle)
           modalTitle.innerHTML = "Instalação <i class='bx bxl-android'></i>";
 
-        // Clicou quando o botão ainda dizia "A analisar..."
         if (btnInstalar.innerHTML.includes("analisar")) {
           if (modalP)
             modalP.innerHTML =
               "O Google Chrome ainda está a validar o sistema de segurança da App. Aguarda 2 a 3 segundos antes de clicar!";
           if (modalOl) modalOl.innerHTML = "";
-        }
-        // Clicou depois dos 6 segundos (quando o botão assumiu o erro)
-        else {
-          if (modalP)
-            modalP.innerHTML =
-              "O teu navegador bloqueou o pop-up automático. Instala a aplicação através do menu oficial:";
-          if (modalOl)
-            modalOl.innerHTML = `
-              <li>Clica nos <strong>3 pontinhos</strong> verticais no canto superior do ecrã.</li>
-              <li>Seleciona <strong>"Instalar Aplicação"</strong> ou <strong>"Adicionar ao Ecrã Principal"</strong>.</li>
-              <li>Confirma clicando em <strong>"Instalar"</strong>.</li>
-            `;
         }
         iosModal.classList.remove("hidden");
       }

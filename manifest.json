@@ -1,21 +1,21 @@
 {
   "name": "Bogas Team Fight Center",
   "short_name": "Bogas Team",
-  "start_url": "/gateway.html",
+  "start_url": "./gateway.html",
   "display": "standalone",
   "prefer_related_applications": false,
-  "scope": "/",
+  "scope": "./",
   "background_color": "#0a0a0a",
   "theme_color": "#0a0a0a",
   "icons": [
     {
-      "src": "/load3.png",
+      "src": "./faviicon.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/load3.png",
+      "src": "./faviicon.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"

@@ -544,14 +544,13 @@ function configurarAprovacaoAula() {
 
 export async function carregarAulasParticulares() {
   const tabela = document.getElementById("tabelaAulasParticulares");
-  const filtroMes = document.getElementById("filtroMesMensalidade"); // 🥊 1. LÊ O SELETOR DE MÊS
+  const filtroMes = document.getElementById("filtroMesMensalidade");
 
   if (!tabela) return;
   tabela.innerHTML =
     '<tr><td colspan="7">A procurar pedidos... <i class="bx bx-loader-alt bx-spin"></i></td></tr>';
 
   try {
-    // 🥊 2. CALCULA OS LIMITES DO MÊS SELECIONADO
     const mesReferencia =
       filtroMes?.value || new Date().toISOString().substring(0, 7);
     const [ano, mesNum] = mesReferencia.split("-");
@@ -560,12 +559,11 @@ export async function carregarAulasParticulares() {
     const dataInicio = `${mesReferencia}-01`;
     const dataFim = `${mesReferencia}-${ultimoDia}`;
 
-    // 🥊 3. SUPABASE FILTRA AS DATAS AUTOMATICAMENTE
     const { data: pedidos, error } = await supabase
       .from("aulas_particulares")
       .select(`id, data_aula, hora_aula, socio_id, estado, valor, pago`)
-      .gte("data_aula", dataInicio) // Maior ou igual ao 1º dia do mês
-      .lte("data_aula", dataFim) // Menor ou igual ao último dia do mês
+      .gte("data_aula", dataInicio)
+      .lte("data_aula", dataFim)
       .order("data_aula", { ascending: false });
 
     if (error) throw error;
@@ -587,12 +585,14 @@ export async function carregarAulasParticulares() {
     });
 
     renderizarTabelaAulas(state.aulasParticulares);
+
+    // 🥊 O SINAL QUE FALTAVA: Atualiza o número no topo (Badge) de cada vez que carrega a tabela
+    atualizarBadgeAulasPendentes();
   } catch (err) {
     tabela.innerHTML =
       '<tr><td colspan="7" style="color: #ff4d4d; text-align: center;">Erro ao carregar pedidos.</td></tr>';
   }
 }
-
 // =========================================================================
 // 🥊 INÍCIO DA ZONA DE ALTERAÇÕES - RENDERIZAÇÃO E EVENTOS DE AULAS
 // =========================================================================
@@ -879,30 +879,32 @@ export function initAulasEvents() {
 // 🥊 FIM DA ZONA DE ALTERAÇÕES
 // =========================================================================
 
-async function atualizarBadgeAulasPendentes() {
-  const badgeId = document.getElementById("badgeAulasPendentes");
+// 🥊 FUNÇÃO DE CONTAGEM BLINDADA
+export async function atualizarBadgeAulasPendentes() {
+  const badgeId = document.getElementById("badgeAulas"); // 🥊 Usa o ID exato que tens no dashboard.html
   const badgeClass = document.querySelector(".badge-tab-inline");
+
   try {
     const { count } = await supabase
       .from("aulas_particulares")
       .select("*", { count: "exact", head: true })
       .eq("estado", "Pendente");
+
     const total = count || 0;
+
+    // Atualiza todos os selos possíveis!
     if (badgeId) {
       badgeId.innerText = total;
-      total > 0
-        ? badgeId.classList.remove("hidden")
-        : badgeId.classList.add("hidden");
+      badgeId.style.display = total > 0 ? "flex" : "none";
     }
     if (badgeClass) {
       badgeClass.innerText = total;
       badgeClass.style.display = total > 0 ? "flex" : "none";
     }
   } catch (err) {
-    console.error(err);
+    console.error("Erro a contar aulas:", err);
   }
 }
-
 function configurarPagamentoDiretoAula() {
   const formFaturar = document.getElementById("formFaturarAula");
   const modalFaturar = document.getElementById("modalFaturarAula");
