@@ -1445,3 +1445,44 @@ table tr:has(.btn-carregar-mais-mens) td::before {
   flex-direction: column;
   gap: 12px; /* Reduz o espaço entre os dois botões */
 }
+
+/* 📱 AJUSTE MICRO-MOBILE: DASHBOARD (< 400px) */
+@media (max-width: 400px) {
+  .dash-nav {
+    padding: 10px 8px !important; /* Reduz a gordura lateral da barra de topo */
+  }
+
+  .dash-header h2 {
+    font-size: 1.2rem !important; /* Título "Visão Geral" mais compacto */
+  }
+
+  /* Botões de filtro e calendário */
+  .header-actions-group .dash-filter,
+  .btn-icon-red {
+    width: 38px !important;
+    height: 38px !important;
+  }
+
+  /* Abas de navegação (Sócios, Mensalidades, Aulas) */
+  .tab-btn {
+    font-size: 0.55rem !important;
+    padding: 5px 2px !important;
+    height: 65px !important;
+  }
+
+  /* Ações dentro das tabelas (Editar, Apagar, Faturar) */
+  table td:last-child > div {
+    flex-wrap: wrap !important;
+    gap: 4px !important;
+  }
+
+  .btn-acao {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  .btn-tatico.btn-small.btn-faturar-aula-direto {
+    font-size: 0.6rem !important;
+    height: 32px !important;
+  }
+}

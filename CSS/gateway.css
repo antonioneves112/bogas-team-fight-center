@@ -194,3 +194,29 @@
   ) !important; /* Dá um brilho verde suave ao fundo */
   box-shadow: 0 5px 15px rgba(74, 222, 128, 0.3);
 }
+
+/* 📱 AJUSTE MICRO-MOBILE: GATEWAY / HUB (< 400px) */
+@media (max-width: 400px) {
+  .gateway-grid {
+    gap: 8px !important; /* Aproxima os cartões Sócio/Treinador */
+    padding: 0 5px !important;
+  }
+
+  .gateway-card {
+    padding: 25px 10px !important; /* Reduz o enchimento interno */
+  }
+
+  .gateway-card i {
+    font-size: 2.5rem !important; /* Ícone central */
+    margin-bottom: 12px !important;
+  }
+
+  .gateway-card h2 {
+    font-size: 0.9rem !important; /* Títulos SÓCIO/TREINADOR */
+  }
+
+  .gateway-card p {
+    font-size: 0.75rem !important; /* Descrições */
+    line-height: 1.2 !important;
+  }
+}
