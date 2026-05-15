@@ -1,4 +1,4 @@
-/* JS/mensalidades.js - GESTÃO DE MENSALIDADES (Modais Premium) */
+/* JS/mensalidades.js - GESTÃO DE MENSALIDADES (Versão Final c/ Ordem Descendente) */
 import { supabase } from "./supabase.js";
 import { state } from "./state.js";
 import { formatarNomeCurto, extrairPreco, debounce } from "./helpers.js";
@@ -43,18 +43,19 @@ export function renderizarTabelaMensalidades(lista, manterPagina = false) {
       m.socios.data_inscricao.startsWith(mesReferencia);
     const classeNeon = isNovoNoMes ? "neon-destaque" : "";
 
-    // 🥊 MAGIA ACONTECE AQUI! Substitui visualmente o mês/ano pelos detalhes da aula
-    // O trim() remove espaços invisíveis que possam vir da Base de Dados
+    // 🥊 TÁTICA DAS LABELS: "Data:" para aulas e "PERÍODO / DATA" para mensalidades
     const isAula = m.tipo && m.tipo.trim() === "Aula Particular";
-    const labelTempo = isAula ? "Dia / Hora" : "PERÍODO / DATA";
+    const labelTempo = "Data";
 
-    let displayTempo = m.mes_ano; // Começa pelo normal (ex: 2026-05)
+    let displayTempo = m.mes_ano;
 
-    // 🥊 BLOCO QUE FALTAVA: Constrói o dia em negrito e a hora
+    // Constrói o visual do Dia e Hora para as Aulas (AGORA EMPILHADO)
     if (isAula && m.dia_aula) {
-      displayTempo = `<strong>${m.dia_aula}</strong>`;
+      displayTempo = `<div>${m.dia_aula}</div>`;
       if (m.hora_aula) {
-        displayTempo += `<br><span style="font-size: 0.85rem; color: var(--accent);"><i class='bx bx-time'></i> ${m.hora_aula.substring(0, 5)}</span>`;
+        displayTempo += `<div style="font-size: 0.85rem; color: var(--accent); margin-top: 4px;">
+                            <i class='bx bx-time'></i> ${m.hora_aula.substring(0, 5)}
+                         </div>`;
       }
     }
 
@@ -103,7 +104,6 @@ export async function carregarMensalidades() {
   tabelaMensalidades.innerHTML =
     '<tr><td colspan="7">A carregar registos...</td></tr>';
 
-  // 🥊 Pede os dados completos ao Supabase!
   const { data: mensalidades, error } = await supabase
     .from("mensalidades")
     .select(
@@ -124,25 +124,37 @@ export async function carregarMensalidades() {
     );
 
     // ====================================================================
-    // 🥊 NOVA ORDENAÇÃO TRIPLA EM CASCATA
-    // 1º Nome (A-Z) | 2º Aula Particular 1º | 3º Ordem de criação
+    // 🥊 ORDENAÇÃO QUADRUPLA EM CASCATA (COM DATA DESCENDENTE)
     // ====================================================================
     apenasAtivos.sort((a, b) => {
+      // 1. Ordem Alfabética (Nome do Sócio de A a Z)
       const nomeA = (a.socios?.nome || "").trim();
       const nomeB = (b.socios?.nome || "").trim();
-
-      // 1. Ordem Alfabética (localeCompare resolve os acentos como o "ç" de Gonçalo)
       const comparacaoNome = nomeA.localeCompare(nomeB, "pt");
       if (comparacaoNome !== 0) return comparacaoNome;
 
-      // 2. Tipo (Empurra a "Aula Particular" para cima)
-      const tipoA = a.tipo || "Mensalidade";
-      const tipoB = b.tipo || "Mensalidade";
+      // Helper para converter "DD/MM/YYYY" em número YYYYMMDD
+      const converterData = (dataStr) => {
+        if (!dataStr) return 0;
+        const p = dataStr.split("/");
+        if (p.length === 3) return parseInt(`${p[2]}${p[1]}${p[0]}`);
+        return 0;
+      };
 
-      if (tipoA === "Aula Particular" && tipoB !== "Aula Particular") return -1;
-      if (tipoA !== "Aula Particular" && tipoB === "Aula Particular") return 1;
+      const diaA = converterData(a.dia_aula);
+      const diaB = converterData(b.dia_aula);
 
-      // 3. Ordem de Criação (Através do ID)
+      // 2. Ordem por Dia (DESCENDENTE: Mais recente primeiro)
+      if (diaA === 0 && diaB !== 0) return 1; // Mensalidade (0) continua no fundo
+      if (diaB === 0 && diaA !== 0) return -1;
+      if (diaA !== diaB) return diaB - diaA; // 🥊 Tática invertida aqui (B - A)!
+
+      // 3. Ordem por Hora (DESCENDENTE: Ex: 18:00 antes das 10:00)
+      const horaA = a.hora_aula || "";
+      const horaB = b.hora_aula || "";
+      if (horaA !== horaB) return horaB.localeCompare(horaA); // 🥊 Invertido aqui!
+
+      // 4. Desempate final pela ordem de criação
       return b.id - a.id;
     });
 

@@ -146,7 +146,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const valor = filtroMes?.value;
     if (valor && tituloMensalidade) {
       const [ano, mesNum] = valor.split("-");
-      tituloMensalidade.innerText = `Controlo de Mensalidades ${mesesPT[parseInt(mesNum) - 1]}`;
+      tituloMensalidade.innerText = `Mensalidades ${mesesPT[parseInt(mesNum) - 1]}`;
     }
   }
 
@@ -896,6 +896,132 @@ export function initAulasEvents() {
       }
     });
 }
+
+// =========================================================
+// 🥊 LÓGICA DE CRIAÇÃO DE NOVA AULA (PELO TREINADOR)
+// =========================================================
+const btnAddAula = document.getElementById("btnAddAulaAdmin");
+const modalNovaAula = document.getElementById("modalNovaAulaAdmin");
+const formNovaAula = document.getElementById("formNovaAulaAdmin");
+const inputSocioSearchAula = document.getElementById("novaAulaSocioSearch");
+const inputSocioIdAula = document.getElementById("novaAulaSocioId");
+
+btnAddAula?.addEventListener("click", () => {
+  formNovaAula?.reset();
+  if (inputSocioIdAula) inputSocioIdAula.value = "";
+
+  // Preenche a lista de pesquisa com os guerreiros ativos
+  const datalist = document.getElementById("listaSociosAula");
+  if (datalist && state.guerreirosAtuais) {
+    datalist.innerHTML = "";
+    state.guerreirosAtuais.forEach((s) => {
+      if (s.estado !== "Inativo") {
+        const opt = document.createElement("option");
+        opt.value = s.nome;
+        opt.setAttribute("data-id", s.id);
+        datalist.appendChild(opt);
+      }
+    });
+  }
+
+  modalNovaAula?.classList.remove("hidden");
+});
+
+document
+  .getElementById("btnFecharModalNovaAula")
+  ?.addEventListener("click", () => {
+    modalNovaAula?.classList.add("hidden");
+  });
+
+inputSocioSearchAula?.addEventListener("input", (e) => {
+  const opt = Array.from(
+    document.getElementById("listaSociosAula")?.options || [],
+  ).find((o) => o.value === e.target.value);
+  if (inputSocioIdAula)
+    inputSocioIdAula.value = opt ? opt.getAttribute("data-id") : "";
+});
+
+formNovaAula?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  if (!inputSocioIdAula.value) {
+    mostrarAviso(
+      "Atenção",
+      "Por favor, seleciona um atleta válido da lista.",
+      "erro",
+    );
+    return;
+  }
+
+  const dataAula = document.getElementById("novaAulaData").value;
+  const horaAula = document.getElementById("novaAulaHora").value;
+  const valorInput = document.getElementById("novaAulaValor").value;
+  const estadoAula = document.getElementById("novaAulaEstado").value;
+
+  const btnGuardar = document.getElementById("btnGuardarNovaAula");
+  const txtOriginal = btnGuardar.innerHTML;
+  btnGuardar.innerHTML =
+    "A Registar... <i class='bx bx-loader-alt bx-spin'></i>";
+  btnGuardar.disabled = true;
+
+  try {
+    const socioId = inputSocioIdAula.value;
+    const valorLimpo = valorInput ? parseFloat(valorInput) : null;
+
+    // 1. Grava o pedido nas aulas
+    const { error: errAula } = await supabase
+      .from("aulas_particulares")
+      .insert([
+        {
+          socio_id: socioId,
+          data_aula: dataAula,
+          hora_aula: horaAula,
+          valor: valorLimpo,
+          estado: estadoAula,
+          pago: false,
+        },
+      ]);
+
+    if (errAula) throw errAula;
+
+    // 2. Se for criada já como "Aceite" e com um valor, gera logo a Mensalidade e a Notificação
+    if (estadoAula === "Aceite" && valorLimpo !== null) {
+      const mesAnoFormatado = dataAula.substring(0, 7);
+      const diaF = dataAula.split("-").reverse().join("/");
+
+      await supabase.from("mensalidades").insert([
+        {
+          socio_id: socioId,
+          mes_ano: mesAnoFormatado,
+          dia_aula: diaF,
+          hora_aula: horaAula,
+          tipo: "Aula Particular",
+          estado: "Pendente",
+          valor: valorLimpo,
+        },
+      ]);
+
+      const t = "Aula Marcada ✅";
+      const m = `O Mestre marcou-te uma aula particular para dia ${diaF} às ${horaAula.substring(0, 5)}. A fatura foi gerada!`;
+      await supabase
+        .from("notificacoes")
+        .insert([{ socio_id: socioId, titulo: t, mensagem: m, lida: false }]);
+    }
+
+    mostrarAviso("Nocaute Técnico", "Aula agendada com sucesso!", "sucesso");
+    modalNovaAula.classList.add("hidden");
+
+    // Atualiza o painel
+    await carregarAulasParticulares();
+    await atualizarBadgeAulasPendentes();
+    if (estadoAula === "Aceite") await carregarMensalidades();
+  } catch (err) {
+    mostrarAviso("Erro", err.message, "erro");
+  } finally {
+    btnGuardar.innerHTML = txtOriginal;
+    btnGuardar.disabled = false;
+  }
+});
 
 export async function atualizarBadgeAulasPendentes() {
   const badgeId = document.getElementById("badgeAulas");

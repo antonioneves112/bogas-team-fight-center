@@ -1,7 +1,7 @@
-/* CSS/dashboard.css - Versão Final de Elite (Layout Restaurado, Cards Slim & Modais Corrigidos) */
+/* CSS/dashboard.css - Versão Final de Elite (Alinhamentos Corrigidos e Forçados na Mesma Linha) */
 
 * {
-  box-sizing: border-box; /* Regra de Ouro: impede que o padding cause scroll lateral */
+  box-sizing: border-box;
 }
 
 :root {
@@ -15,7 +15,7 @@
    BASE & LAYOUT
    ========================================================= */
 .page-dashboard {
-  background-color: #0a0a0a;
+  background-color: #080808 !important;
   color: #fff;
   min-height: 100vh;
   padding-bottom: 50px;
@@ -29,9 +29,10 @@
 }
 
 .glass-panel {
-  background: var(--glass);
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--border-light);
+  background: rgba(255, 255, 255, 0.03) !important;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
   border-radius: 15px;
 }
 
@@ -60,16 +61,22 @@
   font-size: 1.8rem;
 }
 
+.nav-actions {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
 .dash-header {
   display: flex;
-  justify-content: space-between; /* Empurra o título para a esquerda e o calendário para a direita */
-  align-items: center; /* Centra na vertical */
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 30px;
 }
 .dash-header h2 {
   font-family: "Orbitron", sans-serif;
   font-size: 2rem;
-  margin-bottom: 0; /* Remove a margem para ficar alinhado com o botão */
+  margin-bottom: 0;
 }
 .dash-header p {
   color: var(--muted);
@@ -92,6 +99,11 @@
   gap: 20px;
   padding: 25px;
   justify-content: flex-start;
+  cursor: pointer;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
 }
 
 .stat-icon {
@@ -114,6 +126,18 @@
   line-height: 1;
 }
 
+#cardPendentes:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(255, 77, 77, 0.2);
+  border-color: rgba(255, 77, 77, 0.4);
+}
+
+#cardTotalSocios:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(37, 211, 102, 0.2);
+  border-color: rgba(37, 211, 102, 0.4);
+}
+
 .dash-tabs {
   display: flex;
   gap: 20px;
@@ -132,7 +156,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px; /* Espaço tático para o badge */
+  gap: 10px;
   transition: all 0.3s ease;
   position: relative;
 }
@@ -145,111 +169,142 @@
 }
 
 /* =========================================================
-   CABEÇALHO DE CONTEÚDO
+   NOVO LAYOUT DE CABEÇALHO PARA TODAS AS ABAS
    ========================================================= */
-.content-header {
+.header-stack {
+  display: flex;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 20px;
+}
+
+.header-title-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  width: 100%;
 }
 
-.content-header h3 {
+.header-title-row h3 {
+  margin: 0;
+  text-align: left;
   font-family: "Orbitron", sans-serif;
-  font-size: 1.2rem;
+  font-size: 1.05rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.header-actions {
+.title-actions-cluster {
   display: flex;
-  gap: 12px;
+  gap: 8px;
   align-items: center;
+  flex-shrink: 0;
 }
 
+.btn-add-inline {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--accent);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-add-inline:hover {
+  background: rgba(37, 211, 102, 0.1);
+  border-color: var(--accent);
+  transform: scale(1.05);
+}
+
+.btn-add-inline i {
+  font-size: 1.4rem;
+}
+
+.btn-pdf {
+  color: #ff4d4d !important;
+  border-color: rgba(255, 77, 77, 0.2) !important;
+}
+.btn-pdf:hover {
+  background: rgba(255, 77, 77, 0.1) !important;
+  border-color: #ff4d4d !important;
+  transform: scale(1.05);
+}
+
+.header-actions-row {
+  width: 100%;
+}
+
+.full-width {
+  width: 100% !important;
+}
+
+.full-width input {
+  width: 100% !important;
+}
+
+/* =========================================================
+   BARRA DE PESQUISA UNIFICADA
+   ========================================================= */
 .search-container {
   position: relative;
   display: flex;
   align-items: center;
 }
+
+.search-container input {
+  height: 42px;
+  width: 220px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #fff;
+  padding: 10px 40px;
+  font-family: "Montserrat", sans-serif;
+  transition:
+    width 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+  outline: none;
+}
+
+.search-container input:focus {
+  width: 280px;
+  border-color: var(--accent);
+  box-shadow: 0 0 10px rgba(37, 211, 102, 0.15);
+}
+
 .search-icon {
   position: absolute;
   left: 12px;
   color: var(--muted);
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   pointer-events: none;
   z-index: 5;
 }
 
-#filtroNomeSocio,
-#filtroNomeMensalidade,
-#filtroNomeInativo {
-  height: 42px;
-  width: 220px;
-  background: var(--glass);
-  border: 1px solid rgba(37, 211, 102, 0.2);
-  border-radius: 8px;
-  color: #fff;
-  padding-left: 40px;
-  font-family: "Montserrat", sans-serif;
-  transition: width 0.3s ease;
-}
-
-#filtroNomeSocio:focus,
-#filtroNomeMensalidade:focus,
-#filtroNomeInativo:focus {
-  width: 280px;
-  border-color: var(--accent);
-  box-shadow: 0 0 15px rgba(37, 211, 102, 0.2);
-  outline: none;
-}
-
-/* BOTÕES GÉMEOS (Novo Sócio, Registar e PDF) */
-#btnAddSocio,
-#btnAddPagamento,
-#btnExportarPDF,
-#btnExportarSociosPDF {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 42px;
-  padding: 0 20px;
-  background: transparent;
-  border: 1px solid #fff;
-  color: #fff;
-  border-radius: 8px;
-  font-family: "Orbitron", sans-serif;
-  font-size: 0.85rem;
-  letter-spacing: 1px;
+.btn-limpar-pesquisa {
+  position: absolute;
+  right: 12px;
+  color: var(--muted);
+  font-size: 1.3rem;
   cursor: pointer;
-  transition: all 0.3s ease;
-  white-space: nowrap;
+  z-index: 5;
+  display: none;
+  transition: color 0.3s ease;
 }
 
-#btnAddSocio:hover,
-#btnAddPagamento:hover,
-#btnExportarPDF:hover,
-#btnExportarSociosPDF:hover {
-  background: transparent;
-  border-color: var(--accent);
-  color: var(--accent);
-  box-shadow: 0 0 15px rgba(37, 211, 102, 0.5);
-}
-
-#btnAddSocio i,
-#btnAddPagamento i,
-#btnExportarPDF i {
-  margin-right: 8px;
-  font-size: 1.1rem;
-}
-
-/* DESTAQUE NEON PARA NOVOS SÓCIOS NAS MENSALIDADES */
-.neon-destaque {
-  color: var(--accent) !important;
-  text-shadow: 0 0 12px rgba(37, 211, 102, 0.9);
-  font-weight: 700 !important;
+.btn-limpar-pesquisa:hover {
+  color: #ff4d4d;
 }
 
 /* =========================================================
-   CALENDÁRIO STEALTH (Apenas para o Filtro de Mensalidades)
+   CALENDÁRIO STEALTH E DROPDOWNS
    ========================================================= */
 #filtroMesMensalidade {
   position: relative;
@@ -275,12 +330,9 @@
   cursor: pointer;
 }
 
-/* =========================================================
-   CALENDÁRIOS NORMAIS E DROPDOWNS (Nos Formulários/Modais)
-   ========================================================= */
 .dash-form input[type="date"],
 .dash-form input[type="month"] {
-  color-scheme: dark; /* Força o ícone nativo do browser a ficar branco para contrastar no fundo escuro */
+  color-scheme: dark;
   cursor: text;
 }
 
@@ -290,23 +342,38 @@
 .table-responsive {
   overflow-x: auto;
 }
+
 .dash-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0 8px;
   font-size: 0.95rem;
 }
-.dash-table th,
-.dash-table td {
+
+.dash-table tr {
+  background: rgba(255, 255, 255, 0.02);
+  transition: background 0.3s ease;
+}
+
+.dash-table tr:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.dash-table th {
+  color: var(--accent);
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 1px;
   padding: 15px;
   text-align: left;
   border-bottom: 1px solid var(--border-light);
 }
-.dash-table th {
-  color: var(--muted);
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: 0.8rem;
-  letter-spacing: 1px;
+
+.dash-table td {
+  padding: 15px;
+  color: #e0e0e0;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .badge {
@@ -317,7 +384,6 @@
   text-transform: uppercase;
 }
 
-/* 🥊 AJUSTE DO BADGE PARA NÃO DESALINHAR O BOTÃO */
 .badge-tab-inline {
   background: #ff4d4d;
   color: #fff;
@@ -329,12 +395,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-
-  /* 🥊 POSICIONAMENTO ABSOLUTO: O Segredo para não estragar o layout */
   position: absolute;
   top: 5px;
   right: 5px;
-
   box-shadow: 0 0 10px rgba(255, 77, 77, 0.5);
   z-index: 10;
 }
@@ -359,9 +422,14 @@
   color: #00bfff;
   border: 1px solid rgba(0, 191, 255, 0.3);
 }
+.neon-destaque {
+  color: var(--accent) !important;
+  text-shadow: 0 0 12px rgba(37, 211, 102, 0.9);
+  font-weight: 700 !important;
+}
 
 /* =========================================================
-   MODAIS E FORMULÁRIOS (ESTRUTURA CORRIGIDA)
+   MODAIS E FORMULÁRIOS
    ========================================================= */
 .modal-overlay {
   position: fixed;
@@ -369,7 +437,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.85); /* Fundo bem escuro e desfocado */
+  background: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(5px);
   display: flex;
   justify-content: center;
@@ -386,7 +454,7 @@
   max-width: 550px;
   padding: 30px;
   max-height: 90vh;
-  overflow-y: auto; /* Permite scroll se o ecrã for muito pequeno */
+  overflow-y: auto;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
@@ -419,14 +487,13 @@
   color: #ff4d4d;
 }
 
-/* Campos do Formulário */
 .dash-form .form-group {
   margin-bottom: 20px;
 }
 
 .dash-form label {
   display: block;
-  text-align: left; /* 🥊 NOVO: Força as etiquetas a alinharem à esquerda */
+  text-align: left;
   margin-bottom: 8px;
   font-size: 0.8rem;
   color: var(--muted);
@@ -438,7 +505,7 @@
 .dash-form input,
 .dash-form select,
 .dash-form textarea {
-  width: 100%; /* Ocupa sempre o espaço total disponível */
+  width: 100%;
   padding: 12px 15px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--border-light);
@@ -447,21 +514,18 @@
   font-family: "Montserrat", sans-serif;
   font-size: 1rem;
   transition: all 0.3s ease;
-  color-scheme: dark; /* Força os menus nativos (dropdowns/calendários) a usar o tema escuro do OS */
+  color-scheme: dark;
 }
 
-/* Textarea específico para o Modal de Avisos */
 .dash-form textarea {
   resize: none;
 }
 
-/* Força explicitamente a cor de fundo das opções do Select para navegadores mais teimosos */
 .dash-form option {
   background-color: #1a1a1a;
   color: #ffffff;
 }
 
-/* Foco nas caixas (quando clicas para escrever) */
 .dash-form input:focus,
 .dash-form select:focus,
 .dash-form textarea:focus {
@@ -471,88 +535,19 @@
   background: rgba(255, 255, 255, 0.1);
 }
 
-/* Estrutura de colunas para ecrãs grandes */
 .form-row {
   display: flex;
   gap: 15px;
 }
 
 .form-row .form-group {
-  flex: 1; /* Divide o espaço irmamente */
+  flex: 1;
   margin-bottom: 20px;
 }
 
-/* =========================================================
-   BOTÃO "X" LIMPAR PESQUISA
-   ========================================================= */
-.btn-limpar-pesquisa {
-  position: absolute;
-  right: 12px;
-  color: var(--muted);
-  font-size: 1.3rem;
-  cursor: pointer;
-  z-index: 5;
-  display: none; /* Só aparece quando escreves algo! */
-  transition: color 0.3s ease;
-}
-
-.btn-limpar-pesquisa:hover {
-  color: #ff4d4d; /* Fica vermelho ao passar o rato */
-}
-
-/* Garante que o texto não fica por cima do X ao escrever nomes grandes */
-#filtroNomeSocio,
-#filtroNomeMensalidade,
-#filtroNomeInativo {
-  padding-right: 40px;
-}
-
-/* =========================================================
-   EFEITO CLICÁVEL NO CARTÃO DE PENDENTES
-   ========================================================= */
-#cardPendentes {
-  cursor: pointer;
-  transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease,
-    border-color 0.3s ease;
-}
-
-#cardPendentes:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 20px rgba(255, 77, 77, 0.2);
-  border-color: rgba(255, 77, 77, 0.4);
-}
-
-/* =========================================================
-   EFEITO CLICÁVEL NOS CARTÕES DE ESTATÍSTICAS
-   ========================================================= */
-#cardPendentes,
-#cardTotalSocios {
-  cursor: pointer;
-  transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease,
-    border-color 0.3s ease;
-}
-
-/* Efeito Vermelho para os Pendentes */
-#cardPendentes:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 20px rgba(255, 77, 77, 0.2);
-  border-color: rgba(255, 77, 77, 0.4);
-}
-
-/* Efeito Verde Neon para o Total de Sócios */
-#cardTotalSocios:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 20px rgba(37, 211, 102, 0.2);
-  border-color: rgba(37, 211, 102, 0.4);
-}
 /* =========================================================================
-   🥊 ESTILIZAÇÃO DO INPUT DE APROVAÇÃO - EURO À DIREITA
+   ESTILIZAÇÃO DO INPUT COM ÍCONE DE EURO À DIREITA E ALERTAS
    ========================================================================= */
-
 .input-wrapper-tatico {
   position: relative;
   display: flex;
@@ -562,15 +557,15 @@
 
 .input-wrapper-tatico i {
   position: absolute;
-  right: 15px; /* 🥊 Símbolo fixado no lado direito */
-  color: var(--accent); /* Cor verde neon */
+  right: 15px;
+  color: var(--accent);
   font-size: 1.2rem;
   z-index: 5;
 }
 
 .input-wrapper-tatico input {
-  padding-right: 45px !important; /* 🥊 Abre espaço no lado direito para o Euro */
-  padding-left: 15px !important; /* Padding normal à esquerda */
+  padding-right: 45px !important;
+  padding-left: 15px !important;
   background: rgba(255, 255, 255, 0.05) !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
   color: #fff !important;
@@ -587,308 +582,17 @@
   background: rgba(255, 255, 255, 0.08) !important;
 }
 
-/* 🥊 ALERTA DE PAGAMENTO PENDENTE NO HISTÓRICO */
 .linha-pendente-alerta {
-  color: #ff4d4d !important; /* Vermelho vibrante */
+  color: #ff4d4d !important;
   text-shadow: 0 0 10px rgba(255, 77, 77, 0.4);
   font-weight: 700 !important;
 }
-
-/* Garante que o valor e o tipo também herdam a cor se for pendente */
 .linha-pendente-alerta td {
   color: #ff4d4d !important;
 }
-/* =========================================================
-   RESPONSIVIDADE MOBILE DE ELITE (CARTÕES SLIM & MODAIS)
-   ========================================================= */
-@media (max-width: 768px) {
-  table td::before {
-    content: attr(
-      data-label
-    ); /* 🥊 O SEGREDO: Isto lê o nome que pomos no JS! */
-    font-size: 0.75rem;
-    color: var(--muted);
-    text-transform: uppercase;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-  }
-
-  /* 0. CABEÇALHO E BOTÕES NO MOBILE */
-  .dash-nav {
-    flex-direction: column;
-    gap: 15px;
-    padding: 20px 15px;
-  }
-
-  .nav-actions {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .nav-actions .btn-tatico {
-    flex: 1; /* Faz os botões dividirem o ecrã a meio */
-    padding: 12px 5px; /* Reduz o volume do botão */
-    font-size: 0.75rem; /* Ajusta a letra para não cortar */
-    white-space: nowrap; /* Impede que o texto quebre de linha */
-  }
-  /* 1. Títulos e Header */
-  .dash-header {
-    margin-bottom: 5px; /* Corta o espaço gigante que existia aqui */
-  }
-  .dash-header h2 {
-    font-size: 1.5rem;
-    text-align: center;
-    margin-bottom: 0;
-  }
-  .content-header {
-    flex-direction: column !important;
-    gap: 15px;
-    text-align: center;
-  }
-  .content-header h3 {
-    font-size: 1rem;
-    line-height: 1.4;
-  } /* 2. Tabs (Abas) Lado a Lado */
-  .dash-tabs {
-    flex-direction: row !important;
-    gap: 10px;
-    margin-bottom: 15px;
-  }
-  .tab-btn {
-    flex: 1;
-    width: auto !important;
-    height: 75px;
-    font-size: 0.65rem; /* 🥊 Reduzi ligeiramente para caber melhor nomes longos */
-    padding: 5px;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 2px; /* 🥊 Menos espaço entre ícone e texto */
-    text-align: center;
-    position: relative; /* 🥊 NECESSÁRIO para o badge absoluto */
-    overflow: hidden; /* Evita que o texto saia da caixa */
-    line-height: 1.2;
-  }
-  .tab-btn i {
-    font-size: 1.3rem; /* Ícone ligeiramente menor para dar ar ao texto */
-    margin-bottom: 2px;
-  }
-
-  /* 3. AÇÕES: PESQUISA E BOTÕES (DESIGN PREMIUM) */
-  .header-actions {
-    display: flex !important;
-    flex-wrap: wrap !important;
-    gap: 8px !important; /* 🥊 Reduzimos um pouco o gap para dar mais espaço aos botões */
-    width: 100%;
-  }
-
-  .search-container {
-    width: 100%;
-    margin-bottom: 5px;
-  }
-
-  #filtroNomeSocio,
-  #filtroNomeMensalidade,
-  #filtroNomeInativo {
-    width: 100% !important;
-  }
-
-  /* 🥊 Distribuição Tática Lado a Lado (Anti-Transbordo) */
-  #btnAddSocio,
-  #btnExportarSociosPDF,
-  #btnAddPagamento,
-  #btnExportarPDF {
-    flex: 1;
-    width: auto !important;
-    padding: 0 5px !important;
-    font-size: 0.75rem !important; /* 🥊 Letra ligeiramente ajustada */
-    letter-spacing: 0 !important; /* 🥊 O SEGREDO: Cortamos o espaçamento extra das letras no mobile */
-    white-space: nowrap;
-    min-width: 0;
-    overflow: hidden; /* 🥊 Corta qualquer texto que tente sair do botão */
-    text-overflow: ellipsis; /* Se o ecrã for minúsculo, mete "..." em vez de rebentar o design */
-  }
-
-  /* O ícone do Calendário fica com tamanho fixo perfeito */
-  #filtroMesMensalidade {
-    flex: 0 0 42px;
-    height: 42px;
-    padding: 0;
-  }
-  /* 4. CARTÕES DE DADOS (SLIM & SEM SCROLL LATERAL) */
-  table thead {
-    display: none !important;
-  }
-
-  table tr {
-    display: block;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid var(--border-light);
-    border-radius: 12px;
-    margin-bottom: 15px;
-    padding: 15px;
-    width: 100%;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  }
-
-  table td {
-    display: flex;
-    justify-content: space-between; /* Lado a lado: Label na esquerda, Valor na direita */
-    align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    text-align: right;
-  }
-
-  table td::before {
-    font-size: 0.75rem;
-    color: var(--muted);
-    text-transform: uppercase;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-  }
-
-  /* 🥊 INJEÇÃO DE TEXTO PARA A TABELA DE SÓCIOS */
-  #tabelaSocios td:nth-child(1)::before {
-    content: "Nome";
-    display: none;
-  } /* Oculto para destacar ao centro */
-  #tabelaSocios td:nth-child(2)::before {
-    content: "Modalidade";
-  }
-  #tabelaSocios td:nth-child(3)::before {
-    content: "Estado";
-  }
-  #tabelaSocios td:nth-child(4)::before {
-    content: "Mensalidade";
-  }
-
-  /* 🥊 INJEÇÃO DE TEXTO PARA A TABELA DE MENSALIDADES */
-  #tabelaMensalidades td:nth-child(1)::before {
-    content: "Mês / Ano";
-  }
-  #tabelaMensalidades td:nth-child(2)::before {
-    content: "Sócio";
-    display: none;
-  } /* Oculto para destacar ao centro */
-  #tabelaMensalidades td:nth-child(3)::before {
-    content: "Tipo";
-  }
-  #tabelaMensalidades td:nth-child(4)::before {
-    content: "Modalidade";
-  }
-  #tabelaMensalidades td:nth-child(5)::before {
-    content: "Valor";
-  }
-  #tabelaMensalidades td:nth-child(6)::before {
-    content: "Estado";
-  }
-
-  /* Destaque Tático (Nome do Atleta ao Centro) */
-  #tabelaSocios td:nth-child(1),
-  #tabelaMensalidades td:nth-child(2) {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 5px 0 15px 0;
-    border-bottom: 1px solid rgba(37, 211, 102, 0.2);
-    color: var(--accent);
-    font-size: 1.1rem;
-    font-weight: bold;
-  }
-
-  /* Ações (Editar, Apagar, Pagar) sempre ao fundo e centradas */
-  table td:last-child {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    padding-top: 15px;
-    border-bottom: none;
-  }
-
-  table td:last-child::before {
-    display: none;
-  }
-
-  /* 5. Ajuste de Estatísticas (Lado a Lado - Ultra Slim) */ /* 5. Ajuste de Estatísticas (Grelha 2x2 Perfeita com as Tabs) */
-  .dash-stats {
-    grid-template-columns: repeat(2, 1fr);
-    margin-top: 10px;
-    margin-bottom: 10px; /* 🥊 Cola os cards de cima aos de baixo */
-    gap: 10px;
-  }
-
-  .stat-card {
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    padding: 5px;
-    height: 75px; /* 🥊 A MESMA ALTURA CRAVADA DAS TABS */
-    gap: 2px;
-    min-height: auto;
-  }
-
-  .stat-icon {
-    font-size: 1.1rem;
-    padding: 2px 8px; /* Caixa de cor muito fina para não roubar espaço */
-    border-radius: 6px;
-  }
-
-  .stat-info {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .stat-info h3 {
-    font-size: 0.65rem;
-    margin-bottom: 1px;
-    line-height: 1.1;
-    white-space: nowrap; /* Evita que o texto quebre a linha e expanda o card */
-  }
-
-  .stat-info p {
-    font-size: 1rem; /* Número mais compacto */
-    margin: 0;
-    font-weight: 700;
-  }
-  /* 6. COMPORTAMENTO DOS MODAIS NO MOBILE */
-  .form-row {
-    flex-direction: column !important; /* Empilha os campos um em cima do outro! */
-    gap: 0 !important;
-  }
-
-  .modal-content {
-    padding: 20px;
-    width: 95%;
-  }
-
-  .modal-header h3 {
-    font-size: 1.1rem;
-  }
-}
-
-/* Utilitários para Tabelas e Formulários */
-.table-empty-state {
-  text-align: center;
-  color: #888;
-}
-
-.file-input-styled {
-  padding: 9px 15px;
-  cursor: pointer;
-}
-
-.btn-full-width {
-  width: 100%;
-  margin-top: 15px;
-}
 
 /* =========================================================
-   NOTIFICAÇÕES TOAST (SUBSTITUTO DO ALERT NATIVO)
+   NOTIFICAÇÕES TOAST
    ========================================================= */
 .toast-container {
   position: fixed;
@@ -913,40 +617,33 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  transform: translateX(120%); /* Começa fora do ecrã */
+  transform: translateX(120%);
   transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .toast.show {
-  transform: translateX(0); /* Desliza para dentro */
+  transform: translateX(0);
 }
-
 .toast i {
   font-size: 1.5rem;
 }
-
 .toast-sucesso {
-  border-left: 4px solid var(--accent); /* Verde Bogas */
+  border-left: 4px solid var(--accent);
 }
-
 .toast-sucesso i {
   color: var(--accent);
 }
-
 .toast-erro {
-  border-left: 4px solid #ff4d4d; /* Vermelho Erro */
+  border-left: 4px solid #ff4d4d;
 }
-
 .toast-erro i {
   color: #ff4d4d;
 }
-
 .toast-content h4 {
   margin: 0 0 4px 0;
   font-family: "Orbitron", sans-serif;
   font-size: 0.9rem;
 }
-
 .toast-content p {
   margin: 0;
   font-size: 0.85rem;
@@ -954,23 +651,14 @@
 }
 
 /* =========================================================
-   AJUSTES DO MODAL DE BROADCAST E NAVEGAÇÃO
+   MODAL DE CONFIRMAÇÃO E AVISOS
    ========================================================= */
-.nav-actions {
-  display: flex;
-  gap: 15px;
-  align-items: center;
-}
-
 .modal-desc-broadcast {
   color: var(--muted);
   font-size: 0.85rem;
   margin-bottom: 20px;
 }
 
-/* =========================================================
-   MODAL DE CONFIRMAÇÃO (SAIR/LOGOUT)
-   ========================================================= */
 .modal-confirm-box {
   text-align: center;
   max-width: 420px;
@@ -1028,17 +716,14 @@
 }
 
 /* =========================================================
-   🥊 AGRUPAMENTO E BOTÕES DO PAINEL (CALENDÁRIO E GRUPO)
+   AGRUPAMENTO E BOTÕES DO PAINEL (CALENDÁRIO E GRUPO)
    ========================================================= */
-
-/* Alinha o calendário e o botão lado a lado com o mesmo espaço */
 .header-actions-group {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-/* Força os DOIS botões a terem o tamanho exato ao milímetro */
 .dash-filter,
 .btn-icon-red {
   width: 46px !important;
@@ -1049,7 +734,6 @@
   box-sizing: border-box !important;
 }
 
-/* O estilo específico da cor do botão vermelho */
 .btn-icon-red {
   display: flex;
   align-items: center;
@@ -1070,89 +754,28 @@
 }
 
 /* =========================================================
-   🥊 ALINHAMENTO DO CABEÇALHO (VISÃO GERAL E BOTÕES)
+   GESTÃO DE AULAS & NOTIFICAÇÕES (DASHBOARD)
    ========================================================= */
-.dash-header {
-  display: flex;
-  align-items: center; /* Centra tudo perfeitamente na mesma linha horizontal */
-  justify-content: space-between; /* Texto à esquerda, botões à direita */
-  margin-top: 5px !important; /* Reduz drasticamente o espaço para a barra de cima */
-  margin-bottom: 10px; /* Mantém um espaço saudável para os cartões de baixo */
-}
-
-.dash-header h2 {
-  margin: 0 !important; /* Corta as margens invisíveis do navegador que desalinham o texto */
-  line-height: 1; /* Deixa o texto bem compacto */
-}
-
-/* =========================================================================
-   🥊 ARMADURA DA BARRA DE PESQUISA - AULAS PARTICULARES
-   ========================================================================= */
-#view-aulas .search-container {
-  position: relative !important;
-  display: flex !important;
-  align-items: center !important;
-  width: 100%;
-}
-
-#view-aulas .search-container input {
-  background: rgba(0, 0, 0, 0.4) !important; /* Fundo escuro */
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  border-radius: 8px !important;
-  padding: 10px 15px 10px 40px !important; /* 🥊 40px empurra o texto para a frente do ícone! */
-  color: #fff !important;
-  font-family: "Montserrat", sans-serif !important;
-  width: 100% !important;
-  outline: none !important;
-}
-
-#view-aulas .search-container input:focus {
-  border-color: var(--accent) !important; /* Fica verde quando selecionado */
-  box-shadow: 0 0 10px rgba(37, 211, 102, 0.15) !important;
-}
-
-#view-aulas .search-container .search-icon {
-  position: absolute !important;
-  left: 12px !important;
-  color: var(--muted) !important;
-  font-size: 1.2rem !important;
-  pointer-events: none !important; /* Impede o ícone de bloquear o clique */
-}
-
-/* =========================================================================
-   🥊 GESTÃO DE AULAS & NOTIFICAÇÕES (DASHBOARD)
-   ========================================================================= */
-
-/* Estilo do Botão com Badge INLINE (Ajustado) */
 .tab-btn[data-target="view-aulas"] {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px; /* Espaço para o badge ao lado do texto */
+  gap: 8px;
 }
 
-/* Nova regra para o badge ao lado do texto */
 .badge-tab {
   background: #ff4d4d;
   color: #fff;
   font-size: 0.75rem;
   font-weight: 800;
-
-  /* Formato Circular */
   width: 20px;
   height: 20px;
-  border-radius: 50%; /* Garante que é uma bolinha perfeita */
-
-  /* Alinhamento do número ao centro */
+  border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
-  /* Posicionamento Inline */
   margin-left: 5px;
   flex-shrink: 0;
-
-  /* Efeito Neon */
   box-shadow: 0 0 12px rgba(255, 77, 77, 0.6);
   line-height: 1;
 }
@@ -1161,7 +784,6 @@
   display: none !important;
 }
 
-/* Elementos do Modal de Aprovação */
 .aviso-horarios-modal {
   border-left: 3px solid var(--accent);
   padding-left: 10px;
@@ -1176,86 +798,8 @@
 }
 
 /* =========================================================
-   🥊 CORREÇÃO DE HIERARQUIA - TEMA DARK & GLASS
+   DESIGN PREMIUM PARA BOTÃO "CARREGAR MAIS"
    ========================================================= */
-
-/* Garante que o fundo da página é sempre negro profundo */
-.page-dashboard {
-  background-color: #080808 !important;
-  color: #ffffff;
-}
-
-/* Painéis de Vidro (Glassmorphism) corrigidos */
-.glass-panel {
-  background: rgba(255, 255, 255, 0.03) !important;
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
-}
-
-/* Especificidade para as Tabelas no modo Dark */
-.dash-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0 8px; /* Dá espaço entre as linhas para parecerem cards */
-}
-
-.dash-table tr {
-  background: rgba(255, 255, 255, 0.02);
-  transition: background 0.3s ease;
-}
-
-.dash-table tr:hover {
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.dash-table th {
-  color: var(--accent); /* Verde Neon */
-  font-family: "Orbitron", sans-serif;
-  font-size: 0.75rem;
-  letter-spacing: 1px;
-  padding: 15px;
-}
-
-.dash-table td {
-  padding: 15px;
-  color: #e0e0e0;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-/* =========================================================================
-   🥊 AJUSTE DE ESPAÇOS - MOBILE (Subir Visão Geral e Stats)
-   ========================================================================= */
-@media (max-width: 899px) {
-  /* 1. Emagrecer a barra de navegação (Sobe os botões Avisos e Sair) */
-  .dash-nav {
-    padding: 8px 10px !important; /* Corta a "gordura" à volta dos botões */
-    margin-bottom: 5px !important; /* Reduz o espaço abaixo da barra */
-  }
-
-  /* 2. Colar o bloco principal lá em cima */
-  .dash-container {
-    padding-top: 2px !important; /* Quase a tocar na barra! */
-  }
-
-  /* 3. Título "Visão Geral" e ações */
-  .dash-header {
-    margin-top: 0 !important;
-    margin-bottom: 10px !important; /* Puxa os stats ainda mais para cima */
-  }
-
-  /* 4. Respiro antes das tabs (mantém-se para elas não colarem aos stats) */
-  .dash-stats {
-    margin-bottom: 25px !important;
-  }
-}
-
-/* =========================================================================
-   🥊 DESIGN PREMIUM PARA BOTÃO "CARREGAR MAIS" (MOBILE E DESKTOP)
-   ========================================================================= */
-
-/* 1. Libertar o botão da "caixa" do cartão no mobile */
 table tr:has(.btn-carregar-mais),
 table tr:has(.btn-carregar-mais-mens) {
   background: transparent !important;
@@ -1274,41 +818,33 @@ table tr:has(.btn-carregar-mais-mens) td {
   padding: 0 !important;
 }
 
-/* Esconder qualquer label móvel que tente aparecer ao lado */
 table tr:has(.btn-carregar-mais) td::before,
 table tr:has(.btn-carregar-mais-mens) td::before {
   display: none !important;
 }
 
-/* 2. O Novo Design do Botão (Formato Pílula Neon) */
 .btn-carregar-mais,
 .btn-carregar-mais-mens {
-  background: rgba(
-    37,
-    211,
-    102,
-    0.05
-  ) !important; /* Fundo escuro muito subtil */
+  background: rgba(37, 211, 102, 0.05) !important;
   border: 1px solid var(--accent) !important;
   color: var(--accent) !important;
-  border-radius: 30px !important; /* Formato elegante de pílula redonda */
+  border-radius: 30px !important;
   padding: 12px 25px !important;
   font-family: "Orbitron", sans-serif !important;
-  font-size: 0.8rem !important; /* Letra ligeiramente menor para caber */
+  font-size: 0.8rem !important;
   letter-spacing: 1px !important;
   text-transform: uppercase !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   gap: 8px !important;
-  white-space: nowrap !important; /* Impede o texto de quebrar em 2 linhas */
+  white-space: nowrap !important;
   transition: all 0.3s ease !important;
   box-shadow: 0 0 15px rgba(37, 211, 102, 0.1) !important;
-  width: auto !important; /* Deixa de forçar 100% da largura */
-  max-width: 90% !important; /* Mas respeita as margens do telemóvel */
+  width: auto !important;
+  max-width: 90% !important;
 }
 
-/* Efeito ao passar o dedo/rato */
 .btn-carregar-mais:hover,
 .btn-carregar-mais-mens:hover,
 .btn-carregar-mais:active,
@@ -1318,47 +854,106 @@ table tr:has(.btn-carregar-mais-mens) td::before {
   transform: translateY(-2px) !important;
 }
 
+.table-empty-state {
+  text-align: center;
+  color: #888;
+}
+
+.file-input-styled {
+  padding: 9px 15px;
+  cursor: pointer;
+}
+
+.btn-full-width {
+  width: 100%;
+  margin-top: 15px;
+}
+
 /* =========================================================
-   🥊 ATUALIZAÇÃO DE ELITE: UNIFICAÇÃO DOS BOTÕES NO MOBILE
+   RESPONSIVIDADE MOBILE DE ELITE
    ========================================================= */
 @media (max-width: 899px) {
-  /* 1. Contentor Principal das Ações no Fundo do Card */
+  .dash-nav {
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    padding: 15px 15px !important;
+    margin-bottom: 20px !important;
+  }
+
+  .dash-logo span {
+    font-size: 0.85rem !important;
+  }
+
+  .nav-actions {
+    width: auto !important;
+    gap: 10px !important;
+    justify-content: flex-end !important;
+  }
+
+  .nav-actions .btn-tatico span {
+    display: none !important;
+  }
+
+  .nav-actions .btn-tatico {
+    flex: unset !important;
+    width: 42px !important;
+    height: 42px !important;
+    border-radius: 50% !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+  }
+
+  .nav-actions .btn-tatico i {
+    font-size: 1.3rem !important;
+    margin: 0 !important;
+  }
+
+  .dash-container {
+    padding-top: 2px !important;
+  }
+  .dash-header {
+    margin-top: 0 !important;
+    margin-bottom: 10px !important;
+  }
+  .dash-stats {
+    margin-bottom: 25px !important;
+  }
+
   table td:last-child {
     display: flex;
-    justify-content: center; /* Centra a barra no card */
+    justify-content: center;
     padding-top: 15px;
     padding-bottom: 5px;
     border-bottom: none;
     margin-top: 10px;
-    border-top: 1px solid rgba(255, 255, 255, 0.05); /* Linha divisória subtil */
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
   }
 
-  /* 2. A "Armadura" Unificada (Onde estão todos os botões) */
   table td:last-child > div {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 2px !important; /* Quase colados para parecer uma peça única */
-
-    /* Estilo Glass Tático */
+    gap: 2px !important;
     background: rgba(255, 255, 255, 0.03) !important;
     border: 1px solid rgba(255, 255, 255, 0.08) !important;
     padding: 2px !important;
-    border-radius: 50px !important; /* Forma de pílula unificada */
+    border-radius: 50px !important;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
   }
 
-  /* 3. Padronização dos Botões de Ícone (Editar, Apagar) */
   .btn-acao {
     width: 38px !important;
     height: 38px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    background: transparent !important; /* Remove fundos anteriores */
-    border: none !important; /* Remove bordas individuais */
+    background: transparent !important;
+    border: none !important;
     border-radius: 50% !important;
-    color: var(--muted) !important; /* Cor mais discreta por defeito */
+    color: var(--muted) !important;
     transition: all 0.2s ease !important;
     margin: 0 !important;
     padding: 0 !important;
@@ -1368,7 +963,6 @@ table tr:has(.btn-carregar-mais-mens) td::before {
     font-size: 1.1rem !important;
   }
 
-  /* Hover Tático para Ícones */
   .btn-acao.btn-edit:hover {
     color: #fff !important;
     background: rgba(255, 255, 255, 0.05) !important;
@@ -1378,16 +972,14 @@ table tr:has(.btn-carregar-mais-mens) td::before {
     background: rgba(255, 77, 77, 0.1) !important;
   }
 
-  /* 4. Remodelagem do Botão "Faturar" e Status "Regularizada" */
-  /* Removemos a borda branca grossa e o estilo de caixa antiga */
   .btn-tatico.btn-small.btn-faturar-aula-direto,
   table td:last-child span[style*="color: var(--accent)"] {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    height: 38px !important; /* Mesma altura dos ícones */
-    padding: 0 15px !important; /* Respiro lateral para o texto */
-    margin: 0 0 0 4px !important; /* Pequeno respiro do lixo */
+    height: 38px !important;
+    padding: 0 15px !important;
+    margin: 0 0 0 4px !important;
     border-radius: 50px !important;
     font-size: 0.7rem !important;
     font-weight: 800 !important;
@@ -1397,7 +989,6 @@ table tr:has(.btn-carregar-mais-mens) td::before {
     box-sizing: border-box !important;
   }
 
-  /* Estilo Específico para "REGULARIZADA" */
   table td:last-child span[style*="color: var(--accent)"] {
     background: rgba(37, 211, 102, 0.1) !important;
     border: 1px solid rgba(37, 211, 102, 0.3) !important;
@@ -1405,7 +996,6 @@ table tr:has(.btn-carregar-mais-mens) td::before {
     text-shadow: 0 0 10px rgba(37, 211, 102, 0.4) !important;
   }
 
-  /* Estilo Específico para "€ FATURAR" */
   .btn-tatico.btn-small.btn-faturar-aula-direto {
     background: rgba(255, 255, 255, 0.05) !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
@@ -1417,7 +1007,6 @@ table tr:has(.btn-carregar-mais-mens) td::before {
     margin-right: 5px !important;
   }
 
-  /* Efeito Hover no Faturar */
   .btn-tatico.btn-small.btn-faturar-aula-direto:hover {
     background: rgba(37, 211, 102, 0.15) !important;
     border-color: var(--accent) !important;
@@ -1426,53 +1015,246 @@ table tr:has(.btn-carregar-mais-mens) td::before {
   }
 }
 
-/* =========================================================================
-   🥊 AJUSTES DO MODAL SLIM (OPÇÕES DE DESPESA)
-   ========================================================================= */
+@media (max-width: 768px) {
+  table td::before {
+    content: attr(data-label);
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+
+  .dash-header h2 {
+    font-size: 1.5rem;
+    text-align: center;
+    margin-bottom: 0;
+  }
+
+  .dash-tabs {
+    flex-direction: row !important;
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+
+  .tab-btn {
+    flex: 1;
+    width: auto !important;
+    height: 75px;
+    font-size: 0.65rem;
+    padding: 5px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 2px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    line-height: 1.2;
+  }
+  .tab-btn i {
+    font-size: 1.3rem;
+    margin-bottom: 2px;
+  }
+
+  .search-container {
+    width: 100%;
+    margin-bottom: 5px;
+  }
+
+  .search-container input {
+    width: 100% !important;
+  }
+
+  #filtroMesMensalidade {
+    flex: 0 0 42px;
+    height: 42px;
+    padding: 0;
+  }
+
+  table thead {
+    display: none !important;
+  }
+
+  table tr {
+    display: block;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    margin-bottom: 15px;
+    padding: 15px;
+    width: 100%;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  }
+
+  table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    text-align: right;
+  }
+
+  table td::before {
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+
+  #tabelaSocios td:nth-child(1)::before {
+    content: "Nome";
+    display: none;
+  }
+  #tabelaSocios td:nth-child(2)::before {
+    content: "Modalidade";
+  }
+  #tabelaSocios td:nth-child(3)::before {
+    content: "Estado";
+  }
+  #tabelaSocios td:nth-child(4)::before {
+    content: "Mensalidade";
+  }
+
+  #tabelaMensalidades td:nth-child(1)::before {
+    content: attr(data-label);
+  }
+  #tabelaMensalidades td:nth-child(2)::before {
+    content: "Sócio";
+    display: none;
+  }
+  #tabelaMensalidades td:nth-child(3)::before {
+    content: "Tipo";
+  }
+  #tabelaMensalidades td:nth-child(4)::before {
+    content: "Modalidade";
+  }
+  #tabelaMensalidades td:nth-child(5)::before {
+    content: "Valor";
+  }
+  #tabelaMensalidades td:nth-child(6)::before {
+    content: "Estado";
+  }
+
+  #tabelaSocios td:nth-child(1),
+  #tabelaMensalidades td:nth-child(2) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 5px 0 15px 0;
+    border-bottom: 1px solid rgba(37, 211, 102, 0.2);
+    color: var(--accent);
+    font-size: 1.1rem;
+    font-weight: bold;
+  }
+
+  table td:last-child::before {
+    display: none;
+  }
+
+  .dash-stats {
+    grid-template-columns: repeat(2, 1fr);
+    margin-top: 10px;
+    margin-bottom: 10px;
+    gap: 10px;
+  }
+
+  .stat-card {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 5px;
+    height: 75px;
+    gap: 2px;
+    min-height: auto;
+  }
+
+  .stat-icon {
+    font-size: 1.1rem;
+    padding: 2px 8px;
+    border-radius: 6px;
+  }
+
+  .stat-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .stat-info h3 {
+    font-size: 0.65rem;
+    margin-bottom: 1px;
+    line-height: 1.1;
+    white-space: nowrap;
+  }
+
+  .stat-info p {
+    font-size: 1rem;
+    margin: 0;
+    font-weight: 700;
+  }
+
+  .form-row {
+    flex-direction: column !important;
+    gap: 0 !important;
+  }
+
+  .modal-content {
+    padding: 20px;
+    width: 95%;
+  }
+
+  .modal-header h3 {
+    font-size: 1.1rem;
+  }
+}
+
 #modalOpcoesDespesa .modal-content {
   max-width: 350px;
-  min-height: auto !important; /* Corta a altura mínima herdada */
-  padding-bottom: 25px; /* Reduz o espaço no fundo */
+  min-height: auto !important;
+  padding-bottom: 25px;
 }
 
 #modalOpcoesDespesa .modal-header {
-  margin-bottom: 10px; /* Aproxima o título dos botões */
+  margin-bottom: 10px;
   padding-bottom: 10px;
 }
 
 #modalOpcoesDespesa .opcoes-grid {
   display: flex;
   flex-direction: column;
-  gap: 12px; /* Reduz o espaço entre os dois botões */
+  gap: 12px;
 }
 
-/* 📱 AJUSTE MICRO-MOBILE: DASHBOARD (< 400px) */
 @media (max-width: 400px) {
   .dash-nav {
-    padding: 10px 8px !important; /* Reduz a gordura lateral da barra de topo */
+    padding: 10px 8px !important;
   }
 
   .dash-header h2 {
-    font-size: 1.2rem !important; /* Título "Visão Geral" mais compacto */
+    font-size: 1.2rem !important;
   }
 
-  /* Botões de filtro e calendário */
   .header-actions-group .dash-filter,
   .btn-icon-red {
     width: 38px !important;
     height: 38px !important;
   }
 
-  /* Abas de navegação (Sócios, Mensalidades, Aulas) */
   .tab-btn {
     font-size: 0.55rem !important;
     padding: 5px 2px !important;
     height: 65px !important;
   }
 
-  /* Ações dentro das tabelas (Editar, Apagar, Faturar) */
+  /* 🥊 O SEGREDO DO "REGULARIZADA" - Força a mesma linha a não quebrar */
   table td:last-child > div {
-    flex-wrap: wrap !important;
+    flex-wrap: nowrap !important;
     gap: 4px !important;
   }
 
@@ -1481,8 +1263,11 @@ table tr:has(.btn-carregar-mais-mens) td::before {
     height: 32px !important;
   }
 
-  .btn-tatico.btn-small.btn-faturar-aula-direto {
+  /* Reduz ligeiramente o padding para garantir que cabe no telemóvel */
+  .btn-tatico.btn-small.btn-faturar-aula-direto,
+  table td:last-child span[style*="color: var(--accent)"] {
     font-size: 0.6rem !important;
     height: 32px !important;
+    padding: 0 10px !important;
   }
 }

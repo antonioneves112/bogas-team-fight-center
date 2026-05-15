@@ -18,11 +18,7 @@
     <link rel="stylesheet" href="./CSS/dashboard.css" />
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-    <script>
-        window.jsPDF = window.jspdf.jsPDF;
-    </script>
-
+    <script>window.jsPDF = window.jspdf.jsPDF;</script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -38,10 +34,10 @@
         </div>
         <div class="nav-actions">
             <button id="btnAbrirModalBroadcast" class="btn-tatico btn-small">
-                <i class='bx bx-message-square-dots'></i> Avisos
+                <i class='bx bx-message-square-dots'></i> <span>Avisos</span>
             </button>
             <button id="btnLogout" class="btn-tatico btn-small">
-                <i class='bx bx-log-out'></i> Sair
+                <i class='bx bx-log-out'></i> <span>Sair</span>
             </button>
         </div>
     </nav>
@@ -97,21 +93,24 @@
 
         <div id="view-socios" class="tab-content active">
             <section class="dash-content glass-panel">
-                <div class="content-header">
-                    <h3>Sócios Registados</h3>
-
-                    <div class="header-actions">
-                        <div class="search-container">
+                <div class="content-header header-stack">
+                    <div class="header-title-row">
+                        <h3>Sócios Registados</h3>
+                        <div class="title-actions-cluster">
+                            <button class="btn-add-inline" id="btnAddSocio" title="Novo Sócio">
+                                <i class='bx bx-plus'></i>
+                            </button>
+                            <button class="btn-add-inline btn-pdf" id="btnExportarSociosPDF" title="Exportar PDF">
+                                <i class='bx bxs-file-pdf'></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="header-actions-row">
+                        <div class="search-container full-width">
                             <i class='bx bx-search search-icon'></i>
                             <input type="text" id="filtroNomeSocio" autocomplete="off" placeholder="Procurar nome...">
                             <i class='bx bx-x btn-limpar-pesquisa' id="limparSocio" title="Limpar pesquisa"></i>
                         </div>
-                        <button class="btn-tatico btn-small" id="btnAddSocio">
-                            <i class='bx bx-user-plus'></i> NOVO SÓCIO
-                        </button>
-                        <button class="btn-tatico btn-small" id="btnExportarSociosPDF">
-                            <i class='bx bxs-file-pdf'></i> PDF
-                        </button>
                     </div>
                 </div>
 
@@ -138,11 +137,12 @@
 
         <div id="view-inativos" class="tab-content hidden">
             <section class="dash-content glass-panel">
-                <div class="content-header">
-                    <h3>Sócios Inativos</h3>
-
-                    <div class="header-actions">
-                        <div class="search-container">
+                <div class="content-header header-stack">
+                    <div class="header-title-row">
+                        <h3>Sócios Inativos</h3>
+                    </div>
+                    <div class="header-actions-row">
+                        <div class="search-container full-width">
                             <i class='bx bx-search search-icon'></i>
                             <input type="text" id="filtroNomeInativo" autocomplete="off"
                                 placeholder="Procurar ex-atleta...">
@@ -173,23 +173,25 @@
 
         <div id="view-mensalidades" class="tab-content hidden">
             <section class="dash-content glass-panel">
-
-                <div class="content-header">
-                    <h3 id="tituloMensalidade">Controlo de Mensalidades</h3>
-
-                    <div class="header-actions">
-                        <div class="search-container">
+                <div class="content-header header-stack">
+                    <div class="header-title-row">
+                        <h3 id="tituloMensalidade">Mensalidades</h3>
+                        <div class="title-actions-cluster">
+                            <button class="btn-add-inline" id="btnAddPagamento" title="Faturar Mensalidade">
+                                <i class='bx bx-euro'></i>
+                            </button>
+                            <button class="btn-add-inline btn-pdf" id="btnExportarPDF" title="Exportar PDF">
+                                <i class='bx bxs-file-pdf'></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="header-actions-row">
+                        <div class="search-container full-width">
                             <i class='bx bx-search search-icon'></i>
                             <input type="text" id="filtroNomeMensalidade" autocomplete="off"
                                 placeholder="Procurar nome...">
                             <i class='bx bx-x btn-limpar-pesquisa' id="limparMensalidade" title="Limpar pesquisa"></i>
                         </div>
-                        <button class="btn-tatico btn-small" id="btnAddPagamento">
-                            <i class='bx bx-euro'></i>Faturar
-                        </button>
-                        <button class="btn-tatico btn-small" id="btnExportarPDF">
-                            <i class='bx bxs-file-pdf'></i> PDF
-                        </button>
                     </div>
                 </div>
 
@@ -197,7 +199,7 @@
                     <table class="dash-table">
                         <thead>
                             <tr>
-                                <th>PERÍODO / DATA</th>
+                                <th>Data</th>
                                 <th>Sócio</th>
                                 <th>Tipo</th>
                                 <th>Modalidade</th>
@@ -218,10 +220,17 @@
 
         <div id="view-aulas" class="tab-content hidden">
             <section class="dash-content glass-panel">
-                <div class="content-header">
-                    <h3>Pedidos de Aulas Particulares</h3>
-                    <div class="header-actions">
-                        <div class="search-container">
+                <div class="content-header header-stack">
+                    <div class="header-title-row">
+                        <h3>Aulas Particulares</h3>
+                        <div class="title-actions-cluster">
+                            <button class="btn-add-inline" id="btnAddAulaAdmin" title="Agendar Nova Aula">
+                                <i class='bx bx-plus'></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="header-actions-row">
+                        <div class="search-container full-width">
                             <i class='bx bx-search search-icon'></i>
                             <input type="text" id="filtroAtletaAula" autocomplete="off"
                                 placeholder="Procurar atleta...">
@@ -653,8 +662,7 @@
             <i class='bx bx-trash bx-tada icon-confirm-warning'></i>
             <h2 class="title-confirm">Eliminar Aula?</h2>
             <p class="desc-confirm">Tens a certeza que queres eliminar este pedido? O registo desaparecerá completamente
-                do
-                sistema.</p>
+                do sistema.</p>
             <div class="actions-confirm">
                 <button id="btnCancelarDeleteAula" class="btn-tatico btn-outline-muted">Cancelar</button>
                 <button id="btnConfirmarDeleteAula" class="btn-tatico btn-danger-action">Sim, Eliminar</button>
@@ -772,7 +780,56 @@
             </div>
         </div>
     </div>
+    <div id="modalNovaAulaAdmin" class="modal-overlay hidden modal-z-index">
+        <div class="modal-content glass-panel">
+            <div class="modal-header">
+                <h3><i class='bx bx-plus-circle'></i> Agendar Aula Particular</h3>
+                <button id="btnFecharModalNovaAula" class="btn-fechar"><i class='bx bx-x'></i></button>
+            </div>
 
+            <form id="formNovaAulaAdmin" class="dash-form">
+                <div class="form-group">
+                    <label>Selecionar Sócio</label>
+                    <input type="text" id="novaAulaSocioSearch" list="listaSociosAula" placeholder="Procurar atleta..."
+                        required autocomplete="off">
+                    <datalist id="listaSociosAula"></datalist>
+                    <input type="hidden" id="novaAulaSocioId">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Data da Aula</label>
+                        <input type="date" id="novaAulaData" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Hora</label>
+                        <input type="time" id="novaAulaHora" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Valor (€) <span style="font-size: 0.7rem; color: #aaa;">(Opcional)</span></label>
+                        <div class="input-wrapper-tatico">
+                            <input type="number" id="novaAulaValor" step="0.50" min="0" placeholder="0.00">
+                            <i class='bx bx-euro'></i>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Estado Inicial</label>
+                        <select id="novaAulaEstado" required>
+                            <option value="Pendente">Pendente (Por Confirmar)</option>
+                            <option value="Aceite" selected>Aceite (Agendada)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-tatico btn-full-width" id="btnGuardarNovaAula">
+                    Registar Aula <i class='bx bx-check-circle'></i>
+                </button>
+            </form>
+        </div>
+    </div>
     <script src="./JS/app-routing.js" defer></script>
     <script>
         if ('serviceWorker' in navigator) {
