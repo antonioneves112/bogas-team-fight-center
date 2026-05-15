@@ -197,7 +197,7 @@
                     <table class="dash-table">
                         <thead>
                             <tr>
-                                <th>Mês / Ano</th>
+                                <th>PERÍODO / DATA</th>
                                 <th>Sócio</th>
                                 <th>Tipo</th>
                                 <th>Modalidade</th>
@@ -758,6 +758,21 @@
             </div>
         </div>
     </div>
+
+    <div id="modalConfirmRecusarAula" class="modal-overlay hidden">
+        <div class="modal-content glass-panel modal-confirm-box">
+            <i class='bx bx-x-circle bx-tada icon-confirm-warning'></i>
+            <h2 class="title-confirm">Recusar Aula?</h2>
+            <p class="desc-confirm">Tens a certeza que queres recusar a aula particular? <strong
+                    id="spanDataRecusarAula" style="color: #fff;">--/--/----</strong>?<br>O atleta será notificado desta
+                decisão.</p>
+            <div class="actions-confirm">
+                <button id="btnCancelarRecusarAula" class="btn-tatico btn-outline-muted">Cancelar</button>
+                <button id="btnConfirmarRecusarAula" class="btn-tatico btn-danger-action">Sim, Recusar</button>
+            </div>
+        </div>
+    </div>
+
     <script src="./JS/app-routing.js" defer></script>
     <script>
         if ('serviceWorker' in navigator) {

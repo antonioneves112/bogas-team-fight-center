@@ -43,9 +43,24 @@ export function renderizarTabelaMensalidades(lista, manterPagina = false) {
       m.socios.data_inscricao.startsWith(mesReferencia);
     const classeNeon = isNovoNoMes ? "neon-destaque" : "";
 
+    // 🥊 MAGIA ACONTECE AQUI! Substitui visualmente o mês/ano pelos detalhes da aula
+    // O trim() remove espaços invisíveis que possam vir da Base de Dados
+    const isAula = m.tipo && m.tipo.trim() === "Aula Particular";
+    const labelTempo = isAula ? "Dia / Hora" : "PERÍODO / DATA";
+
+    let displayTempo = m.mes_ano; // Começa pelo normal (ex: 2026-05)
+
+    // 🥊 BLOCO QUE FALTAVA: Constrói o dia em negrito e a hora
+    if (isAula && m.dia_aula) {
+      displayTempo = `<strong>${m.dia_aula}</strong>`;
+      if (m.hora_aula) {
+        displayTempo += `<br><span style="font-size: 0.85rem; color: var(--accent);"><i class='bx bx-time'></i> ${m.hora_aula.substring(0, 5)}</span>`;
+      }
+    }
+
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td data-label="Mês / Ano" class="${classeNeon}">${m.mes_ano}</td>
+      <td data-label="${labelTempo}" class="${classeNeon}">${displayTempo}</td>
       <td data-label="Sócio" class="${classeNeon}" style="font-weight: 600;">${formatarNomeCurto(m.socios?.nome)}</td>
       <td data-label="Tipo" class="${classeNeon}">${m.tipo || "Mensalidade"}</td>
       <td data-label="Modalidade" class="${classeNeon}">${m.socios?.modalidade || "N/A"}</td>
@@ -88,10 +103,11 @@ export async function carregarMensalidades() {
   tabelaMensalidades.innerHTML =
     '<tr><td colspan="7">A carregar registos...</td></tr>';
 
+  // 🥊 Pede os dados completos ao Supabase!
   const { data: mensalidades, error } = await supabase
     .from("mensalidades")
     .select(
-      `id, mes_ano, valor, estado, tipo, socio_id, socios ( nome, modalidade, telemovel, data_inscricao, estado )`,
+      `id, mes_ano, valor, estado, tipo, socio_id, dia_aula, hora_aula, socios ( nome, modalidade, telemovel, data_inscricao, estado )`,
     )
     .eq("mes_ano", filtroMes.value);
 
@@ -107,18 +123,27 @@ export async function carregarMensalidades() {
       (m) => m.socios?.estado !== "Inativo",
     );
 
+    // ====================================================================
+    // 🥊 NOVA ORDENAÇÃO TRIPLA EM CASCATA
+    // 1º Nome (A-Z) | 2º Aula Particular 1º | 3º Ordem de criação
+    // ====================================================================
     apenasAtivos.sort((a, b) => {
-      const nomeA = a.socios?.nome || "";
-      const nomeB = b.socios?.nome || "";
-      const partesA = nomeA.trim().split(" ");
-      const partesB = nomeB.trim().split(" ");
-      const pA = partesA[0].toLowerCase();
-      const pB = partesB[0].toLowerCase();
-      const uA = partesA[partesA.length - 1].toLowerCase();
-      const uB = partesB[partesB.length - 1].toLowerCase();
-      if (pA < pB) return -1;
-      if (pA > pB) return 1;
-      return uA < uB ? -1 : 1;
+      const nomeA = (a.socios?.nome || "").trim();
+      const nomeB = (b.socios?.nome || "").trim();
+
+      // 1. Ordem Alfabética (localeCompare resolve os acentos como o "ç" de Gonçalo)
+      const comparacaoNome = nomeA.localeCompare(nomeB, "pt");
+      if (comparacaoNome !== 0) return comparacaoNome;
+
+      // 2. Tipo (Empurra a "Aula Particular" para cima)
+      const tipoA = a.tipo || "Mensalidade";
+      const tipoB = b.tipo || "Mensalidade";
+
+      if (tipoA === "Aula Particular" && tipoB !== "Aula Particular") return -1;
+      if (tipoA !== "Aula Particular" && tipoB === "Aula Particular") return 1;
+
+      // 3. Ordem de Criação (Através do ID)
+      return b.id - a.id;
     });
 
     state.mensalidadesAtuais = apenasAtivos;
@@ -260,7 +285,7 @@ export function initMensalidadesEvents() {
       return;
     }
 
-    const isEdicao = !!state.idMensalidadeEmEdicao; // 🥊 IDENTIFICA SE É EDIÇÃO
+    const isEdicao = !!state.idMensalidadeEmEdicao;
     const dados = {
       socio_id: inputId.value,
       mes_ano: document.getElementById("pagamentoMes").value,
@@ -292,10 +317,30 @@ export function initMensalidadesEvents() {
           .update({ estado: "Ativo" })
           .eq("id", dados.socio_id);
 
-        // 🥊 SÓ ENVIA NOTIFICAÇÃO SE FOR UM NOVO REGISTO
         if (!isEdicao) {
+          const mesesTexto = [
+            "Janeiro",
+            "Fevereiro",
+            "Março",
+            "Abril",
+            "Maio",
+            "Junho",
+            "Julho",
+            "Agosto",
+            "Setembro",
+            "Outubro",
+            "Novembro",
+            "Dezembro",
+          ];
+          let nomeMes = dados.mes_ano;
+          if (dados.mes_ano && dados.mes_ano.includes("-")) {
+            const [ano, mesNum] = dados.mes_ano.split("-");
+            nomeMes = mesesTexto[parseInt(mesNum) - 1];
+          }
+
           const t = "Mensalidade Validada";
-          const m = `O teu pagamento referente a ${dados.mes_ano} foi validado.`;
+          const m = `O teu pagamento referente a ${nomeMes} foi validado.`;
+
           await supabase
             .from("notificacoes")
             .insert([

@@ -1,4 +1,4 @@
-/* JS/portal.js - MOTOR DO PORTAL (VERSÃO FINAL E AFINADA) */
+/* JS/portal.js - MOTOR DO PORTAL (VERSÃO FINAL E BLINDADA) */
 import { supabase } from "./supabase.js";
 
 // 🥊 VARIÁVEIS DE NÍVEL DE MÓDULO
@@ -57,6 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {
   async function iniciarPortalParaAtleta(socio) {
     atletaLogadoId = socio.id;
     localStorage.setItem("bogas_atleta_id", socio.id);
+
     // ========================================================================
     // 🥊 1. PREENCHIMENTO DOS DADOS NO ECRÃ
     // ========================================================================
@@ -230,6 +231,9 @@ document.addEventListener("DOMContentLoaded", () => {
     verificarRegulamento(socio);
     buscarNotificacoes(socio.id);
     buscarProximaAula(socio.id);
+
+    // 🥊 NOVO: Ligar o radar de notificações mal o portal arranca!
+    verificarNecessidadeDeNotificacoes(socio.id);
   }
 
   // 🥊 FUNÇÃO DE VERIFICAÇÃO DO REGULAMENTO
@@ -286,8 +290,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       await iniciarPortalParaAtleta(socio);
 
-      // 🥊 AQUI ESTÁ A CORREÇÃO DE NOCAUTE:
-      // Garante que o portal fica visível depois de confirmar os dados no Auto-login!
+      // 🥊 AQUI ESTÁ A CORREÇÃO DE NOCAUTE DO ECRÃ PRETO:
       portalSection.classList.remove("hidden");
     } catch (err) {
       localStorage.removeItem("bogas_atleta_id");
@@ -584,7 +587,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
   // =========================================================================
-  // --- PUSH NOTIFICATIONS ---
+  // --- PUSH NOTIFICATIONS (SISTEMA DE DUPLA VALIDAÇÃO) ---
   // =========================================================================
   const PUBLIC_VAPID_KEY =
     "BDlSFCtWMO00daEMrL5sLutOo9iw7KfQ_KlxFvL24zhmvPcA2Cn-M8qez3pJgQQzgzeCi8Pwho7s8Ii1-_cDvXo";
@@ -593,33 +596,95 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function verificarNecessidadeDeNotificacoes(socioId) {
     const box = document.getElementById("boxNotificacoes");
+    const statusText = document.getElementById("statusNotificacoesDispositivo");
     if (!box) return;
+
     try {
       const registo = await navigator.serviceWorker.ready;
-      const subAtual = await registo.pushManager.getSubscription();
+      let subAtual = await registo.pushManager.getSubscription();
       const permissao = Notification.permission;
 
-      if (subAtual && permissao === "granted") {
+      // 🥊 VERIFICAÇÃO NA BASE DE DADOS (SUPABASE)
+      let temSubscricaoNaBD = false;
+      if (socioId) {
+        const { data } = await supabase
+          .from("push_subscriptions")
+          .select("id")
+          .eq("socio_id", socioId)
+          .maybeSingle();
+
+        if (data) temSubscricaoNaBD = true;
+      }
+
+      // ====================================================================
+      // 🥊 TÁTICA NINJA: Reparação Silenciosa!
+      // Se o telemóvel JÁ tem permissão mas a BD perdeu o registo,
+      // nós criamos o registo de novo nos bastidores sem chatear o atleta!
+      // ====================================================================
+      if (permissao === "granted" && !temSubscricaoNaBD) {
+        try {
+          if (!subAtual) {
+            subAtual = await registo.pushManager.subscribe({
+              userVisibleOnly: true,
+              applicationServerKey: urlB64ToUint8Array(PUBLIC_VAPID_KEY),
+            });
+          }
+          await supabase.from("push_subscriptions").upsert(
+            [
+              {
+                socio_id: Number(socioId),
+                subscricao: JSON.stringify(subAtual),
+              },
+            ],
+            { onConflict: "socio_id" },
+          );
+
+          temSubscricaoNaBD = true; // Falha reparada com sucesso!
+        } catch (e) {
+          console.error("Falha na reparação silenciosa:", e);
+        }
+      }
+
+      // ====================================================================
+      // VEREDICTO FINAL PARA O ECRÃ
+      // ====================================================================
+      if (subAtual && permissao === "granted" && temSubscricaoNaBD) {
         box.classList.add("hidden");
+        if (statusText) {
+          statusText.innerText = "Ativo";
+          statusText.style.color = "#4ade80"; // Verde Bogas
+        }
       } else {
+        if (statusText) {
+          statusText.innerText = "Desativado";
+          statusText.style.color = "#ff4d4d"; // Vermelho
+        }
+
         setTimeout(() => {
-          box.classList.remove("hidden");
+          // O banner pequeno só aparece se o telemóvel não tiver mesmo permissão
+          if (permissao !== "granted") {
+            box.classList.remove("hidden");
+          }
+
+          // O Pop-up gigante SÓ aparece a novatos absolutos (permissão 'default')
           if (permissao === "default") {
-            const modalAviso = document.getElementById(
-              "modalAvisoNotificacoes",
-            );
-            if (modalAviso) {
-              modalAviso.style.zIndex = "9999";
-              modalAviso.classList.remove("hidden");
+            if (!sessionStorage.getItem("avisoPushMostrado")) {
+              const modalAviso = document.getElementById(
+                "modalAvisoNotificacoes",
+              );
+              if (modalAviso) {
+                modalAviso.style.zIndex = "9999";
+                modalAviso.classList.remove("hidden");
+                sessionStorage.setItem("avisoPushMostrado", "true");
+              }
             }
           }
         }, 1200);
       }
     } catch (err) {
-      console.log("Notificações não suportadas.");
+      console.log("Notificações não suportadas neste browser.");
     }
   }
-
   const executarAtivacaoPush = async () => {
     try {
       const btnAtivar = document.getElementById("btnAceitarNotificacoesModal");
@@ -648,6 +713,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const box = document.getElementById("boxNotificacoes");
         if (box) box.style.display = "none";
+
+        const statusText = document.getElementById(
+          "statusNotificacoesDispositivo",
+        );
+        if (statusText) {
+          statusText.innerText = "Ativo";
+          statusText.style.color = "#4ade80";
+        }
+
         mostrarAviso("Alertas ativados com sucesso.", "sucesso");
       } else {
         mostrarAviso("Aviso", "Permissão para alertas recusada.", "erro");

@@ -1,7 +1,7 @@
 /* JS/main.js - O CÉREBRO DA APLICAÇÃO (Versão Blindada 2.0 - c/ Debounce) */
 import { supabase } from "./supabase.js";
 import { state } from "./state.js";
-import { formatarNomeCurto, extrairPreco, debounce } from "./helpers.js"; // 🥊 IMPORT DO DEBOUNCE UNIFICADO
+import { formatarNomeCurto, extrairPreco, debounce } from "./helpers.js";
 import { inicializarTabs, inicializarFechoModais } from "./ui.js";
 import { executarLogout } from "./auth.js";
 import {
@@ -284,7 +284,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const btnLimparSocio = document.getElementById("limparSocio");
 
   if (filtroNome) {
-    // 1. O Debounce: O trabalho pesado de filtrar e renderizar espera 300ms
     const renderizaFiltroSocio = debounce((termo) => {
       const filtrados = state.guerreirosAtuais.filter((s) =>
         s.nome.toLowerCase().includes(termo),
@@ -292,7 +291,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       renderizarTabelaSocios(filtrados);
     }, 300);
 
-    // 2. O Evento: Mostra logo o botão X e ativa o debounce
     filtroNome.addEventListener("input", (e) => {
       const termo = e.target.value.toLowerCase();
       if (btnLimparSocio)
@@ -408,11 +406,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       exportarGuerreirosPDF(state.guerreirosAtuais);
     });
 
-  // Procura esta parte no final do teu DOMContentLoaded:
   document
     .getElementById("btnExportarPDF")
     ?.addEventListener("click", async () => {
-      // Adicionei o 'async' ali em cima ^
       await exportarMensalidadesPDF(
         state.mensalidadesAtuais,
         tituloMensalidade?.innerText,
@@ -444,7 +440,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       btnConfirma.disabled = true;
       await executarLogout();
     });
-}); // 🥊 CORREÇÃO AQUI: Estava "};);" o que gerava um erro fatal de sintaxe.
+});
 
 // =========================================================================
 // 🥊 FUNÇÕES DE AULAS E DESPESAS (Declaradas fora para estarem disponíveis)
@@ -473,6 +469,10 @@ function configurarAprovacaoAula() {
     );
     const mesAnoFormatado = dataAulaDb.substring(0, 7);
 
+    // 🥊 VAI BUSCAR A DATA E A HORA PARA GUARDAR NA FATURA
+    const dia_aula = dataAulaDb.split("-").reverse().join("/");
+    const hora_aula = window.aulaSelecionadaHora || "";
+
     const btnConfirmar = document.getElementById("btnConfirmarAprovacao");
     const textoOriginal = btnConfirmar.innerHTML;
     btnConfirmar.innerHTML =
@@ -490,6 +490,8 @@ function configurarAprovacaoAula() {
         {
           socio_id: socioId,
           mes_ano: mesAnoFormatado,
+          dia_aula: dia_aula, // 🥊 CAMPO NOVO
+          hora_aula: hora_aula, // 🥊 CAMPO NOVO
           tipo: "Aula Particular",
           estado: "Pendente",
           valor: valorLimpo,
@@ -497,9 +499,8 @@ function configurarAprovacaoAula() {
       ]);
       if (erroFatura) throw erroFatura;
 
-      const dataLegivel = dataAulaDb.split("-").reverse().join("/");
       const tituloNotif = "Aula Aprovada ✅";
-      const mensagemNotif = `O Mestre aprovou a tua aula particular do dia ${dataLegivel}. Foi adicionado um pagamento pendente de ${valorLimpo}€ ao teu portal.`;
+      const mensagemNotif = `O Mestre aprovou a tua aula particular do dia ${dia_aula}. Foi adicionado um pagamento pendente de ${valorLimpo}€ ao teu portal.`;
 
       await supabase.from("notificacoes").insert([
         {
@@ -585,17 +586,13 @@ export async function carregarAulasParticulares() {
     });
 
     renderizarTabelaAulas(state.aulasParticulares);
-
-    // 🥊 O SINAL QUE FALTAVA: Atualiza o número no topo (Badge) de cada vez que carrega a tabela
     atualizarBadgeAulasPendentes();
   } catch (err) {
     tabela.innerHTML =
       '<tr><td colspan="7" style="color: #ff4d4d; text-align: center;">Erro ao carregar pedidos.</td></tr>';
   }
 }
-// =========================================================================
-// 🥊 INÍCIO DA ZONA DE ALTERAÇÕES - RENDERIZAÇÃO E EVENTOS DE AULAS
-// =========================================================================
+
 export function renderizarTabelaAulas(lista) {
   const tabela = document.getElementById("tabelaAulasParticulares");
   if (!tabela) return;
@@ -620,21 +617,20 @@ export function renderizarTabelaAulas(lista) {
 
       const nomeCurto = formatarNomeCurto(p.socios.nome).toUpperCase();
 
-      // 🥊 BOTÕES BASE (Sempre visíveis em todas as aulas: Editar e Eliminar)
       const btnAcoesBase = `
         <button class="btn-acao btn-edit btn-edit-aula" data-id="${p.id}" title="Editar Pedido"><i class='bx bx-edit'></i></button>
         <button class="btn-acao btn-delete btn-delete-aula" data-id="${p.id}" title="Eliminar Aula"><i class='bx bx-trash'></i></button>
       `;
 
-      // 🥊 BOTÕES CONTEXTUAIS (Aprovar, Recusar, Faturar)
       let botoesContexto = "";
       if (p.estado === "Pendente") {
+        // 🥊 Injetamos a HORA aqui no botão para a conseguirmos apanhar
         botoesContexto = `
-        <button class="btn-acao btn-edit btn-aceitar-aula" data-id="${p.id}" data-socio="${p.socio_id}" data-datadb="${p.data_aula}" title="Aprovar Aula"><i class='bx bx-check'></i></button>
+        <button class="btn-acao btn-edit btn-aceitar-aula" data-id="${p.id}" data-socio="${p.socio_id}" data-datadb="${p.data_aula}" data-hora="${p.hora_aula}" title="Aprovar Aula"><i class='bx bx-check'></i></button>
         <button class="btn-acao btn-delete btn-recusar-aula" data-id="${p.id}" data-socio="${p.socio_id}" data-data="${dataF}" title="Recusar Aula"><i class='bx bx-x'></i></button>
       `;
       } else if (p.estado === "Aceite" && !p.pago) {
-        botoesContexto = `<button class="btn-tatico btn-small btn-faturar-aula-direto" data-id="${p.id}" data-socio="${p.socio_id}" data-nome="${p.socios.nome}" data-valor="${p.valor}" data-data="${dataF}" data-datadb="${p.data_aula}"><i class='bx bx-euro'></i> FATURAR</button>`;
+        botoesContexto = `<button class="btn-tatico btn-small btn-faturar-aula-direto" data-id="${p.id}" data-socio="${p.socio_id}" data-nome="${p.socios.nome}" data-valor="${p.valor}" data-data="${dataF}" data-datadb="${p.data_aula}" data-hora="${p.hora_aula}"><i class='bx bx-euro'></i> FATURAR</button>`;
       } else if (p.pago) {
         botoesContexto = `<span style="color: var(--accent); font-weight: bold; font-size: 0.85rem; margin-left: 5px;"><i class='bx bx-check-double' style="font-size:1.2rem; vertical-align: middle;"></i> REGULARIZADA</span>`;
       }
@@ -660,9 +656,6 @@ export function initAulasEvents() {
   const filtroAtletaAula = document.getElementById("filtroAtletaAula");
   const limparAulaPesquisa = document.getElementById("limparAulaPesquisa");
 
-  // =========================================================
-  // 🥊 PESQUISA (DEBOUNCE)
-  // =========================================================
   if (filtroAtletaAula) {
     const renderizaFiltroAula = debounce((termo) => {
       const filtrados = (state.aulasParticulares || []).filter((a) =>
@@ -685,13 +678,12 @@ export function initAulasEvents() {
     });
   }
 
-  // =========================================================
-  // 🥊 CLIQUES NA TABELA (DELEGAÇÃO DE EVENTOS UNIFICADA)
-  // =========================================================
   const modalEditarAula = document.getElementById("modalEditarAula");
   const formEditarAula = document.getElementById("formEditarAula");
   const modalDeleteAula = document.getElementById("modalConfirmDeleteAula");
+
   let aulaIdParaEliminar = null;
+  let aulaParaRecusar = null;
 
   tabela?.addEventListener("click", async (e) => {
     const btnAceitar = e.target.closest(".btn-aceitar-aula");
@@ -700,48 +692,31 @@ export function initAulasEvents() {
     const btnEditar = e.target.closest(".btn-edit-aula");
     const btnApagar = e.target.closest(".btn-delete-aula");
 
-    // 1. APROVAR
     if (btnAceitar) {
       document.getElementById("hiddenAulaId").value = btnAceitar.dataset.id;
       document.getElementById("hiddenSocioIdAula").value =
         btnAceitar.dataset.socio;
       document.getElementById("hiddenDataAula").value =
         btnAceitar.dataset.datadb;
+      window.aulaSelecionadaHora = btnAceitar.dataset.hora; // 🥊 GUARDA A HORA
       document.getElementById("modalAprovarAula").classList.remove("hidden");
     }
 
-    // 2. RECUSAR
     if (btnRecusar) {
-      const aulaId = btnRecusar.dataset.id;
-      const socioId = btnRecusar.dataset.socio;
-      const dataAula = btnRecusar.dataset.data;
+      aulaParaRecusar = {
+        id: btnRecusar.dataset.id,
+        socio: btnRecusar.dataset.socio,
+        data: btnRecusar.dataset.data,
+      };
 
-      if (
-        confirm(`Tens a certeza que queres RECUSAR a aula do dia ${dataAula}?`)
-      ) {
-        try {
-          await supabase
-            .from("aulas_particulares")
-            .update({ estado: "Recusada" })
-            .eq("id", aulaId);
-          await supabase.from("notificacoes").insert([
-            {
-              socio_id: socioId,
-              titulo: "Aula Recusada ❌",
-              mensagem: `O Mestre não tem disponibilidade para dia ${dataAula}.`,
-              lida: false,
-            },
-          ]);
-          mostrarAviso("Recusada", "Aula recusada.", "sucesso");
-          await carregarAulasParticulares();
-          await atualizarBadgeAulasPendentes();
-        } catch (err) {
-          mostrarAviso("Erro", err.message, "erro");
-        }
-      }
+      const dataSpan = document.getElementById("spanDataRecusarAula");
+      if (dataSpan) dataSpan.innerText = aulaParaRecusar.data;
+
+      document
+        .getElementById("modalConfirmRecusarAula")
+        ?.classList.remove("hidden");
     }
 
-    // 3. COBRAR
     if (btnCobrar) {
       document.getElementById("faturarAulaNome").value = btnCobrar.dataset.nome;
       document.getElementById("faturarAulaData").value = btnCobrar.dataset.data;
@@ -752,10 +727,12 @@ export function initAulasEvents() {
         btnCobrar.dataset.socio;
       document.getElementById("faturarAulaDataDb").value =
         btnCobrar.dataset.datadb;
+
+      window.aulaSelecionadaHora = btnCobrar.dataset.hora; // 🥊 GUARDA A HORA
+
       document.getElementById("modalFaturarAula").classList.remove("hidden");
     }
 
-    // 4. EDITAR AULA
     if (btnEditar) {
       const aulaId = btnEditar.dataset.id;
       const aula = state.aulasParticulares.find((a) => a.id == aulaId);
@@ -772,16 +749,12 @@ export function initAulasEvents() {
       }
     }
 
-    // 5. APAGAR AULA
     if (btnApagar) {
       aulaIdParaEliminar = btnApagar.dataset.id;
       modalDeleteAula?.classList.remove("hidden");
     }
   });
 
-  // =========================================================
-  // 🥊 LÓGICA DO FORMULÁRIO DE EDIÇÃO
-  // =========================================================
   document
     .getElementById("btnFecharModalEditarAula")
     ?.addEventListener("click", () => {
@@ -830,9 +803,6 @@ export function initAulasEvents() {
     }
   });
 
-  // =========================================================
-  // 🥊 LÓGICA DE ELIMINAÇÃO DE AULA
-  // =========================================================
   document
     .getElementById("btnCancelarDeleteAula")
     ?.addEventListener("click", () => {
@@ -874,14 +844,61 @@ export function initAulasEvents() {
         aulaIdParaEliminar = null;
       }
     });
-}
-// =========================================================================
-// 🥊 FIM DA ZONA DE ALTERAÇÕES
-// =========================================================================
 
-// 🥊 FUNÇÃO DE CONTAGEM BLINDADA
+  document
+    .getElementById("btnCancelarRecusarAula")
+    ?.addEventListener("click", () => {
+      document
+        .getElementById("modalConfirmRecusarAula")
+        ?.classList.add("hidden");
+      aulaParaRecusar = null;
+    });
+
+  document
+    .getElementById("btnConfirmarRecusarAula")
+    ?.addEventListener("click", async () => {
+      if (!aulaParaRecusar) return;
+
+      const btnConfirma = document.getElementById("btnConfirmarRecusarAula");
+      const textoOriginal = btnConfirma.innerHTML;
+      btnConfirma.innerHTML =
+        "A recusar... <i class='bx bx-loader-alt bx-spin'></i>";
+      btnConfirma.disabled = true;
+
+      try {
+        await supabase
+          .from("aulas_particulares")
+          .update({ estado: "Recusada" })
+          .eq("id", aulaParaRecusar.id);
+
+        await supabase.from("notificacoes").insert([
+          {
+            socio_id: aulaParaRecusar.socio,
+            titulo: "Aula Recusada ❌",
+            mensagem: `O Mestre não tem disponibilidade para dia ${aulaParaRecusar.data}.`,
+            lida: false,
+          },
+        ]);
+
+        mostrarAviso("Recusada", "Aula recusada.", "sucesso");
+        document
+          .getElementById("modalConfirmRecusarAula")
+          ?.classList.add("hidden");
+
+        await carregarAulasParticulares();
+        await atualizarBadgeAulasPendentes();
+      } catch (err) {
+        mostrarAviso("Erro", err.message, "erro");
+      } finally {
+        btnConfirma.innerHTML = textoOriginal;
+        btnConfirma.disabled = false;
+        aulaParaRecusar = null;
+      }
+    });
+}
+
 export async function atualizarBadgeAulasPendentes() {
-  const badgeId = document.getElementById("badgeAulas"); // 🥊 Usa o ID exato que tens no dashboard.html
+  const badgeId = document.getElementById("badgeAulas");
   const badgeClass = document.querySelector(".badge-tab-inline");
 
   try {
@@ -892,7 +909,6 @@ export async function atualizarBadgeAulasPendentes() {
 
     const total = count || 0;
 
-    // Atualiza todos os selos possíveis!
     if (badgeId) {
       badgeId.innerText = total;
       badgeId.style.display = total > 0 ? "flex" : "none";
@@ -905,6 +921,7 @@ export async function atualizarBadgeAulasPendentes() {
     console.error("Erro a contar aulas:", err);
   }
 }
+
 function configurarPagamentoDiretoAula() {
   const formFaturar = document.getElementById("formFaturarAula");
   const modalFaturar = document.getElementById("modalFaturarAula");
@@ -919,11 +936,14 @@ function configurarPagamentoDiretoAula() {
     const dataAulaDb = document.getElementById("faturarAulaDataDb").value;
     const mesAnoFormatado = dataAulaDb.substring(0, 7);
 
-    // 🥊 CAPTURA E LIMPA O VALOR EXATO QUE ESTÁ A SER COBRADO
     const valorCampo = document.getElementById("faturarAulaValor").value;
     const valorLimpo = parseFloat(
       valorCampo.replace("€", "").replace(",", ".").trim(),
     );
+
+    // 🥊 VAI BUSCAR A DATA E A HORA PARA GUARDAR NA FATURA
+    const dia_aula = dataAulaDb.split("-").reverse().join("/");
+    const hora_aula = window.aulaSelecionadaHora || "";
 
     const btnConfirmar = formFaturar.querySelector('button[type="submit"]');
     const textoOriginal = btnConfirmar.innerHTML;
@@ -932,33 +952,37 @@ function configurarPagamentoDiretoAula() {
     btnConfirmar.disabled = true;
 
     try {
-      // 1. Marca a Aula Particular como paga no painel das Aulas
       const { error: errAula } = await supabase
         .from("aulas_particulares")
         .update({ pago: true })
         .eq("id", aulaId);
       if (errAula) throw errAula;
 
-      // 2. VIGILANTE: Procura se a fatura já existe no controlo de mensalidades!
       const { data: faturaExistente } = await supabase
         .from("mensalidades")
         .select("id")
         .eq("socio_id", socioId)
         .eq("tipo", "Aula Particular")
         .eq("mes_ano", mesAnoFormatado)
-        .maybeSingle(); // Pode encontrar uma ou nenhuma
+        .maybeSingle();
 
-      // 3. A MAGIA: Se a fatura existe, atualiza. Se não existe, CRIA COMO PAGA!
       if (faturaExistente) {
         await supabase
           .from("mensalidades")
-          .update({ estado: "Pago", valor: valorLimpo })
+          .update({
+            estado: "Pago",
+            valor: valorLimpo,
+            dia_aula: dia_aula, // 🥊 ATUALIZA CAMPO NOVO
+            hora_aula: hora_aula, // 🥊 ATUALIZA CAMPO NOVO
+          })
           .eq("id", faturaExistente.id);
       } else {
         await supabase.from("mensalidades").insert([
           {
             socio_id: socioId,
             mes_ano: mesAnoFormatado,
+            dia_aula: dia_aula, // 🥊 CAMPO NOVO
+            hora_aula: hora_aula, // 🥊 CAMPO NOVO
             tipo: "Aula Particular",
             estado: "Pago",
             valor: valorLimpo,
@@ -966,11 +990,9 @@ function configurarPagamentoDiretoAula() {
         ]);
       }
 
-      const dataLegivel = dataAulaDb.split("-").reverse().join("/");
       const tituloPagamento = "Pagamento Recebido 🏆";
-      const msg = `O pagamento referente à aula particular de ${dataLegivel} foi liquidado.`;
+      const msg = `O pagamento referente à aula particular de ${dia_aula} foi liquidado.`;
 
-      // 4. Notifica o atleta
       await supabase.from("notificacoes").insert([
         {
           socio_id: socioId,
@@ -996,7 +1018,6 @@ function configurarPagamentoDiretoAula() {
       );
       modalFaturar.classList.add("hidden");
 
-      // 5. Atualiza os dois quadros para mostrar os dados frescos
       await carregarAulasParticulares();
       await carregarMensalidades();
     } catch (erro) {
@@ -1015,17 +1036,14 @@ function configurarRegistoDespesas() {
   const modalHistorico = document.getElementById("modalHistoricoDespesas");
   const formNova = document.getElementById("formNovaDespesa");
 
-  // 1. Abrir Menu de Escolha
   btnPrincipal?.addEventListener("click", () => {
     modalOpcoes?.classList.remove("hidden");
   });
 
-  // Fechar Menu Opções
   document
     .getElementById("btnFecharOpcoesDespesa")
     ?.addEventListener("click", () => modalOpcoes?.classList.add("hidden"));
 
-  // Opção: Registar Nova
   document
     .getElementById("btnOpcaoNovaDespesa")
     ?.addEventListener("click", () => {
@@ -1036,7 +1054,6 @@ function configurarRegistoDespesas() {
         .split("T")[0];
     });
 
-  // Opção: Ver Histórico
   document
     .getElementById("btnOpcaoHistoricoDespesa")
     ?.addEventListener("click", async () => {
@@ -1045,7 +1062,6 @@ function configurarRegistoDespesas() {
       await carregarHistoricoDespesas();
     });
 
-  // Lógica de Fechar Modal de Registo
   document
     .getElementById("btnFecharModalDespesa")
     ?.addEventListener("click", () => {
@@ -1053,7 +1069,6 @@ function configurarRegistoDespesas() {
       formNova?.reset();
     });
 
-  // Lógica de Submissão Original de Nova Despesa
   formNova?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const valor = parseFloat(
@@ -1094,7 +1109,6 @@ function configurarRegistoDespesas() {
   });
 }
 
-// 🥊 NOVA FUNÇÃO: CARREGAR HISTÓRICO
 async function carregarHistoricoDespesas() {
   const tabela = document.getElementById("tabelaHistoricoDespesas");
   if (!tabela) return;
@@ -1108,7 +1122,7 @@ async function carregarHistoricoDespesas() {
       .order("data", { ascending: false });
     if (error) throw error;
 
-    state.despesasCache = despesas; // Cache temporária para edição
+    state.despesasCache = despesas;
 
     if (!despesas || despesas.length === 0) {
       tabela.innerHTML =
@@ -1142,7 +1156,6 @@ async function carregarHistoricoDespesas() {
   }
 }
 
-// 🥊 NOVA FUNÇÃO: AÇÕES DO HISTÓRICO (EDIT/DELETE)
 function configurarAcoesHistoricoDespesas() {
   const tabela = document.getElementById("tabelaHistoricoDespesas");
   const modalEditar = document.getElementById("modalEditarDespesa");
