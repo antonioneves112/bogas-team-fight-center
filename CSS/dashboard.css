@@ -1,4 +1,4 @@
-/* CSS/dashboard.css - Versão Final de Elite (Alinhamentos Corrigidos e Forçados na Mesma Linha) */
+/* CSS/dashboard.css - Versão Final Corrigida (Simetria, Alinhamento e Sem Duplicações) */
 
 * {
   box-sizing: border-box;
@@ -67,30 +67,64 @@
   align-items: center;
 }
 
+/* Destaque vermelho para o botão de sair */
+#btnLogout {
+  color: #ff4d4d !important;
+  border-color: rgba(255, 77, 77, 0.3) !important;
+}
+
+#btnLogout:hover {
+  background: rgba(255, 77, 77, 0.1) !important;
+  border-color: #ff4d4d !important;
+  box-shadow: 0 0 15px rgba(255, 77, 77, 0.2) !important;
+}
+
 .dash-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 30px;
 }
+
 .dash-header h2 {
   font-family: "Orbitron", sans-serif;
   font-size: 2rem;
   margin-bottom: 0;
+  line-height: 1;
 }
+
 .dash-header p {
   color: var(--muted);
   margin: 0;
 }
 
 /* =========================================================
-   ESTATÍSTICAS & TABS
+   QUADRO DE COMANDOS (ENVOLVENTE GLOBAL)
+   ========================================================= */
+.overview-wrapper {
+  padding: 20px;
+  margin-bottom: 30px;
+  margin-top: 0 !important;
+}
+
+.overview-wrapper .dash-stats {
+  margin-top: 0 !important;
+  margin-bottom: 20px !important;
+}
+
+.overview-wrapper .dash-tabs {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+/* =========================================================
+   ESTATÍSTICAS & TABS (AMBIENTE DESKTOP)
    ========================================================= */
 .dash-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 20px;
-  margin: 40px 0;
+  margin: 20px 0;
 }
 
 .stat-card {
@@ -100,6 +134,7 @@
   padding: 25px;
   justify-content: flex-start;
   cursor: pointer;
+  margin-top: 0 !important;
   transition:
     transform 0.3s ease,
     box-shadow 0.3s ease,
@@ -118,6 +153,7 @@
   color: #ff4d4d;
   background: rgba(255, 77, 77, 0.1);
 }
+
 .stat-info p {
   font-size: 1.8rem;
   font-family: "Orbitron", sans-serif;
@@ -126,10 +162,47 @@
   line-height: 1;
 }
 
+/* =========================================================
+   🥊 ALERTA MÁXIMO: CARD DE PENDENTES TOTALMENTE VERMELHO
+   ========================================================= */
+#cardPendentes {
+  border: 1px solid rgba(255, 77, 77, 0.22) !important;
+  box-shadow:
+    0 18px 60px rgba(0, 0, 0, 0.55),
+    0 0 0 3px rgba(255, 77, 77, 0.06),
+    0 0 22px rgba(255, 77, 77, 0.08) !important;
+}
+
+#cardPendentes::before {
+  background:
+    radial-gradient(
+      120% 90% at 50% 0%,
+      rgba(255, 77, 77, 0.12),
+      rgba(255, 77, 77, 0) 60%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.07),
+      rgba(255, 255, 255, 0) 42%
+    ) !important;
+}
+
+#cardPendentes::after {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 77, 77, 0.65),
+    transparent
+  ) !important;
+  box-shadow: 0 0 12px rgba(255, 77, 77, 0.3) !important;
+}
+
 #cardPendentes:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 20px rgba(255, 77, 77, 0.2);
-  border-color: rgba(255, 77, 77, 0.4);
+  border-color: rgba(255, 77, 77, 0.5) !important;
+  box-shadow:
+    0 18px 60px rgba(0, 0, 0, 0.55),
+    0 0 25px rgba(255, 77, 77, 0.25) !important;
 }
 
 #cardTotalSocios:hover {
@@ -169,7 +242,7 @@
 }
 
 /* =========================================================
-   NOVO LAYOUT DE CABEÇALHO PARA TODAS AS ABAS
+   LAYOUT DE CABEÇALHO PARA ABAS & PESQUISA
    ========================================================= */
 .header-stack {
   display: flex;
@@ -239,18 +312,13 @@
 .header-actions-row {
   width: 100%;
 }
-
 .full-width {
   width: 100% !important;
 }
-
 .full-width input {
   width: 100% !important;
 }
 
-/* =========================================================
-   BARRA DE PESQUISA UNIFICADA
-   ========================================================= */
 .search-container {
   position: relative;
   display: flex;
@@ -303,9 +371,6 @@
   color: #ff4d4d;
 }
 
-/* =========================================================
-   CALENDÁRIO STEALTH E DROPDOWNS
-   ========================================================= */
 #filtroMesMensalidade {
   position: relative;
   width: 45px;
@@ -337,28 +402,24 @@
 }
 
 /* =========================================================
-   TABELAS & BADGES
+   TABELAS & COMPONENTES SECUNDÁRIOS
    ========================================================= */
 .table-responsive {
   overflow-x: auto;
 }
-
 .dash-table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0 8px;
   font-size: 0.95rem;
 }
-
 .dash-table tr {
   background: rgba(255, 255, 255, 0.02);
   transition: background 0.3s ease;
 }
-
 .dash-table tr:hover {
   background: rgba(255, 255, 255, 0.05);
 }
-
 .dash-table th {
   color: var(--accent);
   font-family: "Orbitron", sans-serif;
@@ -368,7 +429,6 @@
   text-align: left;
   border-bottom: 1px solid var(--border-light);
 }
-
 .dash-table td {
   padding: 15px;
   color: #e0e0e0;
@@ -383,7 +443,6 @@
   font-weight: bold;
   text-transform: uppercase;
 }
-
 .badge-tab-inline {
   background: #ff4d4d;
   color: #fff;
@@ -401,7 +460,6 @@
   box-shadow: 0 0 10px rgba(255, 77, 77, 0.5);
   z-index: 10;
 }
-
 .badge-ativo {
   background: rgba(156, 230, 156, 0.15);
   color: var(--accent);
@@ -429,7 +487,7 @@
 }
 
 /* =========================================================
-   MODAIS E FORMULÁRIOS
+   MODAIS & FORMULÁRIOS
    ========================================================= */
 .modal-overlay {
   position: fixed;
@@ -444,11 +502,9 @@
   align-items: center;
   z-index: 1000;
 }
-
 .modal-overlay.hidden {
   display: none;
 }
-
 .modal-content {
   width: 90%;
   max-width: 550px;
@@ -457,7 +513,6 @@
   overflow-y: auto;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
-
 .modal-header {
   display: flex;
   justify-content: space-between;
@@ -466,14 +521,12 @@
   border-bottom: 1px solid var(--border-light);
   padding-bottom: 15px;
 }
-
 .modal-header h3 {
   margin: 0;
   font-family: "Orbitron", sans-serif;
   font-size: 1.3rem;
   color: var(--accent);
 }
-
 .btn-fechar {
   background: transparent;
   border: none;
@@ -482,15 +535,12 @@
   cursor: pointer;
   transition: color 0.3s ease;
 }
-
 .btn-fechar:hover {
   color: #ff4d4d;
 }
-
 .dash-form .form-group {
   margin-bottom: 20px;
 }
-
 .dash-form label {
   display: block;
   text-align: left;
@@ -501,7 +551,6 @@
   font-weight: 700;
   letter-spacing: 0.5px;
 }
-
 .dash-form input,
 .dash-form select,
 .dash-form textarea {
@@ -516,16 +565,13 @@
   transition: all 0.3s ease;
   color-scheme: dark;
 }
-
 .dash-form textarea {
   resize: none;
 }
-
 .dash-form option {
   background-color: #1a1a1a;
   color: #ffffff;
 }
-
 .dash-form input:focus,
 .dash-form select:focus,
 .dash-form textarea:focus {
@@ -534,27 +580,21 @@
   box-shadow: 0 0 10px rgba(37, 211, 102, 0.2);
   background: rgba(255, 255, 255, 0.1);
 }
-
 .form-row {
   display: flex;
   gap: 15px;
 }
-
 .form-row .form-group {
   flex: 1;
   margin-bottom: 20px;
 }
 
-/* =========================================================================
-   ESTILIZAÇÃO DO INPUT COM ÍCONE DE EURO À DIREITA E ALERTAS
-   ========================================================================= */
 .input-wrapper-tatico {
   position: relative;
   display: flex;
   align-items: center;
   width: 100%;
 }
-
 .input-wrapper-tatico i {
   position: absolute;
   right: 15px;
@@ -562,7 +602,6 @@
   font-size: 1.2rem;
   z-index: 5;
 }
-
 .input-wrapper-tatico input {
   padding-right: 45px !important;
   padding-left: 15px !important;
@@ -575,13 +614,11 @@
   width: 100%;
   outline: none;
 }
-
 .input-wrapper-tatico input:focus {
   border-color: var(--accent) !important;
   box-shadow: 0 0 15px rgba(37, 211, 102, 0.2);
   background: rgba(255, 255, 255, 0.08) !important;
 }
-
 .linha-pendente-alerta {
   color: #ff4d4d !important;
   text-shadow: 0 0 10px rgba(255, 77, 77, 0.4);
@@ -592,7 +629,7 @@
 }
 
 /* =========================================================
-   NOTIFICAÇÕES TOAST
+   NOTIFICAÇÕES & CONFIRMAÇÕES
    ========================================================= */
 .toast-container {
   position: fixed;
@@ -603,7 +640,6 @@
   flex-direction: column;
   gap: 10px;
 }
-
 .toast {
   background: rgba(10, 10, 10, 0.85);
   backdrop-filter: blur(10px);
@@ -620,7 +656,6 @@
   transform: translateX(120%);
   transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
-
 .toast.show {
   transform: translateX(0);
 }
@@ -650,80 +685,64 @@
   color: var(--muted);
 }
 
-/* =========================================================
-   MODAL DE CONFIRMAÇÃO E AVISOS
-   ========================================================= */
 .modal-desc-broadcast {
   color: var(--muted);
   font-size: 0.85rem;
   margin-bottom: 20px;
 }
-
 .modal-confirm-box {
   text-align: center;
   max-width: 420px;
 }
-
 .icon-confirm-warning {
   font-size: 4.5rem;
   color: #ff4d4d;
   margin-bottom: 15px;
 }
-
 .title-confirm {
   font-family: "Orbitron", sans-serif;
   font-size: 1.6rem;
   margin-bottom: 10px;
   color: #fff;
 }
-
 .desc-confirm {
   color: var(--muted);
   margin-bottom: 30px;
   font-size: 0.95rem;
   line-height: 1.5;
 }
-
 .actions-confirm {
   display: flex;
   gap: 15px;
   justify-content: center;
 }
-
 .btn-outline-muted {
   background: transparent;
   border: 1px solid var(--muted);
   color: var(--muted);
   flex: 1;
 }
-
 .btn-outline-muted:hover {
   background: rgba(255, 255, 255, 0.05);
   border-color: #fff;
   color: #fff;
 }
-
 .btn-danger-action {
   background: rgba(255, 77, 77, 0.15);
   border-color: #ff4d4d;
   color: #ff4d4d;
   flex: 1;
 }
-
 .btn-danger-action:hover {
   background: rgba(255, 77, 77, 0.25);
   box-shadow: 0 0 15px rgba(255, 77, 77, 0.3);
 }
 
-/* =========================================================
-   AGRUPAMENTO E BOTÕES DO PAINEL (CALENDÁRIO E GRUPO)
-   ========================================================= */
 .header-actions-group {
   display: flex;
   align-items: center;
   gap: 12px;
 }
-
 .dash-filter,
 .btn-icon-red {
   width: 46px !important;
@@ -733,7 +752,6 @@
   border-radius: 8px !important;
   box-sizing: border-box !important;
 }
-
 .btn-icon-red {
   display: flex;
   align-items: center;
@@ -745,7 +763,6 @@
   cursor: pointer;
   transition: all 0.3s ease;
 }
-
 .btn-icon-red:hover {
   background: rgba(255, 77, 77, 0.2);
   border-color: #ff4d4d;
@@ -754,51 +771,7 @@
 }
 
 /* =========================================================
-   GESTÃO DE AULAS & NOTIFICAÇÕES (DASHBOARD)
-   ========================================================= */
-.tab-btn[data-target="view-aulas"] {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.badge-tab {
-  background: #ff4d4d;
-  color: #fff;
-  font-size: 0.75rem;
-  font-weight: 800;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-left: 5px;
-  flex-shrink: 0;
-  box-shadow: 0 0 12px rgba(255, 77, 77, 0.6);
-  line-height: 1;
-}
-
-.badge-tab.hidden {
-  display: none !important;
-}
-
-.aviso-horarios-modal {
-  border-left: 3px solid var(--accent);
-  padding-left: 10px;
-  margin-bottom: 20px;
-  font-size: 0.9rem;
-  color: var(--muted);
-}
-
-#btnConfirmarAprovacao {
-  border-color: var(--accent);
-  margin-top: 20px;
-}
-
-/* =========================================================
-   DESIGN PREMIUM PARA BOTÃO "CARREGAR MAIS"
+   BOTÕES DE INTERAÇÃO (CARREGAR MAIS)
    ========================================================= */
 table tr:has(.btn-carregar-mais),
 table tr:has(.btn-carregar-mais-mens) {
@@ -809,7 +782,6 @@ table tr:has(.btn-carregar-mais-mens) {
   margin-top: 10px !important;
   margin-bottom: 30px !important;
 }
-
 table tr:has(.btn-carregar-mais) td,
 table tr:has(.btn-carregar-mais-mens) td {
   border: none !important;
@@ -817,7 +789,6 @@ table tr:has(.btn-carregar-mais-mens) td {
   justify-content: center !important;
   padding: 0 !important;
 }
-
 table tr:has(.btn-carregar-mais) td::before,
 table tr:has(.btn-carregar-mais-mens) td::before {
   display: none !important;
@@ -844,7 +815,6 @@ table tr:has(.btn-carregar-mais-mens) td::before {
   width: auto !important;
   max-width: 90% !important;
 }
-
 .btn-carregar-mais:hover,
 .btn-carregar-mais-mens:hover,
 .btn-carregar-mais:active,
@@ -858,26 +828,24 @@ table tr:has(.btn-carregar-mais-mens) td::before {
   text-align: center;
   color: #888;
 }
-
 .file-input-styled {
   padding: 9px 15px;
   cursor: pointer;
 }
-
 .btn-full-width {
   width: 100%;
   margin-top: 15px;
 }
 
 /* =========================================================
-   RESPONSIVIDADE MOBILE DE ELITE
+   RESPONSIVIDADE MOBILE DE ELITE 🥊 (MEDIA 899PX)
    ========================================================= */
 @media (max-width: 899px) {
   .dash-nav {
     flex-direction: row !important;
     justify-content: space-between !important;
     padding: 15px 15px !important;
-    margin-bottom: 20px !important;
+    margin: 15px 15px 10px 15px !important;
   }
 
   .dash-logo span {
@@ -886,7 +854,7 @@ table tr:has(.btn-carregar-mais-mens) td::before {
 
   .nav-actions {
     width: auto !important;
-    gap: 10px !important;
+    gap: 4px !important;
     justify-content: flex-end !important;
   }
 
@@ -896,30 +864,77 @@ table tr:has(.btn-carregar-mais-mens) td::before {
 
   .nav-actions .btn-tatico {
     flex: unset !important;
-    width: 42px !important;
-    height: 42px !important;
+    width: 36px !important;
+    height: 36px !important;
     border-radius: 50% !important;
     padding: 0 !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    background: rgba(255, 255, 255, 0.05) !important;
+    background: transparent !important;
+    border: 1px solid rgba(37, 211, 102, 0.3) !important;
+    color: var(--accent) !important;
   }
 
   .nav-actions .btn-tatico i {
-    font-size: 1.3rem !important;
+    font-size: 1.1rem !important;
     margin: 0 !important;
   }
 
+  .nav-actions .btn-tatico:active {
+    background: rgba(37, 211, 102, 0.1) !important;
+  }
+  .nav-actions #btnLogout:active {
+    background: rgba(255, 77, 77, 0.15) !important;
+  }
+
   .dash-container {
-    padding-top: 2px !important;
+    padding-top: 0 !important;
   }
+
   .dash-header {
-    margin-top: 0 !important;
-    margin-bottom: 10px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin-top: 30px !important;
+    margin-bottom: 20px !important;
   }
-  .dash-stats {
-    margin-bottom: 25px !important;
+
+  .dash-header h2 {
+    line-height: 1 !important;
+    margin: 0 !important;
+  }
+
+  /* Ajuste dos botões do cabeçalho */
+  .header-actions-group .dash-filter,
+  .btn-icon-red {
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  #filtroMesMensalidade {
+    background-size: 18px !important;
+  }
+
+  .btn-icon-red i {
+    font-size: 1.1rem !important;
+  }
+
+  /* Ajuste do quadro global */
+  .overview-wrapper {
+    padding: 14px !important;
+    padding-top: 10px !important;
+    margin-bottom: 10px !important;
+    margin-top: 15px !important;
+  }
+
+  .overview-wrapper .dash-stats {
+    margin-top: 0 !important;
+    margin-bottom: 14px !important;
+  }
+
+  .dash-content {
+    margin-top: 10px !important;
   }
 
   table td:last-child {
@@ -931,7 +946,6 @@ table tr:has(.btn-carregar-mais-mens) td::before {
     margin-top: 10px;
     border-top: 1px solid rgba(255, 255, 255, 0.05);
   }
-
   table td:last-child > div {
     display: flex !important;
     align-items: center !important;
@@ -958,11 +972,9 @@ table tr:has(.btn-carregar-mais-mens) td::before {
     margin: 0 !important;
     padding: 0 !important;
   }
-
   .btn-acao i {
     font-size: 1.1rem !important;
   }
-
   .btn-acao.btn-edit:hover {
     color: #fff !important;
     background: rgba(255, 255, 255, 0.05) !important;
@@ -988,25 +1000,21 @@ table tr:has(.btn-carregar-mais-mens) td::before {
     white-space: nowrap !important;
     box-sizing: border-box !important;
   }
-
   table td:last-child span[style*="color: var(--accent)"] {
     background: rgba(37, 211, 102, 0.1) !important;
     border: 1px solid rgba(37, 211, 102, 0.3) !important;
     color: var(--accent) !important;
     text-shadow: 0 0 10px rgba(37, 211, 102, 0.4) !important;
   }
-
   .btn-tatico.btn-small.btn-faturar-aula-direto {
     background: rgba(255, 255, 255, 0.05) !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
     color: #fff !important;
   }
-
   .btn-tatico.btn-small.btn-faturar-aula-direto i {
     font-size: 0.95rem !important;
     margin-right: 5px !important;
   }
-
   .btn-tatico.btn-small.btn-faturar-aula-direto:hover {
     background: rgba(37, 211, 102, 0.15) !important;
     border-color: var(--accent) !important;
@@ -1015,6 +1023,9 @@ table tr:has(.btn-carregar-mais-mens) td::before {
   }
 }
 
+/* =========================================================
+   🥊 MOBILE COMPACTO & SIMÉTRICO (MEDIA 768PX)
+   ========================================================= */
 @media (max-width: 768px) {
   table td::before {
     content: attr(data-label);
@@ -1024,7 +1035,6 @@ table tr:has(.btn-carregar-mais-mens) td::before {
     font-weight: 700;
     letter-spacing: 0.5px;
   }
-
   .dash-header h2 {
     font-size: 1.5rem;
     text-align: center;
@@ -1033,8 +1043,8 @@ table tr:has(.btn-carregar-mais-mens) td::before {
 
   .dash-tabs {
     flex-direction: row !important;
-    gap: 10px;
-    margin-bottom: 15px;
+    gap: 10px !important;
+    margin-bottom: 0 !important;
   }
 
   .tab-btn {
@@ -1061,11 +1071,9 @@ table tr:has(.btn-carregar-mais-mens) td::before {
     width: 100%;
     margin-bottom: 5px;
   }
-
   .search-container input {
     width: 100% !important;
   }
-
   #filtroMesMensalidade {
     flex: 0 0 42px;
     height: 42px;
@@ -1075,7 +1083,6 @@ table tr:has(.btn-carregar-mais-mens) td::before {
   table thead {
     display: none !important;
   }
-
   table tr {
     display: block;
     background: rgba(255, 255, 255, 0.03);
@@ -1086,7 +1093,6 @@ table tr:has(.btn-carregar-mais-mens) td::before {
     width: 100%;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
   }
-
   table td {
     display: flex;
     justify-content: space-between;
@@ -1094,14 +1100,6 @@ table tr:has(.btn-carregar-mais-mens) td::before {
     padding: 10px 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     text-align: right;
-  }
-
-  table td::before {
-    font-size: 0.75rem;
-    color: var(--muted);
-    text-transform: uppercase;
-    font-weight: 700;
-    letter-spacing: 0.5px;
   }
 
   #tabelaSocios td:nth-child(1)::before {
@@ -1151,64 +1149,71 @@ table tr:has(.btn-carregar-mais-mens) td::before {
     font-size: 1.1rem;
     font-weight: bold;
   }
-
   table td:last-child::before {
     display: none;
   }
 
+  /* Resolução compacta da grelha (Lado a lado) */
   .dash-stats {
-    grid-template-columns: repeat(2, 1fr);
-    margin-top: 10px;
-    margin-bottom: 10px;
-    gap: 10px;
+    grid-template-columns: repeat(2, 1fr) !important;
+    margin-top: 0 !important;
+    margin-bottom: 14px !important;
+    gap: 10px !important;
   }
 
+  /* Estilo compacto original recuperado */
   .stat-card {
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    padding: 5px;
-    height: 75px;
-    gap: 2px;
-    min-height: auto;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    text-align: center !important;
+    padding: 6px !important;
+    height: 76px !important;
+    min-height: auto !important;
+    gap: 3px !important;
+    margin-top: 0 !important;
   }
 
   .stat-icon {
-    font-size: 1.1rem;
-    padding: 2px 8px;
-    border-radius: 6px;
+    font-size: 1.1rem !important;
+    padding: 2px 8px !important;
+    border-radius: 6px !important;
+    line-height: 1 !important;
+    display: inline-block !important;
   }
 
   .stat-info {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0px !important;
   }
 
   .stat-info h3 {
-    font-size: 0.65rem;
-    margin-bottom: 1px;
-    line-height: 1.1;
-    white-space: nowrap;
+    font-size: 0.65rem !important;
+    margin: 0 0 1px 0 !important;
+    line-height: 1.1 !important;
+    letter-spacing: normal !important;
+    white-space: nowrap !important;
   }
 
   .stat-info p {
-    font-size: 1rem;
-    margin: 0;
-    font-weight: 700;
+    font-size: 1rem !important;
+    margin: 0 !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
   }
 
   .form-row {
     flex-direction: column !important;
     gap: 0 !important;
   }
-
   .modal-content {
     padding: 20px;
     width: 95%;
   }
-
   .modal-header h3 {
     font-size: 1.1rem;
   }
@@ -1219,12 +1224,10 @@ table tr:has(.btn-carregar-mais-mens) td::before {
   min-height: auto !important;
   padding-bottom: 25px;
 }
-
 #modalOpcoesDespesa .modal-header {
   margin-bottom: 10px;
   padding-bottom: 10px;
 }
-
 #modalOpcoesDespesa .opcoes-grid {
   display: flex;
   flex-direction: column;
@@ -1235,15 +1238,14 @@ table tr:has(.btn-carregar-mais-mens) td::before {
   .dash-nav {
     padding: 10px 8px !important;
   }
-
   .dash-header h2 {
     font-size: 1.2rem !important;
   }
 
   .header-actions-group .dash-filter,
   .btn-icon-red {
-    width: 38px !important;
-    height: 38px !important;
+    width: 30px !important;
+    height: 30px !important;
   }
 
   .tab-btn {
@@ -1251,19 +1253,14 @@ table tr:has(.btn-carregar-mais-mens) td::before {
     padding: 5px 2px !important;
     height: 65px !important;
   }
-
-  /* 🥊 O SEGREDO DO "REGULARIZADA" - Força a mesma linha a não quebrar */
   table td:last-child > div {
     flex-wrap: nowrap !important;
     gap: 4px !important;
   }
-
   .btn-acao {
     width: 32px !important;
     height: 32px !important;
   }
-
-  /* Reduz ligeiramente o padding para garantir que cabe no telemóvel */
   .btn-tatico.btn-small.btn-faturar-aula-direto,
   table td:last-child span[style*="color: var(--accent)"] {
     font-size: 0.6rem !important;

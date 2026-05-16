@@ -59,36 +59,38 @@
             </div>
         </header>
 
-        <section class="dash-stats">
-            <div class="stat-card glass-panel" id="cardTotalSocios" title="Clique para ver todos os guerreiros">
-                <div class="stat-icon"><i class='bx bx-group'></i></div>
-                <div class="stat-info">
-                    <h3>Total de Sócios</h3>
-                    <p id="totalSocios">--</p>
+        <div class="glass-panel overview-wrapper">
+            <section class="dash-stats">
+                <div class="stat-card glass-panel" id="cardTotalSocios" title="Clique para ver todos os guerreiros">
+                    <div class="stat-icon"><i class='bx bx-group'></i></div>
+                    <div class="stat-info">
+                        <h3>Total de Sócios</h3>
+                        <p id="totalSocios">--</p>
+                    </div>
                 </div>
-            </div>
 
-            <div class="stat-card glass-panel" id="cardPendentes"
-                title="Clique para ver os guerreiros com pagamentos pendentes">
-                <div class="stat-icon alert"><i class='bx bx-error-circle'></i></div>
-                <div class="stat-info">
-                    <h3>Pagamentos Pendentes</h3>
-                    <p id="pagamentosPendentes">--</p>
+                <div class="stat-card glass-panel" id="cardPendentes"
+                    title="Clique para ver os guerreiros com pagamentos pendentes">
+                    <div class="stat-icon alert"><i class='bx bx-error-circle'></i></div>
+                    <div class="stat-info">
+                        <h3>Pagamentos Pendentes</h3>
+                        <p id="pagamentosPendentes">--</p>
+                    </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <div class="dash-tabs">
-            <button class="tab-btn active" data-target="view-socios">
-                <i class='bx bx-group'></i> Gestão de Sócios
-            </button>
-            <button class="tab-btn" data-target="view-mensalidades">
-                <i class='bx bx-wallet'></i> Gestão de Mensalidades
-            </button>
-            <button class="tab-btn" data-target="view-aulas">
-                <i class='bx bx-time-five'></i> Aulas Particulares
-                <span id="badgeAulas" class="badge-tab-inline" style="display: none;"></span>
-            </button>
+            <div class="dash-tabs">
+                <button class="tab-btn active" data-target="view-socios">
+                    <i class='bx bx-group'></i> Gestão de Sócios
+                </button>
+                <button class="tab-btn" data-target="view-mensalidades">
+                    <i class='bx bx-wallet'></i> Gestão de Mensalidades
+                </button>
+                <button class="tab-btn" data-target="view-aulas">
+                    <i class='bx bx-time-five'></i> Aulas Particulares
+                    <span id="badgeAulas" class="badge-tab-inline" style="display: none;"></span>
+                </button>
+            </div>
         </div>
 
         <div id="view-socios" class="tab-content active">
