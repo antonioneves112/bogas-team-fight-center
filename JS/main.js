@@ -1,4 +1,4 @@
-/* JS/main.js - O CÉREBRO DA APLICAÇÃO (Versão Blindada 2.0 - c/ Debounce) */
+/* JS/main.js - O CÉREBRO DA APLICAÇÃO (Versão Blindada 2.1 - c/ Validação por Clique) */
 import { supabase } from "./supabase.js";
 import { state } from "./state.js";
 import { formatarNomeCurto, extrairPreco, debounce } from "./helpers.js";
@@ -19,6 +19,7 @@ import {
   exportarGuerreirosPDF,
   exportarMensalidadesPDF,
 } from "./pdfManager.js";
+
 // =========================================================================
 // 🥊 FUNÇÃO GLOBAL DE TOAST (AVISOS VISUAIS DE ELITE)
 // =========================================================================
@@ -27,7 +28,6 @@ export function mostrarAviso(titulo, mensagem, tipo = "sucesso") {
   if (!container) return;
 
   // 🥊 BLINDAGEM ANTI-SPAM: Impede que o ecrã acumule demasiados alertas.
-  // Se já houver 2 alertas no ecrã, apaga o mais antigo antes de mostrar o novo.
   while (container.children.length >= 2) {
     container.removeChild(container.firstChild);
   }
@@ -176,7 +176,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     cardPendentes.addEventListener("click", () => {
       document.querySelector('.tab-btn[data-target="view-socios"]')?.click();
 
-      // 🥊 NOVA LÓGICA: Sincronizada com o contador inteligente!
       const faturasMes = state.mensalidadesAtuais || [];
       const idsComDivida = faturasMes
         .filter((m) => m.estado === "Pendente")
@@ -185,13 +184,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       const pendentes = state.guerreirosAtuais.filter((s) => {
         if (s.estado === "Inativo") return false;
-
-        // Tem alguma fatura pendente neste mês (Mensalidade ou PT)?
         const temFaturaPendente = idsComDivida.includes(s.id);
-
-        // Ou ainda nem sequer foi faturado (e é um atleta ativo)?
         const naoTemNenhumaFatura = !idsFaturados.includes(s.id);
-
         return temFaturaPendente || naoTemNenhumaFatura;
       });
 
@@ -278,7 +272,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // =======================================================================
-  // PESQUISAS DINÂMICAS NAS TABELAS (Agora com 🥊 DEBOUNCE Otimizado)
+  // PESQUISAS DINÂMICAS NAS TABELAS (c/ DEBOUNCE Otimizado)
   // =======================================================================
   const filtroNome = document.getElementById("filtroNomeSocio");
   const btnLimparSocio = document.getElementById("limparSocio");
@@ -445,7 +439,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 // =========================================================================
 // 🥊 FUNÇÕES DE AULAS E DESPESAS (Declaradas fora para estarem disponíveis)
 // =========================================================================
-
 function configurarAprovacaoAula() {
   const formAprovar = document.getElementById("formAprovarAula");
   const modalAprovar = document.getElementById("modalAprovarAula");
@@ -469,7 +462,6 @@ function configurarAprovacaoAula() {
     );
     const mesAnoFormatado = dataAulaDb.substring(0, 7);
 
-    // 🥊 VAI BUSCAR A DATA E A HORA PARA GUARDAR NA FATURA
     const dia_aula = dataAulaDb.split("-").reverse().join("/");
     const hora_aula = window.aulaSelecionadaHora || "";
 
@@ -490,8 +482,8 @@ function configurarAprovacaoAula() {
         {
           socio_id: socioId,
           mes_ano: mesAnoFormatado,
-          dia_aula: dia_aula, // 🥊 CAMPO NOVO
-          hora_aula: hora_aula, // 🥊 CAMPO NOVO
+          dia_aula: dia_aula,
+          hora_aula: hora_aula,
           tipo: "Aula Particular",
           estado: "Pendente",
           valor: valorLimpo,
@@ -572,7 +564,6 @@ export async function carregarAulasParticulares() {
     const { data: listaSocios, error: errSocios } = await supabase
       .from("socios")
       .select("id, nome");
-
     if (errSocios) throw errSocios;
 
     state.aulasParticulares = pedidos.map((pedido) => {
@@ -614,7 +605,6 @@ export function renderizarTabelaAulas(lista) {
             ? "badge-inativo"
             : "badge-pendente";
       const badgePagoClass = p.pago ? "badge-ativo" : "badge-inativo";
-
       const nomeCurto = formatarNomeCurto(p.socios.nome).toUpperCase();
 
       const btnAcoesBase = `
@@ -624,18 +614,15 @@ export function renderizarTabelaAulas(lista) {
 
       let botoesContexto = "";
       if (p.estado === "Pendente") {
-        // 🥊 Injetamos a HORA aqui no botão para a conseguirmos apanhar
         botoesContexto = `
-        <button class="btn-acao btn-edit btn-aceitar-aula" data-id="${p.id}" data-socio="${p.socio_id}" data-datadb="${p.data_aula}" data-hora="${p.hora_aula}" title="Aprovar Aula"><i class='bx bx-check'></i></button>
-        <button class="btn-acao btn-delete btn-recusar-aula" data-id="${p.id}" data-socio="${p.socio_id}" data-data="${dataF}" title="Recusar Aula"><i class='bx bx-x'></i></button>
-      `;
+          <button class="btn-acao btn-edit btn-aceitar-aula" data-id="${p.id}" data-socio="${p.socio_id}" data-datadb="${p.data_aula}" data-hora="${p.hora_aula}" title="Aprovar Aula"><i class='bx bx-check'></i></button>
+          <button class="btn-acao btn-delete btn-recusar-aula" data-id="${p.id}" data-socio="${p.socio_id}" data-data="${dataF}" title="Recusar Aula"><i class='bx bx-x'></i></button>
+        `;
       } else if (p.estado === "Aceite" && !p.pago) {
         botoesContexto = `<button class="btn-tatico btn-small btn-faturar-aula-direto" data-id="${p.id}" data-socio="${p.socio_id}" data-nome="${p.socios.nome}" data-valor="${p.valor}" data-data="${dataF}" data-datadb="${p.data_aula}" data-hora="${p.hora_aula}"><i class='bx bx-euro'></i> FATURAR</button>`;
       } else if (p.pago) {
         botoesContexto = `<span style="color: var(--accent); font-weight: bold; font-size: 0.85rem; margin-left: 5px;"><i class='bx bx-check-double' style="font-size:1.2rem; vertical-align: middle;"></i> REGULARIZADA</span>`;
       }
-
-      const todosBotoes = `<div style="display:flex; gap: 6px; align-items:center; justify-content: flex-end;">${btnAcoesBase} ${botoesContexto}</div>`;
 
       return `
     <tr>
@@ -645,7 +632,7 @@ export function renderizarTabelaAulas(lista) {
       <td data-label="VALOR:"><strong style="color: var(--accent);">${valorExibido}</strong></td>
       <td data-label="ESTADO:"><span class="badge ${badgeClass}">${p.estado.toUpperCase()}</span></td>
       <td data-label="PAGO:"><span class="badge ${badgePagoClass}">${p.pago ? "SIM" : "NÃO"}</span></td>
-      <td data-label="AÇÕES:">${todosBotoes}</td>
+      <td data-label="AÇÕES:"><div style="display:flex; gap: 6px; align-items:center; justify-content: flex-end;">${btnAcoesBase} ${botoesContexto}</div></td>
     </tr>`;
     })
     .join("");
@@ -698,7 +685,7 @@ export function initAulasEvents() {
         btnAceitar.dataset.socio;
       document.getElementById("hiddenDataAula").value =
         btnAceitar.dataset.datadb;
-      window.aulaSelecionadaHora = btnAceitar.dataset.hora; // 🥊 GUARDA A HORA
+      window.aulaSelecionadaHora = btnAceitar.dataset.hora;
       document.getElementById("modalAprovarAula").classList.remove("hidden");
     }
 
@@ -708,10 +695,8 @@ export function initAulasEvents() {
         socio: btnRecusar.dataset.socio,
         data: btnRecusar.dataset.data,
       };
-
       const dataSpan = document.getElementById("spanDataRecusarAula");
       if (dataSpan) dataSpan.innerText = aulaParaRecusar.data;
-
       document
         .getElementById("modalConfirmRecusarAula")
         ?.classList.remove("hidden");
@@ -727,9 +712,7 @@ export function initAulasEvents() {
         btnCobrar.dataset.socio;
       document.getElementById("faturarAulaDataDb").value =
         btnCobrar.dataset.datadb;
-
-      window.aulaSelecionadaHora = btnCobrar.dataset.hora; // 🥊 GUARDA A HORA
-
+      window.aulaSelecionadaHora = btnCobrar.dataset.hora;
       document.getElementById("modalFaturarAula").classList.remove("hidden");
     }
 
@@ -870,7 +853,6 @@ export function initAulasEvents() {
           .from("aulas_particulares")
           .update({ estado: "Recusada" })
           .eq("id", aulaParaRecusar.id);
-
         await supabase.from("notificacoes").insert([
           {
             socio_id: aulaParaRecusar.socio,
@@ -910,7 +892,6 @@ btnAddAula?.addEventListener("click", () => {
   formNovaAula?.reset();
   if (inputSocioIdAula) inputSocioIdAula.value = "";
 
-  // Preenche a lista de pesquisa com os guerreiros ativos
   const datalist = document.getElementById("listaSociosAula");
   if (datalist && state.guerreirosAtuais) {
     datalist.innerHTML = "";
@@ -923,7 +904,6 @@ btnAddAula?.addEventListener("click", () => {
       }
     });
   }
-
   modalNovaAula?.classList.remove("hidden");
 });
 
@@ -943,7 +923,6 @@ inputSocioSearchAula?.addEventListener("input", (e) => {
 
 formNovaAula?.addEventListener("submit", async (e) => {
   e.preventDefault();
-
   if (!inputSocioIdAula.value) {
     mostrarAviso(
       "Atenção",
@@ -968,7 +947,6 @@ formNovaAula?.addEventListener("submit", async (e) => {
     const socioId = inputSocioIdAula.value;
     const valorLimpo = valorInput ? parseFloat(valorInput) : null;
 
-    // 1. Grava o pedido nas aulas
     const { error: errAula } = await supabase
       .from("aulas_particulares")
       .insert([
@@ -981,10 +959,8 @@ formNovaAula?.addEventListener("submit", async (e) => {
           pago: false,
         },
       ]);
-
     if (errAula) throw errAula;
 
-    // 2. Se for criada já como "Aceite" e com um valor, gera logo a Mensalidade e a Notificação
     if (estadoAula === "Aceite" && valorLimpo !== null) {
       const mesAnoFormatado = dataAula.substring(0, 7);
       const diaF = dataAula.split("-").reverse().join("/");
@@ -1005,13 +981,11 @@ formNovaAula?.addEventListener("submit", async (e) => {
       const m = `O Mestre marcou-te uma aula particular para dia ${diaF} às ${horaAula.substring(0, 5)}. A fatura foi gerada!`;
       await supabase
         .from("notificacoes")
-        .insert([{ socio_id: socioId, titulo: t, mensagem: m, lida: false }]);
+        .insert([{ socio_id: socioId, titulo: t, message: m, lida: false }]);
     }
 
     mostrarAviso("Nocaute Técnico", "Aula agendada com sucesso!", "sucesso");
     modalNovaAula.classList.add("hidden");
-
-    // Atualiza o painel
     await carregarAulasParticulares();
     await atualizarBadgeAulasPendentes();
     if (estadoAula === "Aceite") await carregarMensalidades();
@@ -1034,7 +1008,6 @@ export async function atualizarBadgeAulasPendentes() {
       .eq("estado", "Pendente");
 
     const total = count || 0;
-
     if (badgeId) {
       badgeId.innerText = total;
       badgeId.style.display = total > 0 ? "flex" : "none";
@@ -1061,13 +1034,11 @@ function configurarPagamentoDiretoAula() {
     const socioId = document.getElementById("faturarAulaSocioId").value;
     const dataAulaDb = document.getElementById("faturarAulaDataDb").value;
     const mesAnoFormatado = dataAulaDb.substring(0, 7);
-
     const valorCampo = document.getElementById("faturarAulaValor").value;
     const valorLimpo = parseFloat(
       valorCampo.replace("€", "").replace(",", ".").trim(),
     );
 
-    // 🥊 VAI BUSCAR A DATA E A HORA PARA GUARDAR NA FATURA
     const dia_aula = dataAulaDb.split("-").reverse().join("/");
     const hora_aula = window.aulaSelecionadaHora || "";
 
@@ -1095,20 +1066,15 @@ function configurarPagamentoDiretoAula() {
       if (faturaExistente) {
         await supabase
           .from("mensalidades")
-          .update({
-            estado: "Pago",
-            valor: valorLimpo,
-            dia_aula: dia_aula, // 🥊 ATUALIZA CAMPO NOVO
-            hora_aula: hora_aula, // 🥊 ATUALIZA CAMPO NOVO
-          })
+          .update({ estado: "Pago", valor: valorLimpo, dia_aula, hora_aula })
           .eq("id", faturaExistente.id);
       } else {
         await supabase.from("mensalidades").insert([
           {
             socio_id: socioId,
             mes_ano: mesAnoFormatado,
-            dia_aula: dia_aula, // 🥊 CAMPO NOVO
-            hora_aula: hora_aula, // 🥊 CAMPO NOVO
+            dia_aula,
+            hora_aula,
             tipo: "Aula Particular",
             estado: "Pago",
             valor: valorLimpo,
@@ -1143,7 +1109,6 @@ function configurarPagamentoDiretoAula() {
         "sucesso",
       );
       modalFaturar.classList.add("hidden");
-
       await carregarAulasParticulares();
       await carregarMensalidades();
     } catch (erro) {
@@ -1162,10 +1127,9 @@ function configurarRegistoDespesas() {
   const modalHistorico = document.getElementById("modalHistoricoDespesas");
   const formNova = document.getElementById("formNovaDespesa");
 
-  btnPrincipal?.addEventListener("click", () => {
-    modalOpcoes?.classList.remove("hidden");
-  });
-
+  btnPrincipal?.addEventListener("click", () =>
+    modalOpcoes?.classList.remove("hidden"),
+  );
   document
     .getElementById("btnFecharOpcoesDespesa")
     ?.addEventListener("click", () => modalOpcoes?.classList.add("hidden"));
@@ -1218,7 +1182,6 @@ function configurarRegistoDespesas() {
             localStorage.getItem("bogas_treinador_nome"),
         },
       ]);
-
       mostrarAviso(
         "Despesa Registada",
         `Saída de ${valor.toFixed(2)}€ guardada.`,
@@ -1247,7 +1210,6 @@ async function carregarHistoricoDespesas() {
       .select("*")
       .order("data", { ascending: false });
     if (error) throw error;
-
     state.despesasCache = despesas;
 
     if (!despesas || despesas.length === 0) {
@@ -1274,7 +1236,6 @@ async function carregarHistoricoDespesas() {
             </tr>`;
       })
       .join("");
-
     configurarAcoesHistoricoDespesas();
   } catch (err) {
     tabela.innerHTML =
@@ -1365,3 +1326,107 @@ function configurarAcoesHistoricoDespesas() {
       }
     });
 }
+
+// =========================================================================
+// 🥊 ESCUDO DE SEGURANÇA MÁXIMA: ELIMINAÇÃO DE SÓCIOS POR APELIDO/NOME
+// =========================================================================
+let socioIdParaEliminar = null;
+let socioNomeParaApagar = "";
+
+// A: Função exportada para ser chamada no clique do caixote do lixo da tabela (socios.js)
+export function abrirModalEliminarSocio(id, nome) {
+  socioIdParaEliminar = id;
+  socioNomeParaApagar = nome;
+
+  // Injeta o nome do atleta para visualização no modal
+  const alvoNome = document.getElementById("deleteSocioNomeAlvo");
+  if (alvoNome) alvoNome.textContent = nome;
+
+  // Limpa o campo de escrita tática
+  const inputConfirm = document.getElementById("inputDeleteSocioNome");
+  if (inputConfirm) inputConfirm.value = "";
+
+  // Destranca o modal tirando o 'hidden'
+  document
+    .getElementById("modalConfirmDeleteSocio")
+    ?.classList.remove("hidden");
+}
+
+// B: Escuta o clique no botão de eliminação e avalia o escudo de segurança
+document
+  .getElementById("btnConfirmarDeleteSocio")
+  ?.addEventListener("click", async (e) => {
+    const inputNome = document
+      .getElementById("inputDeleteSocioNome")
+      .value.trim();
+
+    // 🛑 VALIDAÇÃO 1: Campo totalmente esquecido e em branco
+    if (inputNome === "") {
+      mostrarAviso(
+        "Atenção Mestre",
+        "Tens de escrever o nome exato do atleta para prosseguir!",
+        "erro",
+      );
+      return;
+    }
+
+    // 🛑 VALIDAÇÃO 2: Errou letras maiúsculas, minúsculas ou espaços
+    if (inputNome !== socioNomeParaApagar) {
+      mostrarAviso(
+        "Aviso de Bloqueio",
+        "O nome digitado não coincide com o alvo. Verifica maiúsculas!",
+        "erro",
+      );
+      return;
+    }
+
+    // Se passou na guarda, executa a eliminação definitiva no banco de dados
+    const btnConfirma = e.currentTarget;
+    const textoOriginal = btnConfirma.innerHTML;
+    btnConfirma.innerHTML =
+      "A apagar... <i class='bx bx-loader-alt bx-spin'></i>";
+    btnConfirma.disabled = true;
+
+    try {
+      if (socioIdParaEliminar) {
+        const { error } = await supabase
+          .from("socios")
+          .delete()
+          .eq("id", socioIdParaEliminar);
+
+        if (error) throw error;
+
+        mostrarAviso(
+          "Nocaute Completo",
+          "Atleta removido do sistema com sucesso.",
+          "sucesso",
+        );
+        document
+          .getElementById("modalConfirmDeleteSocio")
+          ?.classList.add("hidden");
+
+        // Atualiza os contadores e a listagem no ecrã imediatamente
+        carregarGuerreiros();
+      }
+    } catch (err) {
+      mostrarAviso(
+        "Falha no Golpe",
+        `Não foi possível eliminar: ${err.message}`,
+        "erro",
+      );
+    } finally {
+      btnConfirma.innerHTML = textoOriginal;
+      btnConfirma.disabled = false;
+      socioIdParaEliminar = null;
+      socioNomeParaApagar = "";
+    }
+  });
+
+// C: Fecho seguro do modal ao clicar em Cancelar
+document
+  .getElementById("btnCancelarDeleteSocio")
+  ?.addEventListener("click", () => {
+    document.getElementById("modalConfirmDeleteSocio")?.classList.add("hidden");
+    socioIdParaEliminar = null;
+    socioNomeParaApagar = "";
+  });

@@ -2,7 +2,7 @@
 import { supabase } from "./supabase.js";
 import { state } from "./state.js";
 import { formatarNomeCurto } from "./helpers.js";
-import { mostrarAviso } from "./main.js";
+import { mostrarAviso, abrirModalEliminarSocio } from "./main.js"; // 🥊 IMPORTA A FUNÇÃO SEGURA
 
 let paginaAtualAtivos = 1;
 const ITENS_POR_PAGINA = 10;
@@ -42,7 +42,6 @@ export async function carregarGuerreiros() {
           .localeCompare((b.nome || "").trim(), "pt", { sensitivity: "base" }),
       );
 
-    // 🥊 AGORA CONSIDERA "RENDIMENTO" COMO UMA MENSALIDADE VÁLIDA PARA EFEITOS DE CONTA
     const faturasMensais = state.faturasMesAtual.filter(
       (m) => !m.tipo || m.tipo === "Mensalidade" || m.tipo === "Rendimento",
     );
@@ -107,11 +106,8 @@ export async function carregarGuerreiros() {
 
     const pendentesReais = socios.filter((s) => {
       const temFaturaPendente = idsComDividaAtiva.includes(s.id);
-
-      // 🥊 PARCERIAS AGORA SÃO TRATADAS COMO ATLETAS PARA GERAR DÍVIDA ATÉ FATURAREM
       const isObrigatorioMensal =
         s.estado === "Ativo" && s.modalidade !== "Aulas Particulares";
-
       const naoTemFatura =
         isObrigatorioMensal && !state.idsPagosGlobal.includes(s.id);
 
@@ -167,7 +163,6 @@ export function renderizarTabelaSocios(
     const faturasDoSocio = (state.faturasMesAtual || []).filter(
       (m) => m.socio_id === s.id,
     );
-    // 🥊 Procura por Mensalidade ou Rendimento
     const faturaMensalidade = faturasDoSocio.find(
       (m) => !m.tipo || m.tipo === "Mensalidade" || m.tipo === "Rendimento",
     );
@@ -216,7 +211,6 @@ export function renderizarTabelaSocios(
           textoMensalidade = "S/ AULAS";
         }
       } else {
-        // 🥊 LÓGICA UNIFICADA PARA ATLETAS E PARCERIAS
         const mensalidadePaga =
           faturaMensalidade && faturaMensalidade.estado === "Pago";
 
@@ -364,11 +358,6 @@ export function initSociosEvents() {
   const formSocio = document.getElementById("formNovoSocio");
   const tituloModal = document.querySelector("#modalSocio .modal-header h3");
   const btnGuardar = document.getElementById("btnGuardarSocio");
-
-  const modalDeleteSocio = document.getElementById("modalConfirmDeleteSocio");
-  const btnCancelarDelete = document.getElementById("btnCancelarDeleteSocio");
-  const btnConfirmarDelete = document.getElementById("btnConfirmarDeleteSocio");
-  let socioIdParaEliminar = null;
 
   document.getElementById("btnAddSocio")?.addEventListener("click", () => {
     state.idSocioEmEdicao = null;
@@ -562,10 +551,15 @@ export function initSociosEvents() {
       return;
     }
 
+    // 🥊 AQUI ESTÁ A CORREÇÃO MESTRE! AGORA CHAMA O MAIN.JS DE FORMA SEGURA.
     const btnDelete = e.target.closest(".btn-delete");
     if (btnDelete) {
-      socioIdParaEliminar = btnDelete.getAttribute("data-id");
-      modalDeleteSocio?.classList.remove("hidden");
+      const id = btnDelete.getAttribute("data-id");
+      const socio = state.todosOsGuerreiros?.find((s) => s.id == id);
+
+      if (socio) {
+        abrirModalEliminarSocio(id, socio.nome); // 👈 Dispara o escudo do main.js!
+      }
     }
   };
 
@@ -575,57 +569,4 @@ export function initSociosEvents() {
   document
     .getElementById("tabelaInativos")
     ?.addEventListener("click", handleAcoesTabela);
-
-  btnCancelarDelete?.addEventListener("click", () => {
-    modalDeleteSocio.classList.add("hidden");
-    socioIdParaEliminar = null;
-  });
-
-  btnConfirmarDelete?.addEventListener("click", async () => {
-    if (!socioIdParaEliminar) return;
-
-    const textoOriginal = btnConfirmarDelete.innerHTML;
-    btnConfirmarDelete.innerHTML =
-      "A apagar... <i class='bx bx-loader-alt bx-spin'></i>";
-    btnConfirmarDelete.disabled = true;
-
-    try {
-      const socio = state.todosOsGuerreiros?.find(
-        (s) => s.id == socioIdParaEliminar,
-      );
-
-      if (socio && socio.foto_url) {
-        const fileName = socio.foto_url.split("/").pop();
-        if (fileName) {
-          const { error: storageError } = await supabase.storage
-            .from("fotos_socios")
-            .remove([fileName]);
-          if (storageError)
-            console.warn(
-              "Aviso: A foto não pôde ser apagada do Storage:",
-              storageError,
-            );
-        }
-      }
-
-      const { data, error } = await supabase
-        .from("socios")
-        .delete()
-        .eq("id", socioIdParaEliminar)
-        .select();
-      if (error) throw error;
-      if (!data || data.length === 0)
-        throw new Error("A BD bloqueou a eliminação. Verifica RLS!");
-
-      modalDeleteSocio.classList.add("hidden");
-      await carregarGuerreiros();
-      mostrarAviso("Atleta Eliminado", "Registo e foto apagados.", "sucesso");
-    } catch (erro) {
-      mostrarAviso("Erro ao eliminar", erro.message, "erro");
-    } finally {
-      btnConfirmarDelete.innerHTML = textoOriginal;
-      btnConfirmarDelete.disabled = false;
-      socioIdParaEliminar = null;
-    }
-  });
 }

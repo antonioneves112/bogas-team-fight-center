@@ -116,9 +116,8 @@
   margin-top: 0 !important;
   margin-bottom: 0 !important;
 }
-
 /* =========================================================
-   ESTATÍSTICAS & TABS (AMBIENTE DESKTOP)
+   Estatísticas - Grelha Unificada (Estilo Cápsula Global)
    ========================================================= */
 .dash-stats {
   display: grid;
@@ -132,13 +131,14 @@
   align-items: center;
   gap: 20px;
   padding: 25px;
-  justify-content: flex-start;
+  justify-content: center; /* 🥊 MÁGICA: Empurra o grupo todo para o centro do cartão */
   cursor: pointer;
   margin-top: 0 !important;
   transition:
     transform 0.3s ease,
     box-shadow 0.3s ease,
     border-color 0.3s ease;
+  min-height: 120px;
 }
 
 .stat-icon {
@@ -147,6 +147,10 @@
   background: rgba(37, 211, 102, 0.1);
   padding: 15px;
   border-radius: 12px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .stat-icon.alert {
@@ -154,12 +158,34 @@
   background: rgba(255, 77, 77, 0.1);
 }
 
+.stat-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* 🥊 MÁGICA: Centra o valor em relação ao título */
+  justify-content: center;
+  gap: 5px;
+}
+
+.stat-info h3 {
+  font-size: 0.95rem;
+  margin: 0;
+  line-height: 1.2;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 700;
+  text-align: center; /* 🥊 MÁGICA: Centra o texto */
+}
+
 .stat-info p {
   font-size: 1.8rem;
   font-family: "Orbitron", sans-serif;
-  font-weight: bold;
+  font-weight: 700;
   margin: 0;
   line-height: 1;
+  color: #fff;
+  text-align: center; /* 🥊 MÁGICA: Centra o texto */
 }
 
 /* =========================================================
@@ -484,6 +510,95 @@
   color: var(--accent) !important;
   text-shadow: 0 0 12px rgba(37, 211, 102, 0.9);
   font-weight: 700 !important;
+}
+
+/* =========================================================
+   🥊 DESIGN UNIFICADO DOS BOTÕES DE AÇÃO (CÁPSULA GLOBAL)
+   Aplica o visual Premium tanto em Desktop como em Mobile
+   ========================================================= */
+table td:last-child > div {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 2px !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  padding: 2px !important;
+  border-radius: 50px !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+}
+
+.btn-acao {
+  width: 38px !important;
+  height: 38px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 50% !important;
+  color: var(--muted) !important;
+  transition: all 0.2s ease !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  cursor: pointer !important;
+}
+
+.btn-acao i {
+  font-size: 1.1rem !important;
+}
+
+.btn-acao.btn-edit:hover {
+  color: #fff !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.btn-acao.btn-delete:hover {
+  color: #ff4d4d !important;
+  background: rgba(255, 77, 77, 0.1) !important;
+}
+
+.btn-tatico.btn-small.btn-faturar-aula-direto,
+table td:last-child span[style*="color: var(--accent)"] {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 38px !important;
+  padding: 0 15px !important;
+  margin: 0 0 0 4px !important;
+  border-radius: 50px !important;
+  font-size: 0.7rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.5px !important;
+  text-transform: uppercase !important;
+  white-space: nowrap !important;
+  box-sizing: border-box !important;
+}
+
+table td:last-child span[style*="color: var(--accent)"] {
+  background: rgba(37, 211, 102, 0.1) !important;
+  border: 1px solid rgba(37, 211, 102, 0.3) !important;
+  color: var(--accent) !important;
+  text-shadow: 0 0 10px rgba(37, 211, 102, 0.4) !important;
+}
+
+.btn-tatico.btn-small.btn-faturar-aula-direto {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
+  cursor: pointer !important;
+}
+
+.btn-tatico.btn-small.btn-faturar-aula-direto i {
+  font-size: 0.95rem !important;
+  margin-right: 5px !important;
+}
+
+.btn-tatico.btn-small.btn-faturar-aula-direto:hover {
+  background: rgba(37, 211, 102, 0.15) !important;
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+  box-shadow: 0 0 10px rgba(37, 211, 102, 0.2) !important;
 }
 
 /* =========================================================
@@ -946,81 +1061,6 @@ table tr:has(.btn-carregar-mais-mens) td::before {
     margin-top: 10px;
     border-top: 1px solid rgba(255, 255, 255, 0.05);
   }
-  table td:last-child > div {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 2px !important;
-    background: rgba(255, 255, 255, 0.03) !important;
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
-    padding: 2px !important;
-    border-radius: 50px !important;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
-  }
-
-  .btn-acao {
-    width: 38px !important;
-    height: 38px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    background: transparent !important;
-    border: none !important;
-    border-radius: 50% !important;
-    color: var(--muted) !important;
-    transition: all 0.2s ease !important;
-    margin: 0 !important;
-    padding: 0 !important;
-  }
-  .btn-acao i {
-    font-size: 1.1rem !important;
-  }
-  .btn-acao.btn-edit:hover {
-    color: #fff !important;
-    background: rgba(255, 255, 255, 0.05) !important;
-  }
-  .btn-acao.btn-delete:hover {
-    color: #ff4d4d !important;
-    background: rgba(255, 77, 77, 0.1) !important;
-  }
-
-  .btn-tatico.btn-small.btn-faturar-aula-direto,
-  table td:last-child span[style*="color: var(--accent)"] {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    height: 38px !important;
-    padding: 0 15px !important;
-    margin: 0 0 0 4px !important;
-    border-radius: 50px !important;
-    font-size: 0.7rem !important;
-    font-weight: 800 !important;
-    letter-spacing: 0.5px !important;
-    text-transform: uppercase !important;
-    white-space: nowrap !important;
-    box-sizing: border-box !important;
-  }
-  table td:last-child span[style*="color: var(--accent)"] {
-    background: rgba(37, 211, 102, 0.1) !important;
-    border: 1px solid rgba(37, 211, 102, 0.3) !important;
-    color: var(--accent) !important;
-    text-shadow: 0 0 10px rgba(37, 211, 102, 0.4) !important;
-  }
-  .btn-tatico.btn-small.btn-faturar-aula-direto {
-    background: rgba(255, 255, 255, 0.05) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    color: #fff !important;
-  }
-  .btn-tatico.btn-small.btn-faturar-aula-direto i {
-    font-size: 0.95rem !important;
-    margin-right: 5px !important;
-  }
-  .btn-tatico.btn-small.btn-faturar-aula-direto:hover {
-    background: rgba(37, 211, 102, 0.15) !important;
-    border-color: var(--accent) !important;
-    color: var(--accent) !important;
-    box-shadow: 0 0 10px rgba(37, 211, 102, 0.2) !important;
-  }
 }
 
 /* =========================================================
@@ -1168,10 +1208,10 @@ table tr:has(.btn-carregar-mais-mens) td::before {
     justify-content: center !important;
     align-items: center !important;
     text-align: center !important;
-    padding: 6px !important;
+    padding: 10px 4px !important; /* MÁGICA: Evita que "sangre" para o cartão do lado */
     height: 76px !important;
     min-height: auto !important;
-    gap: 3px !important;
+    gap: 8px !important;
     margin-top: 0 !important;
   }
 
@@ -1192,15 +1232,16 @@ table tr:has(.btn-carregar-mais-mens) td::before {
   }
 
   .stat-info h3 {
-    font-size: 0.65rem !important;
-    margin: 0 0 1px 0 !important;
+    font-size: 0.6rem !important; /* MÁGICA: Reduzido para caber lado a lado no mobile */
+    margin: 0 0 4px 0 !important; /* Dá espaço para os dados numericos respirarem */
     line-height: 1.1 !important;
     letter-spacing: normal !important;
-    white-space: nowrap !important;
+    white-space: normal !important;
+    text-align: center !important;
   }
 
   .stat-info p {
-    font-size: 1rem !important;
+    font-size: 1.1rem !important; /* MÁGICA: Ajustado para o Mobile ficar limpo */
     margin: 0 !important;
     font-weight: 700 !important;
     line-height: 1 !important;
@@ -1267,4 +1308,69 @@ table tr:has(.btn-carregar-mais-mens) td::before {
     height: 32px !important;
     padding: 0 10px !important;
   }
+}
+
+/* =========================================================
+   🥊 ESCUDO DE SEGURANÇA - VALIDAÇÃO DE ELIMINAÇÃO
+   ========================================================= */
+.delete-validation-block {
+  margin: 20px 0 25px 0 !important;
+  text-align: center !important; /* Centra com o resto do modal */
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+}
+
+.delete-validation-label {
+  color: #ff4d4d !important;
+  font-weight: 600 !important;
+  font-size: 0.85rem !important;
+  letter-spacing: 0.5px !important;
+  margin: 0 !important;
+  text-transform: uppercase !important;
+}
+
+#deleteSocioNomeAlvo {
+  color: #fff !important;
+  font-family: "Orbitron", sans-serif !important;
+  font-weight: 800 !important;
+  font-size: 1.15rem !important;
+  background: rgba(255, 77, 77, 0.08) !important;
+  border: 1px dashed rgba(255, 77, 77, 0.4) !important;
+  padding: 10px 15px !important;
+  border-radius: 8px !important;
+  display: inline-block !important;
+  margin: 4px auto 8px auto !important;
+  max-width: 100% !important;
+  text-shadow: 0 0 10px rgba(255, 77, 77, 0.3) !important;
+}
+
+#deleteSocioNomeAlvo:empty {
+  display: none !important;
+}
+
+#inputDeleteSocioNome {
+  width: 100% !important;
+  height: 46px !important;
+  background: rgba(0, 0, 0, 0.6) !important; /* Fundo escuro tático */
+  border: 1px solid rgba(255, 77, 77, 0.3) !important;
+  border-radius: 8px !important;
+  color: #fff !important;
+  text-align: center !important; /* Centra o que digitas */
+  font-family: "Montserrat", sans-serif !important;
+  font-size: 0.95rem !important;
+  outline: none !important;
+  padding: 0 15px !important;
+  transition: all 0.3s ease !important;
+}
+
+#inputDeleteSocioNome:focus {
+  border-color: #ff4d4d !important;
+  box-shadow: 0 0 15px rgba(255, 77, 77, 0.25) !important;
+  background: rgba(255, 255, 255, 0.02) !important;
+}
+
+#inputDeleteSocioNome::placeholder {
+  color: rgba(255, 255, 255, 0.25) !important;
+  font-size: 0.85rem !important;
 }

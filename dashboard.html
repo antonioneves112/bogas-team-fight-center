@@ -59,38 +59,36 @@
             </div>
         </header>
 
-        <div class="glass-panel overview-wrapper">
-            <section class="dash-stats">
-                <div class="stat-card glass-panel" id="cardTotalSocios" title="Clique para ver todos os guerreiros">
-                    <div class="stat-icon"><i class='bx bx-group'></i></div>
-                    <div class="stat-info">
-                        <h3>Total de Sócios</h3>
-                        <p id="totalSocios">--</p>
-                    </div>
+        <section class="dash-stats">
+            <div class="stat-card glass-panel" id="cardTotalSocios" title="Clique para ver todos os guerreiros">
+                <div class="stat-icon"><i class='bx bx-group'></i></div>
+                <div class="stat-info">
+                    <h3>Total de Sócios</h3>
+                    <p id="totalSocios">--</p>
                 </div>
-
-                <div class="stat-card glass-panel" id="cardPendentes"
-                    title="Clique para ver os guerreiros com pagamentos pendentes">
-                    <div class="stat-icon alert"><i class='bx bx-error-circle'></i></div>
-                    <div class="stat-info">
-                        <h3>Pagamentos Pendentes</h3>
-                        <p id="pagamentosPendentes">--</p>
-                    </div>
-                </div>
-            </section>
-
-            <div class="dash-tabs">
-                <button class="tab-btn active" data-target="view-socios">
-                    <i class='bx bx-group'></i> Gestão de Sócios
-                </button>
-                <button class="tab-btn" data-target="view-mensalidades">
-                    <i class='bx bx-wallet'></i> Gestão de Mensalidades
-                </button>
-                <button class="tab-btn" data-target="view-aulas">
-                    <i class='bx bx-time-five'></i> Aulas Particulares
-                    <span id="badgeAulas" class="badge-tab-inline" style="display: none;"></span>
-                </button>
             </div>
+
+            <div class="stat-card glass-panel" id="cardPendentes"
+                title="Clique para ver os guerreiros com pagamentos pendentes">
+                <div class="stat-icon alert"><i class='bx bx-error-circle'></i></div>
+                <div class="stat-info">
+                    <h3>Pagamentos Pendentes</h3>
+                    <p id="pagamentosPendentes">--</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="dash-tabs">
+            <button class="tab-btn active" data-target="view-socios">
+                <i class='bx bx-group'></i> Gestão de Sócios
+            </button>
+            <button class="tab-btn" data-target="view-mensalidades">
+                <i class='bx bx-wallet'></i> Gestão de Mensalidades
+            </button>
+            <button class="tab-btn" data-target="view-aulas">
+                <i class='bx bx-time-five'></i> Aulas Particulares
+                <span id="badgeAulas" class="badge-tab-inline" style="display: none;"></span>
+            </button>
         </div>
 
         <div id="view-socios" class="tab-content active">
@@ -506,7 +504,16 @@
             <i class='bx bx-trash bx-tada icon-confirm-warning'></i>
             <h2 class="title-confirm">Eliminar Sócio?</h2>
             <p class="desc-confirm">Tens a certeza que queres eliminar este atleta? Toda a informação será apagada e
-                esta ação não pode ser desfeita.</p>
+                esta
+                ação não pode ser desfeita.</p>
+
+            <div class="delete-validation-block">
+                <label class="delete-validation-label">Para confirmar, escreve o nome exato do sócio:</label>
+                <p id="deleteSocioNomeAlvo"></p>
+                <input type="text" id="inputDeleteSocioNome" placeholder="Digita o nome acima para desbloquear..."
+                    autocomplete="off">
+            </div>
+
             <div class="actions-confirm">
                 <button id="btnCancelarDeleteSocio" class="btn-tatico btn-outline-muted">Cancelar</button>
                 <button id="btnConfirmarDeleteSocio" class="btn-tatico btn-danger-action">Sim, Eliminar</button>
