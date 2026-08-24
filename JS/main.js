@@ -202,7 +202,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       btnAlertasAdmin.disabled = true;
 
       try {
-        // Obter o email do treinador logado diretamente da sessão real do Supabase
         const {
           data: { session },
         } = await supabase.auth.getSession();
@@ -218,20 +217,17 @@ document.addEventListener("DOMContentLoaded", async () => {
             applicationServerKey: urlB64ToUint8Array(PUBLIC_VAPID_KEY),
           });
 
-          // Guardar na tabela limpa de administradores
-          await supabase.from("admin_push_subscriptions").upsert(
-            [
-              {
-                treinador_email: emailTreinador,
-                subscricao: JSON.stringify(sub),
-              },
-            ],
-            { onConflict: "treinador_email" },
-          );
+          // Regista este dispositivo específico associado ao admin (permite múltiplos aparelhos)
+          await supabase.from("admin_push_subscriptions").insert([
+            {
+              treinador_email: emailTreinador,
+              subscricao: JSON.stringify(sub),
+            },
+          ]);
 
           mostrarAviso(
             "Radar Ativo",
-            "Dispositivo de gestão registado com sucesso!",
+            "Este dispositivo foi sincronizado com o centro de comandos!",
             "sucesso",
           );
         } else {
