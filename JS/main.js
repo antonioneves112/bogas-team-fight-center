@@ -121,7 +121,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   document
     .getElementById("btnFecharModalBroadcast")
     ?.addEventListener("click", () => modalBroadcast?.classList.add("hidden"));
-
   // =======================================================================
   // CONTROLO DE DATA, ARRANQUE DE DADOS E ESTATÍSTICAS
   // =======================================================================
@@ -163,10 +162,92 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  // CARREGAMENTO INICIAL
+  // CARREGAMENTO INICIAL (Apenas uma vez!)
   carregarGuerreiros();
   carregarMensalidades();
   carregarAulasParticulares();
+
+  // =======================================================================
+  // 🥊 1. RADAR EM TEMPO REAL (POP-UP DA APLICAÇÃO)
+  // =======================================================================
+  supabase
+    .channel("radar-admin")
+    .on(
+      "postgres_changes",
+      { event: "INSERT", schema: "public", table: "aulas_particulares" },
+      (payload) => {
+        if (payload.new.estado === "Pendente") {
+          mostrarAviso(
+            "Nova Marcação! 🥊",
+            "Um atleta acabou de pedir uma aula particular. Verifica a tua agenda!",
+            "sucesso",
+          );
+          carregarAulasParticulares();
+        }
+      },
+    )
+    .subscribe();
+
+  // =======================================================================
+  // 🥊 2. BOTÃO DE NOTIFICAÇÕES PUSH PARA O TREINADOR
+  // =======================================================================
+  const btnAlertasAdmin = document.getElementById("btnAtivarAlertasAdmin");
+  if (btnAlertasAdmin) {
+    btnAlertasAdmin.addEventListener("click", async () => {
+      const PUBLIC_VAPID_KEY =
+        "BDlSFCtWMO00daEMrL5sLutOo9iw7KfQ_KlxFvL24zhmvPcA2Cn-M8qez3pJgQQzgzeCi8Pwho7s8Ii1-_cDvXo";
+      const btnIcon = btnAlertasAdmin.innerHTML;
+      btnAlertasAdmin.innerHTML =
+        "<i class='bx bx-loader-alt bx-spin'></i> <span>Aguarde...</span>";
+      btnAlertasAdmin.disabled = true;
+
+      try {
+        const permissao = await Notification.requestPermission();
+        if (permissao === "granted") {
+          const registo = await navigator.serviceWorker.ready;
+          const sub = await registo.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlB64ToUint8Array(PUBLIC_VAPID_KEY),
+          });
+
+          await supabase
+            .from("push_subscriptions")
+            .upsert([{ socio_id: 999999, subscricao: JSON.stringify(sub) }], {
+              onConflict: "socio_id",
+            });
+
+          mostrarAviso(
+            "Radar Ativo",
+            "Vais receber notificações das marcações neste dispositivo!",
+            "sucesso",
+          );
+        } else {
+          mostrarAviso(
+            "Bloqueado",
+            "O teu browser bloqueou as notificações.",
+            "erro",
+          );
+        }
+      } catch (e) {
+        mostrarAviso("Erro", "Falha ao ativar o radar.", "erro");
+      } finally {
+        btnAlertasAdmin.innerHTML = btnIcon;
+        btnAlertasAdmin.disabled = false;
+      }
+    });
+  }
+
+  function urlB64ToUint8Array(base64String) {
+    const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+    const base64 = (base64String + padding)
+      .replace(/\-/g, "+")
+      .replace(/_/g, "/");
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i)
+      outputArray[i] = rawData.charCodeAt(i);
+    return outputArray;
+  }
 
   // =======================================================================
   // ATALHOS DE CARDS (DASHBOARD)
