@@ -1,7 +1,7 @@
 // =========================================================================
 // 🥊 MOTOR DA APP (SERVICE WORKER) - BOGAS TEAM - V14
 // =========================================================================
-const CACHE_NAME = "bogas-team-v92";
+const CACHE_NAME = "bogas-team-v93";
 
 const ASSETS_TO_CACHE = [
   "./",
