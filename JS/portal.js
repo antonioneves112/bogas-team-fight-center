@@ -131,6 +131,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const hoje = new Date();
     const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}`;
 
+    // 1. Procurar a Mensalidade Normal (Tabela 'mensalidades')
     const { data: faturasMes } = await supabase
       .from("mensalidades")
       .select("estado, tipo")
@@ -138,26 +139,47 @@ document.addEventListener("DOMContentLoaded", () => {
       .eq("mes_ano", mesAtual);
 
     const faturaMensalidade = faturasMes
-      ? faturasMes.find((p) => !p.tipo || p.tipo === "Mensalidade")
-      : null;
-    const faturaAulaPendente = faturasMes
       ? faturasMes.find(
-          (p) => p.tipo === "Aula Particular" && p.estado !== "Pago",
+          (p) => !p.tipo || p.tipo === "Mensalidade" || p.tipo === "Rendimento",
         )
       : null;
+
+    // 2. Procurar Dívidas de Aulas Particulares (Tabela 'aulas_particulares') - A TUA TABELA!
+    const { data: aulasNaoPagas } = await supabase
+      .from("aulas_particulares")
+      .select("id")
+      .eq("socio_id", socio.id)
+      .eq("estado", "Aceite") // Garante que a aula aconteceu/foi confirmada
+      .eq("pago", false) // Lógica do booleano (FALSE = Dívida)
+      .limit(1);
+
+    const temAulaPendente = aulasNaoPagas && aulasNaoPagas.length > 0;
 
     let statusTexto = "PAGO";
     let isDivida = false;
     let tipoDivida = "";
 
-    if (!faturaMensalidade || faturaMensalidade.estado !== "Pago") {
-      statusTexto = "N PAGA";
-      isDivida = true;
-      tipoDivida = "mensalidade";
-    } else if (faturaAulaPendente) {
+    const isPTOnly =
+      socio.modalidade === "Aulas Particulares" ||
+      socio.modalidade === "Aula Particular";
+    const isParceria =
+      socio.modalidade === "Rendimento" ||
+      (socio.nome || "").toUpperCase().includes("GYM");
+
+    // Lógica Blindada de Cobrança:
+    if (temAulaPendente) {
       statusTexto = "AULA N PAGA";
       isDivida = true;
       tipoDivida = "aula";
+    } else if (!isPTOnly && !isParceria) {
+      if (
+        !faturaMensalidade ||
+        (faturaMensalidade.estado || "").trim().toLowerCase() === "pendente"
+      ) {
+        statusTexto = "N PAGA";
+        isDivida = true;
+        tipoDivida = "mensalidade";
+      }
     }
 
     // 🥊 3. ATUALIZAÇÃO DO CARTÃO DE MENSALIDADE
