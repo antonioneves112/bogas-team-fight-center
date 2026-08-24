@@ -961,6 +961,24 @@ document.addEventListener("DOMContentLoaded", () => {
         },
       ]);
 
+      // 🥊 DISPARAR NOTIFICAÇÃO PUSH PARA O MESTRE (ID 999999)
+      const elNomeAtleta = document.getElementById("atletaNome");
+      const nomeAtleta = elNomeAtleta ? elNomeAtleta.innerText : "Atleta";
+      const tituloPush = "Nova Marcação de Aula! 🥊";
+      const mensagemPush = `O atleta ${nomeAtleta} marcou uma aula particular para o dia ${inputData.value}. Verifica o painel!`;
+
+      try {
+        await supabase.functions.invoke("notificar-alvo", {
+          body: {
+            socio_id: 999999,
+            titulo: tituloPush,
+            mensagem: mensagemPush,
+          },
+        });
+      } catch (erroPush) {
+        console.warn("Aviso: Falha ao enviar push para o treinador", erroPush);
+      }
+
       mostrarAviso("Pedido Enviado", "Aguardar confirmação!", "sucesso");
       buscarProximaAula(socioIdAtual);
       modalAula.classList.add("hidden");
