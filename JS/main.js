@@ -202,6 +202,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       btnAlertasAdmin.disabled = true;
 
       try {
+        // Obter o email do treinador logado diretamente da sessão real do Supabase
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        if (!session) throw new Error("Sessão não encontrada.");
+
+        const emailTreinador = session.user.email;
+
         const permissao = await Notification.requestPermission();
         if (permissao === "granted") {
           const registo = await navigator.serviceWorker.ready;
@@ -210,26 +218,31 @@ document.addEventListener("DOMContentLoaded", async () => {
             applicationServerKey: urlB64ToUint8Array(PUBLIC_VAPID_KEY),
           });
 
-          await supabase
-            .from("push_subscriptions")
-            .upsert([{ socio_id: 999999, subscricao: JSON.stringify(sub) }], {
-              onConflict: "socio_id",
-            });
+          // Guardar na tabela limpa de administradores
+          await supabase.from("admin_push_subscriptions").upsert(
+            [
+              {
+                treinador_email: emailTreinador,
+                subscricao: JSON.stringify(sub),
+              },
+            ],
+            { onConflict: "treinador_email" },
+          );
 
           mostrarAviso(
             "Radar Ativo",
-            "Vais receber notificações das marcações neste dispositivo!",
+            "Dispositivo de gestão registado com sucesso!",
             "sucesso",
           );
         } else {
           mostrarAviso(
             "Bloqueado",
-            "O teu browser bloqueou as notificações.",
+            "O browser bloqueou as notificações.",
             "erro",
           );
         }
       } catch (e) {
-        mostrarAviso("Erro", "Falha ao ativar o radar.", "erro");
+        mostrarAviso("Erro", "Falha ao ativar o radar: " + e.message, "erro");
       } finally {
         btnAlertasAdmin.innerHTML = btnIcon;
         btnAlertasAdmin.disabled = false;

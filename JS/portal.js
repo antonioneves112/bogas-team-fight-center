@@ -970,9 +970,9 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         await supabase.functions.invoke("notificar-alvo", {
           body: {
-            socio_id: 999999,
-            titulo: tituloPush,
-            mensagem: mensagemPush,
+            email_admin: "antonio.carlos.cosme.boturao@gmail.com", // Substitui pelo teu email de login de admin
+            titulo: "Nova Marcação de Aula Privada!",
+            mensagem: `O atleta ${nomeAtleta} marcou uma aula particular para o dia ${inputData.value}.`,
           },
         });
       } catch (erroPush) {
