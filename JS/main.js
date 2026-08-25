@@ -1665,3 +1665,58 @@ function urlB64ToUint8Array(base64String) {
   }
   return outputArray;
 }
+
+// =======================================================================
+// 🥊 DISPARADOR AUTOMÁTICO DE RADAR (BLINDAGEM MÓVEL)
+// =======================================================================
+async function ativarRadarAutomaticamente() {
+  const PUBLIC_VAPID_KEY =
+    "BDlSFCtWMO00daEMrL5sLutOo9iw7KfQ_KlxFvL24zhmvPcA2Cn-M8qez3pJgQQzgzeCi8Pwho7s8Ii1-_cDvXo";
+
+  try {
+    if (!("Notification" in window) || !("serviceWorker" in navigator)) return;
+
+    // Se já tiver permissão concedida, garante que está subscrito em segundo plano
+    if (Notification.permission === "granted") {
+      const registo = await navigator.serviceWorker.ready;
+      let sub = await registo.pushManager.getSubscription();
+
+      if (!sub) {
+        sub = await registo.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlB64ToUint8Array(PUBLIC_VAPID_KEY),
+        });
+      }
+
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (session) {
+        const emailTreinador = session.user.email;
+
+        // Verifica se já existe na base de dados para não duplicar
+        const { data: existe } = await supabase
+          .from("admin_push_subscriptions")
+          .select("id")
+          .eq("treinador_email", emailTreinador)
+          .maybeSingle();
+
+        if (!existe) {
+          await supabase
+            .from("admin_push_subscriptions")
+            .insert([
+              {
+                treinador_email: emailTreinador,
+                subscricao: JSON.stringify(sub),
+              },
+            ]);
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("Aviso no radar automático:", err);
+  }
+}
+
+// Executa o disparo logo que o motor arranca
+ativarRadarAutomaticamente();
