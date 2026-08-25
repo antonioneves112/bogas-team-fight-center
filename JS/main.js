@@ -1546,9 +1546,11 @@ async function verificarEstadoRadarAdmin() {
       const subAtual = await registo.pushManager.getSubscription();
 
       if (subAtual) {
-        const { data } =
-          (await supabase.from("admin_push_subscriptions")) -
-          select("id").eq("treinador_email", emailTreinador).maybeSingle();
+        const { data } = await supabase
+          .from("admin_push_subscriptions")
+          .select("id")
+          .eq("treinador_email", emailTreinador)
+          .maybeSingle();
 
         if (data) temRegistoValido = true;
       }
@@ -1614,14 +1616,12 @@ document.addEventListener("DOMContentLoaded", () => {
             ? session.user.email
             : "admin@bogasteam.com";
 
-          await supabase
-            .from("admin_push_subscriptions")
-            .insert([
-              {
-                treinador_email: emailTreinador,
-                subscricao: JSON.stringify(sub),
-              },
-            ]);
+          await supabase.from("admin_push_subscriptions").insert([
+            {
+              treinador_email: emailTreinador,
+              subscricao: JSON.stringify(sub),
+            },
+          ]);
 
           mostrarAviso(
             "Radar Ativo",
