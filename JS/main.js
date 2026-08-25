@@ -166,6 +166,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   carregarGuerreiros();
   carregarMensalidades();
   carregarAulasParticulares();
+  verificarEstadoRadarAdmin();
 
   // =======================================================================
   // 🥊 1. RADAR EM TEMPO REAL (POP-UP DA APLICAÇÃO)
@@ -176,14 +177,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       "postgres_changes",
       { event: "INSERT", schema: "public", table: "aulas_particulares" },
       (payload) => {
-        if (payload.new.estado === "Pendente") {
-          mostrarAviso(
-            "Nova Marcação! 🥊",
-            "Um atleta acabou de pedir uma aula particular. Verifica a tua agenda!",
-            "sucesso",
-          );
-          carregarAulasParticulares();
-        }
+        // Dispara sempre que entra um novo pedido (independente de vir como Pendente logo na criação)
+        mostrarAviso(
+          "Nova Marcação! 🥊",
+          "Um atleta acabou de pedir uma aula particular. Verifica a tua agenda!",
+          "sucesso",
+        );
+        carregarAulasParticulares();
+        atualizarBadgeAulasPendentes();
       },
     )
     .subscribe();
@@ -1451,7 +1452,7 @@ document
     socioNomeParaApagar = "";
   });
 // =======================================================================
-// 🥊 1. VERIFICAÇÃO DO ESTADO DO RADAR (COM BLINDAGEM MÓVEL)
+// 🥊 1. VERIFICAÇÃO DO ESTADO DO RADAR (ADAPTADO PARA DESKTOP E MOBILE)
 // =======================================================================
 async function verificarEstadoRadarAdmin() {
   const btnAlertasAdmin = document.getElementById("btnAtivarAlertasAdmin");
@@ -1467,44 +1468,27 @@ async function verificarEstadoRadarAdmin() {
     if (!session) return;
     const emailTreinador = session.user.email;
 
-    const permissao = Notification.permission;
-    let temRegistoValido = false;
+    const { data } = await supabase
+      .from("admin_push_subscriptions")
+      .select("id")
+      .eq("treinador_email", emailTreinador)
+      .maybeSingle();
 
-    if ("serviceWorker" in navigator && permissao === "granted") {
-      const registo = await navigator.serviceWorker.ready;
-      const subAtual = await registo.pushManager.getSubscription();
-
-      if (subAtual) {
-        const { data } = await supabase
-          .from("admin_push_subscriptions")
-          .select("id")
-          .eq("treinador_email", emailTreinador)
-          .maybeSingle();
-
-        if (data) temRegistoValido = true;
-      }
-    }
-
-    if (temRegistoValido) {
-      btnAlertasAdmin.style.borderColor = "var(--accent)";
-      btnAlertasAdmin.style.color = "var(--accent)";
-      btnAlertasAdmin.style.backgroundColor = "";
+    if (data) {
+      btnAlertasAdmin.classList.add("radar-ativo");
+      btnAlertasAdmin.disabled = true;
       if (texto) texto.innerText = "Radar Ativo";
       if (icone) icone.className = "bx bx-bell";
     } else {
-      btnAlertasAdmin.style.borderColor = "#ff4d4d";
-      btnAlertasAdmin.style.color = "#ff4d4d";
-      if (texto) texto.innerText = "Ativar Alertas";
-      if (icone) icone.className = "bx bx-bell-off";
+      btnAlertasAdmin.classList.remove("radar-ativo");
+      btnAlertasAdmin.disabled = false;
+      if (texto) texto.innerText = "Alertas";
+      if (icone) icone.className = "bx bx-bell";
     }
   } catch (err) {
     console.warn("Aviso na verificação do radar:", err);
   }
 }
-
-// Executa a verificação inicial do radar assim que o script arranca
-verificarEstadoRadarAdmin();
-
 // =======================================================================
 // 🥊 2. EVENTO DE CLIQUE DO BOTÃO DE ALERTAS (BLINDADO PARA MOBILE)
 // =======================================================================
@@ -1544,7 +1528,13 @@ if (btnAlertasAdmin) {
         } = await supabase.auth.getSession();
         const emailTreinador = session
           ? session.user.email
-          : "admin@bogasteam.com";
+          : "antonio.carlos.cosme.boturao@gmail.com";
+
+        // 🥊 BLINDAGEM ANTI-DUPLICADOS: Remove registos antigos deste treinador antes de inserir o novo
+        await supabase
+          .from("admin_push_subscriptions")
+          .delete()
+          .eq("treinador_email", emailTreinador);
 
         await supabase.from("admin_push_subscriptions").insert([
           {
@@ -1565,6 +1555,8 @@ if (btnAlertasAdmin) {
           "Permissão de notificações recusada pelo sistema.",
           "erro",
         );
+        btnAlertasAdmin.disabled = false;
+        btnAlertasAdmin.innerHTML = btnIcon;
       }
     } catch (err) {
       console.error("Erro no clique do telemóvel:", err);
@@ -1573,9 +1565,8 @@ if (btnAlertasAdmin) {
         err.message || "Falha ao ativar o radar.",
         "erro",
       );
-    } finally {
-      btnAlertasAdmin.innerHTML = btnIcon;
       btnAlertasAdmin.disabled = false;
+      btnAlertasAdmin.innerHTML = btnIcon;
     }
   });
 }
@@ -1606,7 +1597,6 @@ async function ativarRadarAutomaticamente() {
   try {
     if (!("Notification" in window) || !("serviceWorker" in navigator)) return;
 
-    // Se já tiver permissão concedida, garante que está subscrito em segundo plano
     if (Notification.permission === "granted") {
       const registo = await navigator.serviceWorker.ready;
       let sub = await registo.pushManager.getSubscription();
@@ -1624,7 +1614,6 @@ async function ativarRadarAutomaticamente() {
       if (session) {
         const emailTreinador = session.user.email;
 
-        // Verifica se já existe na base de dados para não duplicar
         const { data: existe } = await supabase
           .from("admin_push_subscriptions")
           .select("id")
@@ -1632,6 +1621,12 @@ async function ativarRadarAutomaticamente() {
           .maybeSingle();
 
         if (!existe) {
+          // 🥊 BLINDAGEM ANTI-DUPLICADOS
+          await supabase
+            .from("admin_push_subscriptions")
+            .delete()
+            .eq("treinador_email", emailTreinador);
+
           await supabase.from("admin_push_subscriptions").insert([
             {
               treinador_email: emailTreinador,
@@ -1646,5 +1641,4 @@ async function ativarRadarAutomaticamente() {
   }
 }
 
-// Executa a disposição logo que o motor arranca
 ativarRadarAutomaticamente();

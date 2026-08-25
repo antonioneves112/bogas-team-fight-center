@@ -973,11 +973,13 @@ table tr:has(.btn-carregar-mais-mens) td::before {
     justify-content: flex-end !important;
   }
 
-  .nav-actions .btn-tatico span {
+  /* 🥊 FORÇA A ESCONDER SEMPRE O TEXTO DO BOTÃO DE ALERTAS NO MÓVEL */
+  .nav-actions #btnAtivarAlertasAdmin span {
     display: none !important;
   }
 
-  .nav-actions .btn-tatico {
+  /* 🥊 MANTÉM O BOTÃO SEMPRE EM FORMATO DE CÁPSULA REDONDA COMPACTA */
+  .nav-actions #btnAtivarAlertasAdmin {
     flex: unset !important;
     width: 36px !important;
     height: 36px !important;
@@ -986,23 +988,35 @@ table tr:has(.btn-carregar-mais-mens) td::before {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    background: transparent !important;
-    border: 1px solid rgba(37, 211, 102, 0.3) !important;
-    color: var(--accent) !important;
   }
 
-  .nav-actions .btn-tatico i {
+  /* Quando o radar estiver ATIVO no telemóvel, pinta o ícone e a borda de vermelho, mantendo o formato redondo */
+  .nav-actions #btnAtivarAlertasAdmin.radar-ativo {
+    background: rgba(255, 77, 77, 0.15) !important;
+    border: 1px solid #ff4d4d !important;
+    color: #ff4d4d !important;
+  }
+
+  .nav-actions #btnAtivarAlertasAdmin.radar-ativo i {
+    color: #ff4d4d !important;
     font-size: 1.1rem !important;
     margin: 0 !important;
   }
 
-  .nav-actions .btn-tatico:active {
-    background: rgba(37, 211, 102, 0.1) !important;
-  }
-  .nav-actions #btnLogout:active {
-    background: rgba(255, 77, 77, 0.15) !important;
+  /* O restante dos botões de ação do topo também compactos */
+  .nav-actions .btn-tatico:not(#btnAtivarAlertasAdmin) span {
+    display: none !important;
   }
 
+  .nav-actions .btn-tatico:not(#btnAtivarAlertasAdmin) {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 50% !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
   .dash-container {
     padding-top: 0 !important;
   }
