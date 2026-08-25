@@ -188,9 +188,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     )
     .subscribe();
 
-  // =======================================================================
-  // 🥊 2. BOTÃO DE NOTIFICAÇÕES PUSH PARA O TREINADOR
-  // =======================================================================
   const btnAlertasAdmin = document.getElementById("btnAtivarAlertasAdmin");
   if (btnAlertasAdmin) {
     btnAlertasAdmin.addEventListener("click", async () => {
@@ -202,12 +199,15 @@ document.addEventListener("DOMContentLoaded", async () => {
       btnAlertasAdmin.disabled = true;
 
       try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-        if (!session) throw new Error("Sessão não encontrada.");
+        // 1. Verificar se o browser suporta notificações
+        if (!("Notification" in window)) {
+          throw new Error("Este browser não suporta notificações.");
+        }
 
-        const emailTreinador = session.user.email;
+        // 2. Verificar se o Service Worker está pronto
+        if (!("serviceWorker" in navigator)) {
+          throw new Error("Service Worker não suportado neste dispositivo.");
+        }
 
         const permissao = await Notification.requestPermission();
         if (permissao === "granted") {
@@ -217,7 +217,13 @@ document.addEventListener("DOMContentLoaded", async () => {
             applicationServerKey: urlB64ToUint8Array(PUBLIC_VAPID_KEY),
           });
 
-          // Regista este dispositivo específico associado ao admin (permite múltiplos aparelhos)
+          const {
+            data: { session },
+          } = await supabase.auth.getSession();
+          const emailTreinador = session
+            ? session.user.email
+            : "admin@bogasteam.com";
+
           await supabase.from("admin_push_subscriptions").insert([
             {
               treinador_email: emailTreinador,
@@ -227,35 +233,29 @@ document.addEventListener("DOMContentLoaded", async () => {
 
           mostrarAviso(
             "Radar Ativo",
-            "Este dispositivo foi sincronizado com o centro de comandos!",
+            "Dispositivo sincronizado com sucesso!",
             "sucesso",
           );
         } else {
           mostrarAviso(
             "Bloqueado",
-            "O browser bloqueou as notificações.",
+            "Permissão de notificações negada pelo sistema.",
             "erro",
           );
         }
       } catch (e) {
-        mostrarAviso("Erro", "Falha ao ativar o radar: " + e.message, "erro");
+        console.error("Erro detalhado no telemóvel:", e);
+        // Mostra o erro real no ecrã para sabermos o que se passa
+        mostrarAviso(
+          "Erro Técnico",
+          e.message || "Falha desconhecida no telemóvel.",
+          "erro",
+        );
       } finally {
         btnAlertasAdmin.innerHTML = btnIcon;
         btnAlertasAdmin.disabled = false;
       }
     });
-  }
-
-  function urlB64ToUint8Array(base64String) {
-    const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-    const base64 = (base64String + padding)
-      .replace(/\-/g, "+")
-      .replace(/_/g, "/");
-    const rawData = window.atob(base64);
-    const outputArray = new Uint8Array(rawData.length);
-    for (let i = 0; i < rawData.length; ++i)
-      outputArray[i] = rawData.charCodeAt(i);
-    return outputArray;
   }
 
   // =======================================================================
