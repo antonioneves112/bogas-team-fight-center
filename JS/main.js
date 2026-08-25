@@ -1521,19 +1521,23 @@ document
     socioNomeParaApagar = "";
   });
 
+// =======================================================================
+// 🥊 1. VERIFICAÇÃO DO ESTADO DO RADAR (COM BLINDAGEM MÓVEL)
+// =======================================================================
 async function verificarEstadoRadarAdmin() {
   const btnAlertasAdmin = document.getElementById("btnAtivarAlertasAdmin");
   if (!btnAlertasAdmin) return;
 
+  const icone = btnAlertasAdmin.querySelector("i");
+  const texto = btnAlertasAdmin.querySelector("span");
+
   try {
-    // 1. Obter a sessão e o email do treinador atual
     const {
       data: { session },
     } = await supabase.auth.getSession();
     if (!session) return;
     const emailTreinador = session.user.email;
 
-    // 2. Verificar o estado das permissões no browser
     const permissao = Notification.permission;
     let temRegistoValido = false;
 
@@ -1542,41 +1546,110 @@ async function verificarEstadoRadarAdmin() {
       const subAtual = await registo.pushManager.getSubscription();
 
       if (subAtual) {
-        // 3. Cruzar dados com a tabela 'admin_push_subscriptions' no Supabase
-        const { data, error } = await supabase
-          .from("admin_push_subscriptions")
-          .select("id")
-          .eq("treinador_email", emailTreinador)
-          .maybeSingle();
+        const { data } =
+          (await supabase.from("admin_push_subscriptions")) -
+          select("id").eq("treinador_email", emailTreinador).maybeSingle();
 
-        // Se encontrou registo na base de dados para este admin
-        if (data) {
-          temRegistoValido = true;
-        }
+        if (data) temRegistoValido = true;
       }
     }
 
-    // 4. Feedback Visual Tático no Botão do Sino
-    const icone = btnAlertasAdmin.querySelector("i");
-    const texto = btnAlertasAdmin.querySelector("span");
-
     if (temRegistoValido) {
-      // Se está tudo ativo e blindado
       btnAlertasAdmin.style.borderColor = "var(--accent)";
       btnAlertasAdmin.style.color = "var(--accent)";
+      btnAlertasAdmin.style.backgroundColor = "";
       if (texto) texto.innerText = "Radar Ativo";
       if (icone) icone.className = "bx bx-bell";
     } else {
-      // Se falta ativar ou se perdeu a subscrição
-      btnAlertasAdmin.style.borderColor = "";
-      btnAlertasAdmin.style.color = "";
-      if (texto) texto.innerText = "Alertas";
+      btnAlertasAdmin.style.borderColor = "#ff4d4d";
+      btnAlertasAdmin.style.color = "#ff4d4d";
+      if (texto) texto.innerText = "Ativar Alertas";
       if (icone) icone.className = "bx bx-bell-off";
     }
   } catch (err) {
-    console.error("Erro ao verificar o estado do radar:", err);
+    console.warn("Aviso na verificação do radar:", err);
   }
 }
+
+// =======================================================================
+// 🥊 2. EVENTO DE CLIQUE DO BOTÃO DE ALERTAS (BLINDADO PARA MOBILE)
+// =======================================================================
+document.addEventListener("DOMContentLoaded", () => {
+  const btnAlertasAdmin = document.getElementById("btnAtivarAlertasAdmin");
+
+  if (btnAlertasAdmin) {
+    // Garante escuta tanto para clique normal como para toque em dispositivos móveis
+    btnAlertasAdmin.addEventListener("click", async (e) => {
+      e.preventDefault();
+
+      const PUBLIC_VAPID_KEY =
+        "BDlSFCtWMO00daEMrL5sLutOo9iw7KfQ_KlxFvL24zhmvPcA2Cn-M8qez3pJgQQzgzeCi8Pwho7s8Ii1-_cDvXo";
+      const btnIcon = btnAlertasAdmin.innerHTML;
+      btnAlertasAdmin.innerHTML =
+        "<i class='bx bx-loader-alt bx-spin'></i> <span>Aguarde...</span>";
+      btnAlertasAdmin.disabled = true;
+
+      try {
+        if (!("Notification" in window)) {
+          throw new Error("O teu telemóvel não suporta notificações web.");
+        }
+
+        if (!("serviceWorker" in navigator)) {
+          throw new Error("Service Worker indisponível neste dispositivo.");
+        }
+
+        const permissao = await Notification.requestPermission();
+
+        if (permissao === "granted") {
+          const registo = await navigator.serviceWorker.ready;
+          const sub = await registo.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlB64ToUint8Array(PUBLIC_VAPID_KEY),
+          });
+
+          const {
+            data: { session },
+          } = await supabase.auth.getSession();
+          const emailTreinador = session
+            ? session.user.email
+            : "admin@bogasteam.com";
+
+          await supabase
+            .from("admin_push_subscriptions")
+            .insert([
+              {
+                treinador_email: emailTreinador,
+                subscricao: JSON.stringify(sub),
+              },
+            ]);
+
+          mostrarAviso(
+            "Radar Ativo",
+            "Dispositivo sincronizado com sucesso!",
+            "sucesso",
+          );
+          verificarEstadoRadarAdmin(); // Atualiza a cor do botão imediatamente para verde
+        } else {
+          mostrarAviso(
+            "Bloqueado",
+            "Permissão de notificações recusada pelo sistema.",
+            "erro",
+          );
+        }
+      } catch (err) {
+        console.error("Erro no clique do telemóvel:", err);
+        mostrarAviso(
+          "Erro Técnico",
+          err.message || "Falha ao ativar o radar.",
+          "erro",
+        );
+      } finally {
+        btnAlertasAdmin.innerHTML = btnIcon;
+        btnAlertasAdmin.disabled = false;
+      }
+    });
+  }
+});
 
 // =========================================================================
 // 🥊 FUNÇÃO GLOBAL DE CONVERSÃO VAPID
