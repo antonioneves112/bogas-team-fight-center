@@ -1520,3 +1520,76 @@ document
     socioIdParaEliminar = null;
     socioNomeParaApagar = "";
   });
+
+async function verificarEstadoRadarAdmin() {
+  const btnAlertasAdmin = document.getElementById("btnAtivarAlertasAdmin");
+  if (!btnAlertasAdmin) return;
+
+  try {
+    // 1. Obter a sessão e o email do treinador atual
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session) return;
+    const emailTreinador = session.user.email;
+
+    // 2. Verificar o estado das permissões no browser
+    const permissao = Notification.permission;
+    let temRegistoValido = false;
+
+    if ("serviceWorker" in navigator && permissao === "granted") {
+      const registo = await navigator.serviceWorker.ready;
+      const subAtual = await registo.pushManager.getSubscription();
+
+      if (subAtual) {
+        // 3. Cruzar dados com a tabela 'admin_push_subscriptions' no Supabase
+        const { data, error } = await supabase
+          .from("admin_push_subscriptions")
+          .select("id")
+          .eq("treinador_email", emailTreinador)
+          .maybeSingle();
+
+        // Se encontrou registo na base de dados para este admin
+        if (data) {
+          temRegistoValido = true;
+        }
+      }
+    }
+
+    // 4. Feedback Visual Tático no Botão do Sino
+    const icone = btnAlertasAdmin.querySelector("i");
+    const texto = btnAlertasAdmin.querySelector("span");
+
+    if (temRegistoValido) {
+      // Se está tudo ativo e blindado
+      btnAlertasAdmin.style.borderColor = "var(--accent)";
+      btnAlertasAdmin.style.color = "var(--accent)";
+      if (texto) texto.innerText = "Radar Ativo";
+      if (icone) icone.className = "bx bx-bell";
+    } else {
+      // Se falta ativar ou se perdeu a subscrição
+      btnAlertasAdmin.style.borderColor = "";
+      btnAlertasAdmin.style.color = "";
+      if (texto) texto.innerText = "Alertas";
+      if (icone) icone.className = "bx bx-bell-off";
+    }
+  } catch (err) {
+    console.error("Erro ao verificar o estado do radar:", err);
+  }
+}
+
+// =========================================================================
+// 🥊 FUNÇÃO GLOBAL DE CONVERSÃO VAPID
+// =========================================================================
+function urlB64ToUint8Array(base64String) {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding)
+    .replace(/\-/g, "+")
+    .replace(/_/g, "/");
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
