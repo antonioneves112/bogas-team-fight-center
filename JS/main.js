@@ -188,76 +188,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     )
     .subscribe();
 
-  const btnAlertasAdmin = document.getElementById("btnAtivarAlertasAdmin");
-  if (btnAlertasAdmin) {
-    btnAlertasAdmin.addEventListener("click", async () => {
-      const PUBLIC_VAPID_KEY =
-        "BDlSFCtWMO00daEMrL5sLutOo9iw7KfQ_KlxFvL24zhmvPcA2Cn-M8qez3pJgQQzgzeCi8Pwho7s8Ii1-_cDvXo";
-      const btnIcon = btnAlertasAdmin.innerHTML;
-      btnAlertasAdmin.innerHTML =
-        "<i class='bx bx-loader-alt bx-spin'></i> <span>Aguarde...</span>";
-      btnAlertasAdmin.disabled = true;
-
-      try {
-        // 1. Verificar se o browser suporta notificações
-        if (!("Notification" in window)) {
-          throw new Error("Este browser não suporta notificações.");
-        }
-
-        // 2. Verificar se o Service Worker está pronto
-        if (!("serviceWorker" in navigator)) {
-          throw new Error("Service Worker não suportado neste dispositivo.");
-        }
-
-        const permissao = await Notification.requestPermission();
-        if (permissao === "granted") {
-          const registo = await navigator.serviceWorker.ready;
-          const sub = await registo.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: urlB64ToUint8Array(PUBLIC_VAPID_KEY),
-          });
-
-          const {
-            data: { session },
-          } = await supabase.auth.getSession();
-          const emailTreinador = session
-            ? session.user.email
-            : "admin@bogasteam.com";
-
-          await supabase.from("admin_push_subscriptions").insert([
-            {
-              treinador_email: emailTreinador,
-              subscricao: JSON.stringify(sub),
-            },
-          ]);
-
-          mostrarAviso(
-            "Radar Ativo",
-            "Dispositivo sincronizado com sucesso!",
-            "sucesso",
-          );
-        } else {
-          mostrarAviso(
-            "Bloqueado",
-            "Permissão de notificações negada pelo sistema.",
-            "erro",
-          );
-        }
-      } catch (e) {
-        console.error("Erro detalhado no telemóvel:", e);
-        // Mostra o erro real no ecrã para sabermos o que se passa
-        mostrarAviso(
-          "Erro Técnico",
-          e.message || "Falha desconhecida no telemóvel.",
-          "erro",
-        );
-      } finally {
-        btnAlertasAdmin.innerHTML = btnIcon;
-        btnAlertasAdmin.disabled = false;
-      }
-    });
-  }
-
   // =======================================================================
   // ATALHOS DE CARDS (DASHBOARD)
   // =======================================================================
@@ -1702,14 +1632,12 @@ async function ativarRadarAutomaticamente() {
           .maybeSingle();
 
         if (!existe) {
-          await supabase
-            .from("admin_push_subscriptions")
-            .insert([
-              {
-                treinador_email: emailTreinador,
-                subscricao: JSON.stringify(sub),
-              },
-            ]);
+          await supabase.from("admin_push_subscriptions").insert([
+            {
+              treinador_email: emailTreinador,
+              subscricao: JSON.stringify(sub),
+            },
+          ]);
         }
       }
     }
@@ -1718,5 +1646,5 @@ async function ativarRadarAutomaticamente() {
   }
 }
 
-// Executa o disparo logo que o motor arranca
+// Executa a disposição logo que o motor arranca
 ativarRadarAutomaticamente();
