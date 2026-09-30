@@ -923,3 +923,17 @@ input:-webkit-autofill:active {
   box-shadow: 0 0 15px rgba(255, 77, 77, 0.4) !important; /* Brilho vermelho suave */
   transform: translateY(-2px);
 }
+
+/* =========================================================
+   🥊 CORREÇÃO: LOGOTIPO NO IPHONE / ECRÃS PEQUENOS
+========================================================= */
+@media (max-width: 430px) {
+  .site-header .site-logo {
+    font-size: 1.1rem !important; /* Reduz o tamanho da fonte */
+    letter-spacing: 0.5px !important; /* Aproxima ligeiramente as letras */
+    white-space: nowrap !important; /* Impede o texto de quebrar de linha */
+    max-width: 70vw; /* Garante que não empurra o botão do menu para fora */
+    overflow: hidden;
+    text-overflow: ellipsis; /* Em casos extremos de ecrãs minúsculos, adiciona "..." em vez de cortar feio */
+  }
+}
