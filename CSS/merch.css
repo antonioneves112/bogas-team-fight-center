@@ -60,11 +60,34 @@
 }
 
 .page-merch .filter-row {
-  display: flex;
+  display: inline-flex;
+  background: rgba(15, 15, 15, 0.85); /* Fundo escuro unificado */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50px; /* Formato de cápsula / pílula */
+  padding: 6px;
+  gap: 5px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
   flex-wrap: wrap;
   justify-content: center;
-  gap: 12px;
-  width: 100%;
+  width: auto; /* Ajusta ao tamanho dos botões em vez de ocupar tudo */
+}
+
+.page-merch .filter-row .btn-tatico {
+  border: none !important;
+  background: transparent !important;
+  color: rgba(
+    255,
+    255,
+    255,
+    0.5
+  ) !important; /* Letra mais apagada por defeito */
+  border-radius: 40px !important;
+  padding: 12px 30px !important;
+  font-size: 1.1rem !important;
+  box-shadow: none !important;
+  transition: all 0.3s ease !important;
+  margin: 0;
 }
 
 /* =========================
@@ -376,8 +399,12 @@ body.no-scroll {
   }
 
   .page-merch .merch-grid {
-    grid-template-columns: 1fr;
-    gap: 20px;
+    flex-wrap: nowrap !important; /* Impede que quebrem de linha */
+    width: 100% !important;
+    max-width: 360px !important; /* Largura ideal para caber no ecrã do telemóvel */
+    gap: 2px !important;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .page-merch .filter-row {
@@ -385,10 +412,11 @@ body.no-scroll {
   }
 
   .page-merch .btn-tatico.js-filter {
-    flex: 1 1 calc(50% - 10px);
-    padding: 14px 10px;
-    font-size: 0.8rem;
+    flex: 1 !important; /* Cada um ocupa 1/3 do espaço exato */
+    padding: 10px 4px !important;
+    font-size: 0.75rem !important; /* Letra ajustada para caber sem cortar */
     text-align: center;
+    white-space: nowrap !important;
   }
 
   .page-merch .tools {

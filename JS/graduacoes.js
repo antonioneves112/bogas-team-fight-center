@@ -222,6 +222,78 @@ const graduacoesDB = {
         },
       ],
     },
+    {
+      id: "outubro2026",
+      date: "04/10/2026",
+      cover: "../img/graduacoes_2026_outubro/GRUPO.jpeg",
+      gallery: [
+        {
+          type: "img",
+          src: "../img/graduacoes_2026_outubro/GRUPO.jpeg",
+          caption: "Exame Outubro 2026",
+        },
+        {
+          type: "img",
+          src: "../img/graduacoes_2026_outubro/AMARELAS.jpeg",
+          caption: "Faixas Amarelas",
+        },
+        {
+          type: "img",
+          src: "../img/graduacoes_2026_outubro/LARANJAS.jpeg",
+          caption: "Faixas Laranjas",
+        },
+        {
+          type: "img",
+          src: "../img/graduacoes_2026_outubro/VERDES.jpeg",
+          caption: "Faixas Verdes",
+        },
+        {
+          type: "img",
+          src: "../img/graduacoes_2026_outubro/AZUL.jpeg",
+          caption: "Faixas Azuis",
+        },
+        {
+          type: "img",
+          src: "../img/graduacoes_2026_outubro/TREINADORES.jpeg",
+          caption: "Treinadores",
+        },
+        {
+          type: "img",
+          src: "../img/graduacoes_2026_outubro/MESTRE.jpeg",
+          caption: "Mestre",
+        },
+        {
+          type: "video",
+          src: "../img/graduacoes_2026_outubro/TECNICA_1.mp4",
+          caption: "Técnicas",
+        },
+        {
+          type: "video",
+          src: "../img/graduacoes_2026_outubro/TECNICA_2.mp4",
+          caption: "Técnicas",
+        },
+        {
+          type: "video",
+          src: "../img/graduacoes_2026_outubro/Sparring.mp4",
+          caption: "Sparring",
+        },
+        {
+          type: "video",
+          src: "../img/graduacoes_2026_outubro/SPARRING 1.mp4",
+          caption: "Sparring",
+        },
+        {
+          type: "video",
+          src: "../img/graduacoes_2026_outubro/SPARRING II.mp4",
+          caption: "Sparring",
+        },
+        {
+          type: "video",
+          src: "../img/graduacoes_2026_outubro/ENTREGA.mp4",
+          caption: "Entrega",
+        },
+      ],
+    },
   ],
 };
 

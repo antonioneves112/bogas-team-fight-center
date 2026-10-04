@@ -2,11 +2,18 @@
 
 /* --- 1. BOTÕES DOS ANOS (TÁTICOS) --- */
 .page-graduacoes .year-buttons {
-  display: flex;
+  display: inline-flex !important; /* O 'inline-flex' encolhe a caixa à medida exata dos botões */
+  background: rgba(15, 15, 15, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50px;
+  padding: 6px;
+  gap: 5px;
+  margin: 30px auto 0;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+  flex-wrap: wrap;
   justify-content: center;
-  gap: 15px;
-  margin: 30px 0 0; /* <--- Margem inferior agora é 0 */
-  transition: margin-bottom 0.3s ease; /* Transição suave quando expandir */
+  transition: margin-bottom 0.3s ease;
 }
 
 #yearEvents {
@@ -144,6 +151,46 @@
   margin: 0 auto;
 }
 
+/* =========================================================
+   🥊 DESIGN PREMIUM PARA OS BOTÕES DOS ANOS (CÁPSULA UNIFICADA)
+========================================================= */
+
+/* Limpar o estilo base do btn-tatico APENAS dentro desta zona */
+.year-buttons .btn-tatico {
+  border: none !important;
+  background: transparent !important;
+  color: rgba(
+    255,
+    255,
+    255,
+    0.5
+  ) !important; /* Letra mais apagada por defeito */
+  border-radius: 40px !important;
+  padding: 12px 30px !important;
+  font-size: 1.1rem !important;
+  box-shadow: none !important;
+  transition: all 0.3s ease !important;
+}
+
+/* Efeito ao passar o rato (Hover) */
+.year-buttons .btn-tatico:hover {
+  color: #fff !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  transform: translateY(0) !important; /* Desativa o salto do botão base */
+}
+
+/* ESTADO ATIVO (Ano Selecionado) */
+.year-buttons .btn-tatico.is-active {
+  background: rgba(
+    156,
+    230,
+    156,
+    0.15
+  ) !important; /* Fundo verde neon subtil */
+  color: var(--accent) !important; /* Letra verde neon */
+  font-weight: 700 !important;
+  box-shadow: 0 0 15px rgba(156, 230, 156, 0.2) !important; /* Brilho interior */
+}
 /* --- 5. RESPONSIVIDADE E KEYFRAMES --- */
 @media (max-width: 768px) {
   .page-graduacoes .graduacoes-container {
@@ -152,10 +199,45 @@
 }
 
 @media (max-width: 560px) {
-  .page-graduacoes .year-btn {
-    height: 48px;
-    padding: 0 24px;
-    font-size: 0.8rem;
+  /* 1. CÁPSULA HORIZONTAL FORÇADA NO MOBILE */
+  .page-graduacoes .year-buttons {
+    display: flex !important;
+    flex-direction: row !important; /* Garante que ficam lado a lado */
+    flex-wrap: nowrap !important; /* Impede terminantemente que saltem de linha */
+    border-radius: 50px !important; /* Volta ao formato pílula deitada */
+    padding: 4px !important;
+    width: 100% !important;
+    max-width: 340px !important; /* Largura perfeita para os ecrãs mobile */
+    gap: 2px !important; /* Espaço mínimo entre botões */
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* 2. BOTÕES ADAPTADOS PARA DIVIDIREM O ESPAÇO */
+  .year-buttons .btn-tatico {
+    flex: 1 !important; /* Os 3 botões dividem a largura exata da cápsula em partes iguais */
+    padding: 10px 4px !important; /* Reduz a margem interna para a letra caber */
+    font-size: 0.85rem !important; /* Afina o texto ligeiramente */
+    height: 42px !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+  }
+
+  /* Ajuste da grelha de fotos */
+  .page-graduacoes .graduacoes-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 

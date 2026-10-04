@@ -1,10 +1,38 @@
 /* CSS/home.css - LIMPO E UNIFICADO */
 .page-home .hero-actions {
-  display: flex;
-  gap: 16px;
-  justify-content: center;
+  display: inline-flex;
+  background: rgba(15, 15, 15, 0.85); /* Fundo escuro unificado */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50px; /* Formato de cápsula */
+  padding: 8px;
+  gap: 5px;
+  margin: 10px auto 35px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
   flex-wrap: wrap;
-  margin-bottom: 30px;
+  justify-content: center;
+}
+
+/* Limpar o estilo base do btn-tatico APENAS dentro desta cápsula */
+.page-home .hero-actions .btn-tatico {
+  border: none !important;
+  background: transparent !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+  border-radius: 40px !important;
+  padding: 14px 32px !important;
+  font-size: 1rem !important;
+  box-shadow: none !important;
+  transition: all 0.3s ease !important;
+  margin: 0 !important;
+}
+
+/* Efeito ao passar o rato (Acende a luz Neon) */
+.page-home .hero-actions .btn-tatico:hover {
+  background: rgba(156, 230, 156, 0.15) !important;
+  color: var(--accent) !important;
+  font-weight: 700 !important;
+  box-shadow: 0 0 15px rgba(156, 230, 156, 0.2) !important;
+  transform: translateY(0) !important;
 }
 .page-home .hero-pills {
   display: flex;
@@ -384,26 +412,42 @@
   .page-home .feature-grid {
     grid-template-columns: 1fr;
   }
-
   .page-home .hero-actions {
     display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important; /* Força tudo ao centro da coluna */
-    justify-content: center !important;
+    flex-direction: row !important; /* Força os dois botões a ficarem lado a lado */
+    flex-wrap: nowrap !important; /* Impede de saltarem de linha */
+    border-radius: 50px !important; /* Formato pílula deitada */
+    padding: 4px !important;
     width: 100% !important;
-    gap: 15px !important;
+    max-width: 380px !important; /* Dá um pouco mais de largura para o texto caber */
+    gap: 2px !important;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .page-home .hero-actions .btn-tatico {
+    flex: 1 !important; /* Ambos dividem os 50% do espaço da cápsula */
     width: 100% !important;
-    max-width: 280px !important; /* Controla a largura máxima */
+    max-width: none !important;
     display: flex !important;
-    justify-content: center !important; /* Centra o texto dentro do botão */
+    justify-content: center !important;
     align-items: center !important;
     text-align: center !important;
-    margin: 0 auto !important; /* A trava de segurança para centrar */
+    padding: 8px 4px !important; /* Margem menor nas laterais */
+    font-size: 0.75rem !important; /* Reduz a letra para caber */
+    line-height: 1.2 !important; /* Permite que o texto se divida em 2 linhas de forma limpa */
+    white-space: normal !important;
+    height: auto !important;
+    min-height: 48px !important;
   }
 
+  .page-home .hero-actions .btn-tatico:hover {
+    background: rgba(156, 230, 156, 0.15) !important;
+    color: var(--accent) !important;
+    font-weight: 700 !important;
+    box-shadow: 0 0 15px rgba(156, 230, 156, 0.2) !important;
+    transform: translateY(0) !important;
+  }
   /* 2. MENU LOGIN BTN */
   .nav-login-btn {
     margin-left: 0 !important;
