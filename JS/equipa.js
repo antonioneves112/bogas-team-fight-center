@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
     },
     {
       nome: "Francisco António",
-      foto: "./img/PRETO2.png",
+      foto: "./img/equipa_chiquinho.jpg",
       locais: [
         {
           ginasio: "Bogas Team Sede (Queluz)",
@@ -68,6 +68,12 @@ document.addEventListener("DOMContentLoaded", () => {
           modalidade: "Kickboxing",
           dias: "Terças e Quintas",
           hora: "20:00 - 21:30",
+        },
+        {
+          ginasio: "Ginásio Super Tónico (Ajuda)",
+          modalidade: "Kickboxing",
+          dias: "Segunda, Quarta e Sexta",
+          hora: "20:30 - 21:30",
         },
       ],
     },
