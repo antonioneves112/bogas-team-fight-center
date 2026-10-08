@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // --- NOVO: ACADEMIA OCUPACIONAL (ADULTOS) ---
         {
           ginasio: "Academia Ocupacional  (Mira Sintra)",
-          modalidade: "Kickboxing Adultos",
+          modalidade: "Kickboxing",
           dias: "Terça",
           hora: "19:45 - 20:45",
           dias2: "Quinta",
