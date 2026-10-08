@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
         {
           ginasio: "Life Gymnasium",
           modalidade: "Kickboxing",
-          dias: "Terças e Quintas",
+          dias: "Terça e Quinta",
           hora: "21:00 - 22:00",
         },
       ],
@@ -50,12 +50,30 @@ document.addEventListener("DOMContentLoaded", () => {
       foto: "./img/equipa_paulinho.png",
       locais: [
         {
-          ginasio: "MonsterGym",
+          ginasio: "MonsterGym (Cacém)",
           modalidade: "Kickboxing",
           dias: "Segunda, Quarta e Sexta",
-          hora: "08:00 - 09:00",
-          dias2: "Terças e Quintas", // 🥊 GOLPE: Criámos a variável dias2 e hora2
+          hora: "08:00 - 09:00 <br> 19:30 - 20:30",
+          dias2: "Terça e Quinta",
           hora2: "13:00 - 14:00",
+        },
+        // --- NOVO: ACADEMIA OCUPACIONAL (KIDS) ---
+        {
+          ginasio: "Academia Ocupacional (Mira Sintra)",
+          modalidade: "Kickboxing Kids (6 aos 12)",
+          dias: "Terça",
+          hora: "19:00 - 19:45",
+          dias2: "Quinta",
+          hora2: "19:45 - 20:30",
+        },
+        // --- NOVO: ACADEMIA OCUPACIONAL (ADULTOS) ---
+        {
+          ginasio: "Academia Ocupacional  (Mira Sintra)",
+          modalidade: "Kickboxing Adultos",
+          dias: "Terça",
+          hora: "19:45 - 20:45",
+          dias2: "Quinta",
+          hora2: "20:30 - 21:30",
         },
       ],
     },
@@ -66,7 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
         {
           ginasio: "XL Gym (Pontinha)",
           modalidade: "Kickboxing",
-          dias: "Terças e Quintas",
+          dias: "Terça e Quinta",
           hora: "20:00 - 21:30",
         },
         {

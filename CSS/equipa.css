@@ -123,15 +123,19 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap; /* 🥊 GOLPE VITAL: Permite que os horários grandes saltem de linha */
+  gap: 10px; /* Garante que, se saltar de linha, não ficam colados */
 }
 
 .hora-badge {
   background: rgba(74, 222, 128, 0.1);
   color: #4ade80;
-  padding: 3px 8px;
+  padding: 4px 10px;
   border-radius: 4px;
   font-weight: 600;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
+  text-align: center;
+  margin-left: auto; /* 🥊 GOLPE VITAL: Empurra a caixa verde SEMPRE para a direita */
 }
 
 .local-mod-tag {
