@@ -439,8 +439,31 @@ export function initSociosEvents() {
           .eq("id", state.idSocioEmEdicao);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("socios").insert([dados]);
+        // 🥊 INSERE O NOVO SÓCIO E SELECIONA OS DADOS PARA O WEBHOOK
+        const { data: novoSocio, error } = await supabase
+          .from("socios")
+          .insert([dados])
+          .select()
+          .single();
+
         if (error) throw error;
+
+        // 🥊 DISPARA O WEBHOOK DE BOAS-VINDAS PARA O MAKE
+        if (novoSocio && novoSocio.email) {
+          fetch("https://hook.eu1.make.com/hrx5jlfmciwktkksbe8luvln8uxgp1b3", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              atleta: novoSocio.nome,
+              emailAtleta: novoSocio.email,
+              modalidade: novoSocio.modalidade,
+            }),
+          }).catch((err) =>
+            console.error("Erro ao disparar webhook de boas-vindas:", err),
+          );
+        }
       }
 
       modalSocio.classList.add("hidden");
