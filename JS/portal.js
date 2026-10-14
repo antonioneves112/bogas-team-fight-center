@@ -1,8 +1,9 @@
-/* JS/portal.js - MOTOR DO PORTAL (VERSÃO FINAL E BLINDADA) */
+/* JS/portal.js - MOTOR DO PORTAL (VERSÃO FINAL, BLINDADA E COM EMAIL DE ELITE) */
 import { supabase } from "./supabase.js";
 
 // 🥊 VARIÁVEIS DE NÍVEL DE MÓDULO
 let atletaLogadoId = null;
+let atletaLogadoObj = null; // Guardamos os dados completos do sócio
 let notificacaoParaApagarId = null;
 let mensagensAtleta = [];
 
@@ -56,6 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function iniciarPortalParaAtleta(socio) {
     atletaLogadoId = socio.id;
+    atletaLogadoObj = socio; // Guarda o atleta na memória global do módulo
     localStorage.setItem("bogas_atleta_id", socio.id);
 
     // ========================================================================
@@ -77,7 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ? socio.data_inscricao.split("-").reverse().join("/")
         : "--/--/----";
 
-    // --- LÓGICA DA GRADUAÇÃO (Fim do "Verificando..." Infinito) ---
+    // --- LÓGICA DA GRADUAÇÃO ---
     const elGrad = document.getElementById("atletaGraduacao");
     const badgeGrad = document.getElementById("statusAptidao");
     const elDataUltimaGrad = document.getElementById("labelUltimaGrad");
@@ -89,7 +91,7 @@ document.addEventListener("DOMContentLoaded", () => {
       socio.graduacao === "Não Aplicável" ||
       !socio.graduacao
     ) {
-      if (badgeGrad) badgeGrad.classList.add("hidden"); // Esconde o crachá
+      if (badgeGrad) badgeGrad.classList.add("hidden");
       if (elDataUltimaGrad) elDataUltimaGrad.innerText = "Última: N/A";
     } else {
       if (badgeGrad) badgeGrad.classList.add("hidden");
@@ -100,20 +102,15 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // --- LÓGICA DA FEDERAÇÃO (O Cartão Vermelho) ---
+    // --- LÓGICA DA FEDERAÇÃO ---
     const elFed = document.getElementById("atletaFederacao");
     if (elFed) {
-      // 🥊 Tática: Procura por 'federacao' ou 'estado_federacao'. Se estiver vazio/nulo, assume logo que não está regularizado!
       const estadoFedRaw =
         socio.federacao || socio.estado_federacao || "Não Regularizada";
-
-      // Se por algum motivo o valor vier como "---", forçamos o aviso real
       const estadoFed =
         estadoFedRaw === "---" ? "Não Regularizada" : estadoFedRaw;
 
       elFed.innerText = estadoFed;
-
-      // Puxar o cartão inteiro (a div 'info-card') e acender o alarme vermelho!
       const cardFed = elFed.closest(".info-card");
       if (cardFed) {
         if (
@@ -131,7 +128,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const hoje = new Date();
     const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}`;
 
-    // 1. Procurar a Mensalidade Normal (Tabela 'mensalidades')
     const { data: faturasMes } = await supabase
       .from("mensalidades")
       .select("estado, tipo")
@@ -144,13 +140,12 @@ document.addEventListener("DOMContentLoaded", () => {
         )
       : null;
 
-    // 2. Procurar Dívidas de Aulas Particulares (Tabela 'aulas_particulares') - A TUA TABELA!
     const { data: aulasNaoPagas } = await supabase
       .from("aulas_particulares")
       .select("id")
       .eq("socio_id", socio.id)
-      .eq("estado", "Aceite") // Garante que a aula aconteceu/foi confirmada
-      .eq("pago", false) // Lógica do booleano (FALSE = Dívida)
+      .eq("estado", "Aceite")
+      .eq("pago", false)
       .limit(1);
 
     const temAulaPendente = aulasNaoPagas && aulasNaoPagas.length > 0;
@@ -166,7 +161,6 @@ document.addEventListener("DOMContentLoaded", () => {
       socio.modalidade === "Rendimento" ||
       (socio.nome || "").toUpperCase().includes("GYM");
 
-    // Lógica Blindada de Cobrança:
     if (temAulaPendente) {
       statusTexto = "AULA N PAGA";
       isDivida = true;
@@ -253,8 +247,6 @@ document.addEventListener("DOMContentLoaded", () => {
     verificarRegulamento(socio);
     buscarNotificacoes(socio.id);
     buscarProximaAula(socio.id);
-
-    // 🥊 NOVO: Ligar o radar de notificações mal o portal arranca!
     verificarNecessidadeDeNotificacoes(socio.id);
   }
 
@@ -311,8 +303,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
       await iniciarPortalParaAtleta(socio);
-
-      // 🥊 AQUI ESTÁ A CORREÇÃO DE NOCAUTE DO ECRÃ PRETO:
       portalSection.classList.remove("hidden");
     } catch (err) {
       localStorage.removeItem("bogas_atleta_id");
@@ -370,8 +360,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         await iniciarPortalParaAtleta(socio);
-
-        // 🥊 Trocar as vistas (Esconde Login -> Mostra Portal)
         loginSection.classList.add("hidden");
         portalSection.classList.remove("hidden");
       } catch (erro) {
@@ -410,6 +398,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       localStorage.removeItem("bogas_atleta_id");
       atletaLogadoId = null;
+      atletaLogadoObj = null;
 
       modalConfirmLogout?.classList.add("hidden");
       portalSection.classList.add("hidden");
@@ -609,7 +598,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
   // =========================================================================
-  // --- PUSH NOTIFICATIONS (SISTEMA DE DUPLA VALIDAÇÃO) ---
+  // --- PUSH NOTIFICATIONS ---
   // =========================================================================
   const PUBLIC_VAPID_KEY =
     "BDlSFCtWMO00daEMrL5sLutOo9iw7KfQ_KlxFvL24zhmvPcA2Cn-M8qez3pJgQQzgzeCi8Pwho7s8Ii1-_cDvXo";
@@ -626,7 +615,6 @@ document.addEventListener("DOMContentLoaded", () => {
       let subAtual = await registo.pushManager.getSubscription();
       const permissao = Notification.permission;
 
-      // 🥊 VERIFICAÇÃO NA BASE DE DADOS (SUPABASE)
       let temSubscricaoNaBD = false;
       if (socioId) {
         const { data } = await supabase
@@ -638,11 +626,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (data) temSubscricaoNaBD = true;
       }
 
-      // ====================================================================
-      // 🥊 TÁTICA NINJA: Reparação Silenciosa!
-      // Se o telemóvel JÁ tem permissão mas a BD perdeu o registo,
-      // nós criamos o registo de novo nos bastidores sem chatear o atleta!
-      // ====================================================================
       if (permissao === "granted" && !temSubscricaoNaBD) {
         try {
           if (!subAtual) {
@@ -661,34 +644,28 @@ document.addEventListener("DOMContentLoaded", () => {
             { onConflict: "socio_id" },
           );
 
-          temSubscricaoNaBD = true; // Falha reparada com sucesso!
+          temSubscricaoNaBD = true;
         } catch (e) {
           console.error("Falha na reparação silenciosa:", e);
         }
       }
 
-      // ====================================================================
-      // VEREDICTO FINAL PARA O ECRÃ
-      // ====================================================================
       if (subAtual && permissao === "granted" && temSubscricaoNaBD) {
         box.classList.add("hidden");
         if (statusText) {
           statusText.innerText = "Ativo";
-          statusText.style.color = "#4ade80"; // Verde Bogas
+          statusText.style.color = "#4ade80";
         }
       } else {
         if (statusText) {
           statusText.innerText = "Desativado";
-          statusText.style.color = "#ff4d4d"; // Vermelho
+          statusText.style.color = "#ff4d4d";
         }
 
         setTimeout(() => {
-          // O banner pequeno só aparece se o telemóvel não tiver mesmo permissão
           if (permissao !== "granted") {
             box.classList.remove("hidden");
           }
-
-          // O Pop-up gigante SÓ aparece a novatos absolutos (permissão 'default')
           if (permissao === "default") {
             if (!sessionStorage.getItem("avisoPushMostrado")) {
               const modalAviso = document.getElementById(
@@ -707,6 +684,7 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log("Notificações não suportadas neste browser.");
     }
   }
+
   const executarAtivacaoPush = async () => {
     try {
       const btnAtivar = document.getElementById("btnAceitarNotificacoesModal");
@@ -944,6 +922,8 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const socioIdAtual =
         atletaLogadoId || localStorage.getItem("bogas_atleta_id");
+
+      // 1. Inserir Aula na BD
       await supabase.from("aulas_particulares").insert([
         {
           socio_id: socioIdAtual,
@@ -952,6 +932,8 @@ document.addEventListener("DOMContentLoaded", () => {
           estado: "Pendente",
         },
       ]);
+
+      // 2. Inserir Notificação In-App
       await supabase.from("notificacoes").insert([
         {
           socio_id: socioIdAtual,
@@ -961,24 +943,67 @@ document.addEventListener("DOMContentLoaded", () => {
         },
       ]);
 
-      // 🥊 DISPARAR NOTIFICAÇÃO PUSH PARA O MESTRE (ID 999999)
       const elNomeAtleta = document.getElementById("atletaNome");
       const nomeAtleta = elNomeAtleta ? elNomeAtleta.innerText : "Atleta";
-      const tituloPush = "Nova Marcação de Aula! 🥊";
-      const mensagemPush = `O atleta ${nomeAtleta} marcou uma aula particular para o dia ${inputData.value}. Verifica o painel!`;
+      const atletaTelemovel =
+        atletaLogadoObj && atletaLogadoObj.telemovel
+          ? atletaLogadoObj.telemovel
+          : "Não facultado";
+      const atletaEmail =
+        atletaLogadoObj && atletaLogadoObj.email
+          ? atletaLogadoObj.email
+          : "Não facultado";
+      const dataFormatada = inputData.value.split("-").reverse().join("/");
 
+      // 🥊 3. DISPARAR NOTIFICAÇÃO PUSH PARA O MESTRE
       try {
         await supabase.functions.invoke("notificar-alvo", {
           body: {
-            email_admin: "antonio.carlos.cosme.boturao@gmail.com", // Substitui pelo teu email de login de admin
+            email_admin: "antonio.carlos.cosme.boturao@gmail.com",
             titulo: "Nova Marcação de Aula Privada!",
-            mensagem: `O atleta ${nomeAtleta} marcou uma aula particular para o dia ${inputData.value}.`,
+            mensagem: `O atleta ${nomeAtleta} marcou uma aula particular para o dia ${dataFormatada}.`,
           },
         });
       } catch (erroPush) {
         console.warn("Aviso: Falha ao enviar push para o treinador", erroPush);
       }
+      // =========================================================================
+      // 🥊 4. DISPARAR DADOS PARA O WEBHOOK DO MAKE.COM
+      // =========================================================================
+      try {
+        const webhookMakeURL =
+          "https://hook.eu1.make.com/vswq8ii3485yoqzndxuwiriuy2vxg6yy";
 
+        const elNomeAtleta = document.getElementById("atletaNome");
+        const nomeAtletaReal =
+          elNomeAtleta && elNomeAtleta.innerText !== "A carregar..."
+            ? elNomeAtleta.innerText
+            : atletaLogadoObj
+              ? atletaLogadoObj.nome
+              : "Atleta Bogas Team";
+        const dataFormatadaReal = inputData.value
+          ? inputData.value.split("-").reverse().join("/")
+          : "--/--/----";
+        const horaFormatadaReal = inputHora.value || "--:--";
+
+        await fetch(webhookMakeURL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            atleta: nomeAtletaReal,
+            dataAula: dataFormatadaReal,
+            horaAula: horaFormatadaReal,
+            emailMestre: "antonio.carlos.cosme.boturao@gmail.com",
+            assunto: `Aula Particular: ${nomeAtletaReal}`,
+          }),
+        });
+      } catch (erroEmail) {
+        console.warn(
+          "Aviso: O webhook de e-mail falhou, mas a app continua",
+          erroEmail,
+        );
+      }
+      // =========================================================================
       mostrarAviso("Pedido Enviado", "Aguardar confirmação!", "sucesso");
       buscarProximaAula(socioIdAtual);
       modalAula.classList.add("hidden");
