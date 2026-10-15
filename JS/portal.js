@@ -3,12 +3,141 @@ import { supabase } from "./supabase.js";
 
 // 🥊 VARIÁVEIS DE NÍVEL DE MÓDULO
 let atletaLogadoId = null;
-let atletaLogadoObj = null; // Guardamos os dados completos do sócio
+let atletaLogadoObj = null;
 let notificacaoParaApagarId = null;
 let mensagensAtleta = [];
 
 // =========================================================================
-// 🥊 FUNÇÃO GLOBAL
+// 🥊 DEFESA XSS: FUNÇÃO PARA SANITIZAR TEXTO
+// =========================================================================
+function escapeHTML(str) {
+  if (!str) return "";
+  return str.replace(
+    /[&<>'"]/g,
+    (tag) =>
+      ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        "'": "&#39;",
+        '"': "&quot;",
+      })[tag] || tag,
+  );
+}
+
+// =========================================================================
+// 🥊 LÓGICA DO BOTÃO DE INSTALAR A APP NO PORTAL (SISTEMA DE SEMÁFORO)
+// =========================================================================
+function inicializarInstaladorAppPortal() {
+  let eventoInstalacaoGuardado = null;
+  const btnInstalar = document.getElementById("btnInstalarAppPortal");
+  const iosModal = document.getElementById("ios-install-modal");
+  const closeIosBtn = document.getElementById("close-ios-modal");
+  const modalTitle = iosModal?.querySelector("h3");
+  const modalP = iosModal?.querySelector("p");
+  const modalOl = iosModal?.querySelector("ol");
+
+  if (!btnInstalar) return;
+
+  const estaNaApp =
+    window.matchMedia("(display-mode: standalone)").matches ||
+    window.navigator.standalone;
+
+  if (estaNaApp) {
+    btnInstalar.style.display = "none";
+    return;
+  }
+
+  btnInstalar.style.display = "inline-flex";
+  btnInstalar.innerHTML =
+    "<i class='bx bx-loader-alt bx-spin'></i> A analisar...";
+  btnInstalar.style.opacity = "0.7";
+
+  const isIOS =
+    /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+  if (closeIosBtn && iosModal) {
+    closeIosBtn.addEventListener("click", () =>
+      iosModal.classList.add("hidden"),
+    );
+  }
+
+  if (isIOS) {
+    btnInstalar.innerHTML =
+      "<i class='bx bx-download bx-tada'></i> Instalar App";
+    btnInstalar.style.opacity = "1";
+  }
+
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    eventoInstalacaoGuardado = e;
+    btnInstalar.innerHTML =
+      "<i class='bx bx-download bx-tada'></i> Instalar App";
+    btnInstalar.style.opacity = "1";
+  });
+
+  setTimeout(() => {
+    if (!eventoInstalacaoGuardado && !isIOS && !estaNaApp) {
+      btnInstalar.style.display = "none";
+    }
+  }, 6000);
+
+  window.addEventListener("appinstalled", () => {
+    btnInstalar.style.display = "none";
+    eventoInstalacaoGuardado = null;
+  });
+
+  btnInstalar.addEventListener("click", async (e) => {
+    e.preventDefault();
+
+    if (isIOS) {
+      if (iosModal) {
+        if (modalTitle)
+          modalTitle.innerHTML =
+            "Instalar no iPhone <i class='bx bxl-apple'></i>";
+        if (modalP)
+          modalP.innerHTML = "Para instalares a App Bogas Team no teu iPhone:";
+        if (modalOl)
+          modalOl.innerHTML = `
+          <li>Toca no ícone de <strong>Partilhar</strong> <i class='bx bx-upload'></i> na barra inferior do Safari.</li>
+          <li>Desliza para baixo e escolhe <strong>"Ecrã Principal"</strong> (Add to Home Screen).</li>
+          <li>Clica em <strong>"Adicionar"</strong> no canto superior direito.</li>
+        `;
+        iosModal.classList.remove("hidden");
+      }
+      return;
+    }
+
+    if (eventoInstalacaoGuardado) {
+      try {
+        await eventoInstalacaoGuardado.prompt();
+        const { outcome } = await eventoInstalacaoGuardado.userChoice;
+        if (outcome === "accepted") {
+          btnInstalar.style.display = "none";
+        }
+      } catch (erro) {
+        console.error("Erro na instalação:", erro);
+      } finally {
+        eventoInstalacaoGuardado = null;
+      }
+    } else {
+      if (iosModal) {
+        if (modalTitle)
+          modalTitle.innerHTML = "Instalação <i class='bx bxl-android'></i>";
+        if (btnInstalar.innerHTML.includes("analisar")) {
+          if (modalP)
+            modalP.innerHTML =
+              "O Google Chrome ainda está a validar o sistema de segurança da App. Aguarda 2 a 3 segundos antes de clicar!";
+          if (modalOl) modalOl.innerHTML = "";
+        }
+        iosModal.classList.remove("hidden");
+      }
+    }
+  });
+}
+
+// =========================================================================
+// 🥊 FUNÇÕES GLOBAIS DE CONTEÚDO
 // =========================================================================
 async function buscarProximaAula(atletaId) {
   const elTexto = document.getElementById("atletaProximaAula");
@@ -45,24 +174,100 @@ async function buscarProximaAula(atletaId) {
   }
 }
 
+function mostrarAviso(titulo, mensagem, tipo = "sucesso") {
+  const container = document.getElementById("toast-container");
+  if (!container) return;
+  const toast = document.createElement("div");
+  toast.className = `toast toast-${tipo}`;
+  toast.innerHTML = `<i class='bx ${tipo === "sucesso" ? "bx-check-circle" : "bx-error-circle"}'></i><div class="toast-content"><h4>${titulo}</h4><p>${mensagem}</p></div>`;
+  container.appendChild(toast);
+  requestAnimationFrame(() => toast.classList.add("show"));
+  setTimeout(() => {
+    toast.classList.remove("show");
+    setTimeout(() => toast.remove(), 400);
+  }, 3500);
+}
+
+async function buscarNotificacoes(userId) {
+  try {
+    const { data } = await supabase
+      .from("notificacoes")
+      .select("*")
+      .eq("socio_id", userId)
+      .order("created_at", { ascending: false });
+    mensagensAtleta = data || [];
+    atualizarBadge();
+    renderizarNotificacoes();
+  } catch (err) {}
+}
+
+function atualizarBadge() {
+  const badge = document.getElementById("badgeNotificacoes");
+  if (!badge) return;
+  const count = mensagensAtleta.filter((m) => !m.lida).length;
+  if (count > 0) {
+    badge.innerText = count;
+    badge.classList.remove("hidden");
+  } else {
+    badge.classList.add("hidden");
+  }
+}
+
+function renderizarNotificacoes() {
+  const lista = document.getElementById("listaNotificacoes");
+  if (!lista) return;
+
+  lista.innerHTML = mensagensAtleta.length
+    ? mensagensAtleta
+        .map(
+          (m) => `
+    <div class="notif-item ${m.lida ? "lida" : ""}" data-id="${m.id}">
+      <div class="notif-info"><h4>${escapeHTML(m.titulo)}</h4><p>${escapeHTML(m.mensagem)}</p><span class="notif-time">${new Date(m.created_at).toLocaleString("pt-PT")}</span></div>
+      <button class="btn-delete-notif" data-id="${m.id}"><i class='bx bx-trash'></i></button>
+    </div>`,
+        )
+        .join("")
+    : '<p class="notif-empty">Sem mensagens.</p>';
+
+  document
+    .querySelectorAll(".btn-delete-notif")
+    .forEach((btn) =>
+      btn.addEventListener("click", (e) =>
+        window.apagarNotificacao(e.currentTarget.getAttribute("data-id")),
+      ),
+    );
+}
+
+// =========================================================================
+// 🥊 ARRANQUE DO MOTOR UNIFICADO
+// =========================================================================
 document.addEventListener("DOMContentLoaded", () => {
+  // 1. Instalação da App e Regras Globais UI
+  inicializarInstaladorAppPortal();
+
+  // 🥊 CORREÇÃO 4 (UX): Fechar qualquer modal clicando fora da caixa
+  document.querySelectorAll(".modal-overlay").forEach((modal) => {
+    modal.addEventListener("click", (e) => {
+      // Se clicou estritamente no overlay e não no conteúdo interior
+      if (e.target === modal) {
+        modal.classList.add("hidden");
+      }
+    });
+  });
+
   const formLogin = document.getElementById("formLoginAtleta");
   const loginSection = document.getElementById("login-section");
   const portalSection = document.getElementById("portal-section");
   const btnSair = document.getElementById("btnSairPortal");
 
-  // =========================================================================
-  // --- MOTOR DE SESSÃO E CARREGAMENTO DO PORTAL ---
-  // =========================================================================
-
+  // ========================================================================
+  // 🥊 LÓGICA DE LOGIN E CARREGAMENTO
+  // ========================================================================
   async function iniciarPortalParaAtleta(socio) {
     atletaLogadoId = socio.id;
-    atletaLogadoObj = socio; // Guarda o atleta na memória global do módulo
+    atletaLogadoObj = socio;
     localStorage.setItem("bogas_atleta_id", socio.id);
 
-    // ========================================================================
-    // 🥊 1. PREENCHIMENTO DOS DADOS NO ECRÃ
-    // ========================================================================
     const elNome = document.getElementById("atletaNome");
     if (elNome) elNome.innerText = socio.nome;
 
@@ -79,7 +284,6 @@ document.addEventListener("DOMContentLoaded", () => {
         ? socio.data_inscricao.split("-").reverse().join("/")
         : "--/--/----";
 
-    // --- LÓGICA DA GRADUAÇÃO ---
     const elGrad = document.getElementById("atletaGraduacao");
     const badgeGrad = document.getElementById("statusAptidao");
     const elDataUltimaGrad = document.getElementById("labelUltimaGrad");
@@ -87,44 +291,35 @@ document.addEventListener("DOMContentLoaded", () => {
     if (elGrad) elGrad.innerText = socio.graduacao || "---";
 
     if (
+      !socio.graduacao ||
       socio.graduacao === "N/A" ||
-      socio.graduacao === "Não Aplicável" ||
-      !socio.graduacao
+      socio.graduacao === "Não Aplicável"
     ) {
       if (badgeGrad) badgeGrad.classList.add("hidden");
       if (elDataUltimaGrad) elDataUltimaGrad.innerText = "Última: N/A";
     } else {
       if (badgeGrad) badgeGrad.classList.add("hidden");
-      if (elDataUltimaGrad) {
+      if (elDataUltimaGrad)
         elDataUltimaGrad.innerText = socio.data_ultima_graduacao
           ? `Última: ${socio.data_ultima_graduacao.split("-").reverse().join("/")}`
           : "Última: --/--/----";
-      }
     }
 
-    // --- LÓGICA DA FEDERAÇÃO ---
     const elFed = document.getElementById("atletaFederacao");
     if (elFed) {
       const estadoFedRaw =
         socio.federacao || socio.estado_federacao || "Não Regularizada";
       const estadoFed =
         estadoFedRaw === "---" ? "Não Regularizada" : estadoFedRaw;
-
       elFed.innerText = estadoFed;
       const cardFed = elFed.closest(".info-card");
-      if (cardFed) {
-        if (
-          estadoFed === "Não Regularizada" ||
-          estadoFed === "Não Regularizado"
-        ) {
-          cardFed.classList.add("card-alerta-vermelho");
-        } else {
-          cardFed.classList.remove("card-alerta-vermelho");
-        }
-      }
+      if (cardFed)
+        cardFed.classList.toggle(
+          "card-alerta-vermelho",
+          estadoFed === "Não Regularizada" || estadoFed === "Não Regularizado",
+        );
     }
 
-    // 🥊 2. VERIFICAÇÃO DE MENSALIDADES E DÍVIDAS
     const hoje = new Date();
     const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}`;
 
@@ -139,7 +334,6 @@ document.addEventListener("DOMContentLoaded", () => {
           (p) => !p.tipo || p.tipo === "Mensalidade" || p.tipo === "Rendimento",
         )
       : null;
-
     const { data: aulasNaoPagas } = await supabase
       .from("aulas_particulares")
       .select("id")
@@ -149,7 +343,6 @@ document.addEventListener("DOMContentLoaded", () => {
       .limit(1);
 
     const temAulaPendente = aulasNaoPagas && aulasNaoPagas.length > 0;
-
     let statusTexto = "PAGO";
     let isDivida = false;
     let tipoDivida = "";
@@ -176,7 +369,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // 🥊 3. ATUALIZAÇÃO DO CARTÃO DE MENSALIDADE
     const cardMensalidade = document.getElementById("cardMensalidade");
     const statusH1 = document.getElementById("statusMensalidade");
     const iconMensalidade = document.getElementById("iconeMensalidade");
@@ -222,7 +414,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // 🥊 4. MODAL DE COBRANÇA
     const diaAtual = hoje.getDate();
     if (isDivida && diaAtual > 8) {
       const modalCobranca = document.getElementById("modalCobranca");
@@ -239,7 +430,6 @@ document.addEventListener("DOMContentLoaded", () => {
           descShame.innerHTML = `Os nossos registos indicam que tens uma aula particular por liquidar.<br><br>
                 <strong class="text-accent">Por favor, regulariza o pagamento com o mestre para manteres a tua conta em dia.</strong>`;
         }
-
         setTimeout(() => modalCobranca.classList.remove("hidden"), 500);
       }
     }
@@ -250,7 +440,6 @@ document.addEventListener("DOMContentLoaded", () => {
     verificarNecessidadeDeNotificacoes(socio.id);
   }
 
-  // 🥊 FUNÇÃO DE VERIFICAÇÃO DO REGULAMENTO
   function verificarRegulamento(socio) {
     const modalReg = document.getElementById("modalRegulamento");
     const btnFecharX = document.getElementById("btnFecharRegulamentoX");
@@ -288,7 +477,6 @@ document.addEventListener("DOMContentLoaded", () => {
       portalSection.classList.add("hidden");
       return;
     }
-
     loginSection.classList.add("hidden");
     try {
       const { data: socio, error } = await supabase
@@ -334,9 +522,7 @@ document.addEventListener("DOMContentLoaded", () => {
           .select("*")
           .ilike("email", emailInserido)
           .maybeSingle();
-
         if (error) throw error;
-
         if (!socio) {
           mostrarAviso(
             "Acesso Negado",
@@ -349,7 +535,6 @@ document.addEventListener("DOMContentLoaded", () => {
         let passCorreta = socio.password
           ? passInserida === socio.password
           : passInserida === socio.telemovel?.toString().trim();
-
         if (!passCorreta) {
           mostrarAviso(
             "Acesso Negado",
@@ -375,51 +560,52 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // =========================================================================
+  // 🥊 CLICKS, MODAIS, HISTÓRICOS & SETTINGS
+  // =========================================================================
   const modalConfirmLogout = document.getElementById("modalConfirmLogout");
   if (btnSair) {
-    btnSair.addEventListener("click", () => {
-      modalConfirmLogout?.classList.remove("hidden");
-    });
+    btnSair.addEventListener("click", () =>
+      modalConfirmLogout?.classList.remove("hidden"),
+    );
   }
   document
     .getElementById("btnCancelarLogout")
-    ?.addEventListener("click", () => {
-      modalConfirmLogout?.classList.add("hidden");
-    });
+    ?.addEventListener("click", () =>
+      modalConfirmLogout?.classList.add("hidden"),
+    );
   document
     .getElementById("btnConfirmarLogout")
-    ?.addEventListener("click", async (e) => {
+    ?.addEventListener("click", async () => {
       const btnConfirma = document.getElementById("btnConfirmarLogout");
       if (btnConfirma) {
         btnConfirma.innerHTML =
           "A sair... <i class='bx bx-loader-alt bx-spin'></i>";
         btnConfirma.disabled = true;
       }
-
       localStorage.removeItem("bogas_atleta_id");
       atletaLogadoId = null;
       atletaLogadoObj = null;
-
       modalConfirmLogout?.classList.add("hidden");
       portalSection.classList.add("hidden");
       loginSection.classList.remove("hidden");
-
       if (formLogin) formLogin.reset();
-
       if (btnConfirma) {
         btnConfirma.innerHTML = "Sim, Sair";
         btnConfirma.disabled = false;
       }
     });
 
-  document.getElementById("btnRegulamento")?.addEventListener("click", () => {
-    document.getElementById("modalRegulamento")?.classList.remove("hidden");
-  });
+  document
+    .getElementById("btnRegulamento")
+    ?.addEventListener("click", () =>
+      document.getElementById("modalRegulamento")?.classList.remove("hidden"),
+    );
   document
     .getElementById("btnFecharRegulamentoX")
-    ?.addEventListener("click", () => {
-      document.getElementById("modalRegulamento")?.classList.add("hidden");
-    });
+    ?.addEventListener("click", () =>
+      document.getElementById("modalRegulamento")?.classList.add("hidden"),
+    );
   document
     .getElementById("btnFecharRegulamento")
     ?.addEventListener("click", async () => {
@@ -458,9 +644,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-  // =========================================================================
-  // --- HISTÓRICO DE PAGAMENTOS ---
-  // =========================================================================
   const btnVerPagamentos = document.getElementById("btnVerPagamentos");
   const modalHistorico = document.getElementById("modalHistorico");
   const listaPagamentosAtleta = document.getElementById(
@@ -486,7 +669,6 @@ document.addEventListener("DOMContentLoaded", () => {
               .map((p) => {
                 const dataRaw = p.mes_ano || "";
                 let dataDisplay = dataRaw;
-
                 if (dataRaw.includes("-")) {
                   const [ano, mes] = dataRaw.split("-");
                   dataDisplay = `${ano}/${mes}`;
@@ -494,14 +676,12 @@ document.addEventListener("DOMContentLoaded", () => {
                   const [dia, mes, ano] = dataRaw.split("/");
                   dataDisplay = `${ano}/${mes}`;
                 }
-
                 const eAula =
                   p.tipo === "Aula Particular" || dataRaw.length > 7;
                 const tipoDisplay = eAula ? "PT" : "Mensal";
                 const labelFinal = eAula ? `${dataDisplay}` : dataDisplay;
                 const rowClass =
                   p.estado === "Pendente" ? "linha-pendente-alerta" : "";
-
                 return `
           <tr class="${rowClass}">
             <td>${labelFinal}</td>
@@ -522,17 +702,14 @@ document.addEventListener("DOMContentLoaded", () => {
     .getElementById("btnFecharHistorico")
     ?.addEventListener("click", () => modalHistorico.classList.add("hidden"));
 
-  // --- ALTERAR PASSWORD ---
   const btnAbrirModalPass = document.getElementById("btnAbrirModalPass");
   const modalPass = document.getElementById("modalPass");
   const formAlterarPass = document.getElementById("formAlterarPass");
 
-  if (btnAbrirModalPass) {
+  if (btnAbrirModalPass)
     btnAbrirModalPass.addEventListener("click", () =>
       modalPass.classList.remove("hidden"),
     );
-  }
-
   document
     .getElementById("btnFecharModalPass")
     ?.addEventListener("click", () => modalPass.classList.add("hidden"));
@@ -540,12 +717,10 @@ document.addEventListener("DOMContentLoaded", () => {
   if (formAlterarPass) {
     formAlterarPass.addEventListener("submit", async (e) => {
       e.preventDefault();
-
       const btnGuardarPass = formAlterarPass.querySelector(
         "button[type='submit']",
       );
       const textoOriginalBtnPass = btnGuardarPass.innerHTML;
-
       const nova = document.getElementById("novaPass").value.trim();
       const confirma = document.getElementById("confirmaNovaPass").value.trim();
 
@@ -553,31 +728,20 @@ document.addEventListener("DOMContentLoaded", () => {
         mostrarAviso("Erro", "Verifica a password.", "erro");
         return;
       }
-
       btnGuardarPass.innerHTML =
         "A alterar... <i class='bx bx-loader-alt bx-spin'></i>";
       btnGuardarPass.disabled = true;
-
       try {
-        // 🥊 CHAMA A RPC (FUNÇÃO SEGURA) EM VEZ DO UPDATE DIRETO
         const { error } = await supabase.rpc("alterar_password_atleta", {
           atleta_id: atletaLogadoId,
           nova_password: nova,
         });
-
         if (error) throw error;
-
         mostrarAviso("Sucesso", "Password alterada com sucesso!", "sucesso");
-
-        // Atualiza a password no objeto em memória para não dar erro se ele reentrar sem fazer logout
-        if (atletaLogadoObj) {
-          atletaLogadoObj.password = nova;
-        }
-
+        if (atletaLogadoObj) atletaLogadoObj.password = nova;
         modalPass.classList.add("hidden");
         formAlterarPass.reset();
       } catch (err) {
-        console.error("Erro ao alterar pass:", err);
         mostrarAviso("Erro", "Falha ao alterar a palavra-passe.", "erro");
       } finally {
         btnGuardarPass.innerHTML = textoOriginalBtnPass;
@@ -593,16 +757,15 @@ document.addEventListener("DOMContentLoaded", () => {
       verificarNecessidadeDeNotificacoes(atletaLogadoId);
     });
 
-  // --- APAGAR NOTIFICAÇÕES ---
   window.apagarNotificacao = function (id) {
     notificacaoParaApagarId = id;
     document.getElementById("modalConfirmarApagar").classList.remove("hidden");
   };
   document
     .getElementById("btnCancelarApagar")
-    ?.addEventListener("click", () => {
-      document.getElementById("modalConfirmarApagar").classList.add("hidden");
-    });
+    ?.addEventListener("click", () =>
+      document.getElementById("modalConfirmarApagar").classList.add("hidden"),
+    );
   document
     .getElementById("btnConfirmarApagar")
     ?.addEventListener("click", async () => {
@@ -626,7 +789,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
   // =========================================================================
-  // --- PUSH NOTIFICATIONS ---
+  // 🥊 PUSH NOTIFICATIONS
   // =========================================================================
   const PUBLIC_VAPID_KEY =
     "BDlSFCtWMO00daEMrL5sLutOo9iw7KfQ_KlxFvL24zhmvPcA2Cn-M8qez3pJgQQzgzeCi8Pwho7s8Ii1-_cDvXo";
@@ -642,15 +805,14 @@ document.addEventListener("DOMContentLoaded", () => {
       const registo = await navigator.serviceWorker.ready;
       let subAtual = await registo.pushManager.getSubscription();
       const permissao = Notification.permission;
-
       let temSubscricaoNaBD = false;
+
       if (socioId) {
         const { data } = await supabase
           .from("push_subscriptions")
           .select("id")
           .eq("socio_id", socioId)
           .maybeSingle();
-
         if (data) temSubscricaoNaBD = true;
       }
 
@@ -671,11 +833,8 @@ document.addEventListener("DOMContentLoaded", () => {
             ],
             { onConflict: "socio_id" },
           );
-
           temSubscricaoNaBD = true;
-        } catch (e) {
-          console.error("Falha na reparação silenciosa:", e);
-        }
+        } catch (e) {}
       }
 
       if (subAtual && permissao === "granted" && temSubscricaoNaBD) {
@@ -689,11 +848,8 @@ document.addEventListener("DOMContentLoaded", () => {
           statusText.innerText = "Desativado";
           statusText.style.color = "#ff4d4d";
         }
-
         setTimeout(() => {
-          if (permissao !== "granted") {
-            box.classList.remove("hidden");
-          }
+          if (permissao !== "granted") box.classList.remove("hidden");
           if (permissao === "default") {
             if (!sessionStorage.getItem("avisoPushMostrado")) {
               const modalAviso = document.getElementById(
@@ -708,9 +864,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         }, 1200);
       }
-    } catch (err) {
-      console.log("Notificações não suportadas neste browser.");
-    }
+    } catch (err) {}
   }
 
   const executarAtivacaoPush = async () => {
@@ -719,29 +873,23 @@ document.addEventListener("DOMContentLoaded", () => {
       if (btnAtivar)
         btnAtivar.innerHTML =
           "A gerar chave... <i class='bx bx-loader-alt bx-spin'></i>";
-
       const permissao = await Notification.requestPermission();
-
       if (permissao === "granted") {
         const registo = await navigator.serviceWorker.ready;
         const subAntiga = await registo.pushManager.getSubscription();
         if (subAntiga) await subAntiga.unsubscribe();
-
         const sub = await registo.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: urlB64ToUint8Array(PUBLIC_VAPID_KEY),
         });
-
         await supabase.from("push_subscriptions").insert([
           {
             socio_id: Number(atletaLogadoId),
             subscricao: JSON.stringify(sub),
           },
         ]);
-
         const box = document.getElementById("boxNotificacoes");
         if (box) box.style.display = "none";
-
         const statusText = document.getElementById(
           "statusNotificacoesDispositivo",
         );
@@ -749,7 +897,6 @@ document.addEventListener("DOMContentLoaded", () => {
           statusText.innerText = "Ativo";
           statusText.style.color = "#4ade80";
         }
-
         mostrarAviso("Alertas ativados com sucesso.", "sucesso");
       } else {
         mostrarAviso("Aviso", "Permissão para alertas recusada.", "erro");
@@ -779,12 +926,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const protegerEAtivarBotao = (btnId) => {
     const btn = document.getElementById(btnId);
     if (!btn) return;
-
     const eTelemovel = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     const estaNaApp =
       window.matchMedia("(display-mode: standalone)").matches ||
       window.navigator.standalone;
-
     if (eTelemovel && !estaNaApp) {
       btn.disabled = true;
       btn.style.opacity = "0.6";
@@ -803,106 +948,36 @@ document.addEventListener("DOMContentLoaded", () => {
   protegerEAtivarBotao("btnAceitarNotificacoesModal");
 
   const btnRecusar = document.getElementById("btnRecusarNotificacoes");
-  if (btnRecusar) {
-    btnRecusar.onclick = () => {
+  if (btnRecusar)
+    btnRecusar.onclick = () =>
       document
         .getElementById("modalAvisoNotificacoes")
         ?.classList.add("hidden");
-    };
-  }
-}); // <-- CORREÇÃO ESTÁ AQUI
-
-// =========================================================================
-// --- SISTEMA DE CAIXA DE MENSAGENS E TOAST ---
-// =========================================================================
-function mostrarAviso(titulo, mensagem, tipo = "sucesso") {
-  const container = document.getElementById("toast-container");
-  if (!container) return;
-  const toast = document.createElement("div");
-  toast.className = `toast toast-${tipo}`;
-  toast.innerHTML = `<i class='bx ${tipo === "sucesso" ? "bx-check-circle" : "bx-error-circle"}'></i><div class="toast-content"><h4>${titulo}</h4><p>${mensagem}</p></div>`;
-  container.appendChild(toast);
-  requestAnimationFrame(() => toast.classList.add("show"));
-  setTimeout(() => {
-    toast.classList.remove("show");
-    setTimeout(() => toast.remove(), 400);
-  }, 3500);
-}
-
-async function buscarNotificacoes(userId) {
-  try {
-    const { data } = await supabase
-      .from("notificacoes")
-      .select("*")
-      .eq("socio_id", userId)
-      .order("created_at", { ascending: false });
-    mensagensAtleta = data || [];
-    atualizarBadge();
-    renderizarNotificacoes();
-  } catch (err) {}
-}
-
-function atualizarBadge() {
-  const badge = document.getElementById("badgeNotificacoes");
-  if (!badge) return;
-  const count = mensagensAtleta.filter((m) => !m.lida).length;
-  if (count > 0) {
-    badge.innerText = count;
-    badge.classList.remove("hidden");
-  } else {
-    badge.classList.add("hidden");
-  }
-}
-
-function renderizarNotificacoes() {
-  const lista = document.getElementById("listaNotificacoes");
-  if (!lista) return;
-  lista.innerHTML = mensagensAtleta.length
-    ? mensagensAtleta
-        .map(
-          (m) => `
-    <div class="notif-item ${m.lida ? "lida" : ""}" data-id="${m.id}">
-      <div class="notif-info"><h4>${m.titulo}</h4><p>${m.mensagem}</p><span class="notif-time">${new Date(m.created_at).toLocaleString("pt-PT")}</span></div>
-      <button class="btn-delete-notif" data-id="${m.id}"><i class='bx bx-trash'></i></button>
-    </div>`,
-        )
-        .join("")
-    : '<p class="notif-empty">Sem mensagens.</p>';
 
   document
-    .querySelectorAll(".btn-delete-notif")
-    .forEach((btn) =>
-      btn.addEventListener("click", (e) =>
-        window.apagarNotificacao(e.currentTarget.getAttribute("data-id")),
-      ),
+    .getElementById("btnVerNotificacoes")
+    ?.addEventListener("click", async () => {
+      document.getElementById("modalNotificacoes")?.classList.remove("hidden");
+      const naoLidas = mensagensAtleta.filter((m) => !m.lida).map((m) => m.id);
+      if (naoLidas.length > 0) {
+        await supabase
+          .from("notificacoes")
+          .update({ lida: true })
+          .in("id", naoLidas);
+        mensagensAtleta.forEach((m) => (m.lida = true));
+        atualizarBadge();
+        renderizarNotificacoes();
+      }
+    });
+  document
+    .getElementById("btnFecharNotificacoes")
+    ?.addEventListener("click", () =>
+      document.getElementById("modalNotificacoes")?.classList.add("hidden"),
     );
-}
 
-document
-  .getElementById("btnVerNotificacoes")
-  ?.addEventListener("click", async () => {
-    document.getElementById("modalNotificacoes")?.classList.remove("hidden");
-    const naoLidas = mensagensAtleta.filter((m) => !m.lida).map((m) => m.id);
-    if (naoLidas.length > 0) {
-      await supabase
-        .from("notificacoes")
-        .update({ lida: true })
-        .in("id", naoLidas);
-      mensagensAtleta.forEach((m) => (m.lida = true));
-      atualizarBadge();
-      renderizarNotificacoes();
-    }
-  });
-document
-  .getElementById("btnFecharNotificacoes")
-  ?.addEventListener("click", () =>
-    document.getElementById("modalNotificacoes")?.classList.add("hidden"),
-  );
-
-// =========================================================================
-// 🥊 GESTÃO DE AULAS PARTICULARES (Portal do Sócio)
-// =========================================================================
-document.addEventListener("DOMContentLoaded", () => {
+  // =========================================================================
+  // 🥊 GESTÃO DE AULAS PARTICULARES (Portal do Sócio)
+  // =========================================================================
   const modalAula = document.getElementById("modalAulaParticular");
   const btnAbrirModal = document.getElementById("btnAbrirModalParticular");
   const btnFecharModal = document.getElementById("btnFecharModalParticular");
@@ -951,7 +1026,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const socioIdAtual =
         atletaLogadoId || localStorage.getItem("bogas_atleta_id");
 
-      // 1. Inserir Aula na BD
       await supabase.from("aulas_particulares").insert([
         {
           socio_id: socioIdAtual,
@@ -960,8 +1034,6 @@ document.addEventListener("DOMContentLoaded", () => {
           estado: "Pendente",
         },
       ]);
-
-      // 2. Inserir Notificação In-App
       await supabase.from("notificacoes").insert([
         {
           socio_id: socioIdAtual,
@@ -973,17 +1045,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const elNomeAtleta = document.getElementById("atletaNome");
       const nomeAtleta = elNomeAtleta ? elNomeAtleta.innerText : "Atleta";
-      const atletaTelemovel =
-        atletaLogadoObj && atletaLogadoObj.telemovel
-          ? atletaLogadoObj.telemovel
-          : "Não facultado";
-      const atletaEmail =
-        atletaLogadoObj && atletaLogadoObj.email
-          ? atletaLogadoObj.email
-          : "Não facultado";
       const dataFormatada = inputData.value.split("-").reverse().join("/");
 
-      // 🥊 3. DISPARAR NOTIFICAÇÃO PUSH PARA O MESTRE
       try {
         await supabase.functions.invoke("notificar-alvo", {
           body: {
@@ -992,46 +1055,30 @@ document.addEventListener("DOMContentLoaded", () => {
             mensagem: `O atleta ${nomeAtleta} marcou uma aula particular para o dia ${dataFormatada}.`,
           },
         });
-      } catch (erroPush) {
-        console.warn("Aviso: Falha ao enviar push para o treinador", erroPush);
-      }
-      // =========================================================================
-      // 🥊 4. DISPARAR DADOS PARA O WEBHOOK DO MAKE.COM
-      // =========================================================================
+      } catch (erroPush) {}
+
       try {
         const webhookMakeURL =
           "https://hook.eu1.make.com/vswq8ii3485yoqzndxuwiriuy2vxg6yy";
-
-        const elNomeAtleta = document.getElementById("atletaNome");
         const nomeAtletaReal =
           elNomeAtleta && elNomeAtleta.innerText !== "A carregar..."
             ? elNomeAtleta.innerText
             : atletaLogadoObj
               ? atletaLogadoObj.nome
               : "Atleta Bogas Team";
-        const dataFormatadaReal = inputData.value
-          ? inputData.value.split("-").reverse().join("/")
-          : "--/--/----";
-        const horaFormatadaReal = inputHora.value || "--:--";
-
         await fetch(webhookMakeURL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             atleta: nomeAtletaReal,
-            dataAula: dataFormatadaReal,
-            horaAula: horaFormatadaReal,
+            dataAula: dataFormatada,
+            horaAula: inputHora.value || "--:--",
             emailMestre: "antonio.carlos.cosme.boturao@gmail.com",
             assunto: `Aula Particular: ${nomeAtletaReal}`,
           }),
         });
-      } catch (erroEmail) {
-        console.warn(
-          "Aviso: O webhook de e-mail falhou, mas a app continua",
-          erroEmail,
-        );
-      }
-      // =========================================================================
+      } catch (erroEmail) {}
+
       mostrarAviso("Pedido Enviado", "Aguardar confirmação!", "sucesso");
       buscarProximaAula(socioIdAtual);
       modalAula.classList.add("hidden");
@@ -1039,8 +1086,8 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (erro) {
       mostrarAviso("Erro", erro.message, "erro");
     } finally {
-      btnSubmit.innerHTML = "Pedir Aprovação";
+      btnSubmit.innerHTML = "Pedir Aprovação <i class='bx bx-send'></i>";
       btnSubmit.disabled = false;
     }
   });
-});
+}); // <-- FIM DO ÚNICO DOMContentLoaded

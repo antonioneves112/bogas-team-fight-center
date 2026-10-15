@@ -20,7 +20,6 @@
 <body class="page-portal">
 
     <main id="login-section" class="login-wrapper">
-        <!-- 🥊 CORREÇÃO: Apontar um nível para trás (pasta pública) -->
         <a href="../index.html" class="btn-back-home">
             <i class='bx bx-left-arrow-alt'></i> Voltar ao site
         </a>
@@ -98,6 +97,14 @@
             </div>
         </header>
 
+        <!-- 🥊 CORREÇÃO 1: Botão de instalação passa para o topo do portal, visível logo após o login -->
+        <div class="portal-install-container" style="display: flex; justify-content: center; margin: 15px 0;">
+            <button id="btnInstalarAppPortal" class="btn-tatico"
+                style="display: none; padding: 10px 20px; font-size: 0.9rem;">
+                <i class='bx bx-loader-alt bx-spin'></i> A analisar...
+            </button>
+        </div>
+
         <section class="status-card glass-panel" id="cardMensalidade">
             <div class="status-icon" id="iconeMensalidade"><i class='bx bx-loader-alt bx-spin'></i></div>
             <div class="status-text">
@@ -135,7 +142,6 @@
         </div>
 
         <section class="portal-actions actions-stacked">
-            <!-- 🥊 GÉMEO 1: Marcar Aula (BLINDADO COM FLEXBOX) -->
             <button id="btnAbrirModalParticular" class="btn-tatico btn-outline"
                 style="display: flex !important; align-items: center !important; justify-content: center !important; gap: 10px !important; position: relative;">
                 <i class='bx bx-calendar-plus'
@@ -143,7 +149,6 @@
                 Particular
             </button>
 
-            <!-- 🥊 GÉMEO 2: Ler Regulamento (BLINDADO COM FLEXBOX) -->
             <button id="btnRegulamento" class="btn-tatico btn-outline"
                 style="display: flex !important; align-items: center !important; justify-content: center !important; gap: 10px !important; position: relative;">
                 <i class='bx bx-book-open'
@@ -152,6 +157,7 @@
         </section>
     </div>
 
+    <!-- Modais do Sistema -->
     <div id="modalNotificacoes" class="modal-overlay hidden">
         <div class="modal-content glass-panel modal-notif-size">
             <div class="modal-header">
@@ -163,6 +169,7 @@
             </div>
         </div>
     </div>
+
     <div id="modalPass" class="modal-overlay hidden">
         <div class="modal-content glass-panel">
             <div class="modal-header">
@@ -171,7 +178,6 @@
             </div>
 
             <form id="formAlterarPass" class="login-form">
-
                 <div class="form-group">
                     <label>Nova Password</label>
                     <div class="input-wrapper">
@@ -220,6 +226,7 @@
             </div>
         </div>
     </div>
+
     <div id="modalCobranca" class="modal-overlay hidden">
         <div class="modal-content modal-shame glass-panel">
             <i class='bx bx-error-alt bx-tada icon-shame-warning'></i>
@@ -227,14 +234,14 @@
             <p class="shame-description">
                 Os nossos registos indicam que tens a tua mensalidade em atraso.<br><br>
                 <strong class="text-accent">Regulariza a tua situação com o treinador o mais breve possível para
-                    continuares a
-                    treinar.</strong>
+                    continuares a treinar.</strong>
             </p>
             <button id="btnFecharCobranca" class="btn-tatico btn-shame-confirm">
                 Confirmar!
             </button>
         </div>
     </div>
+
     <div id="modalAvisoNotificacoes" class="modal-overlay hidden">
         <div class="modal-content modal-alerta-verde glass-panel">
             <i class='bx bx-bell bx-tada icon-alerta-verde'></i>
@@ -250,6 +257,7 @@
             </div>
         </div>
     </div>
+
     <div id="modalRegulamento" class="modal-overlay hidden modal-z-index">
         <div class="modal-content glass-panel modal-regulamento-box">
             <div class="modal-header">
@@ -269,18 +277,15 @@
 
                 <h4>2. Higiene, Vestuário e Espaço</h4>
                 <p>• É obrigatório o uso de t-shirt; não é permitido treinar de tronco nu.</p>
-
                 <p>• Manter as unhas devidamente cortadas e os pés limpos antes de aceder ao tatami.</p>
                 <p>• <b>Dever de Limpeza:</b> É dever de todos manter o tatami e os arredores sempre limpos.</p>
 
                 <h4>3. Equipamento e Segurança</h4>
                 <p>• <b>Seguro Desportivo:</b> É obrigatória a subscrição do seguro desportivo, que deve ser
-                    registado
-                    através do portal da <b>FPKMT</b>.</p>
+                    registado através do portal da <b>FPKMT</b>.</p>
                 <p>• Uso obrigatório de equipamento de proteção individual, devidamente higienizado.</p>
                 <p>• <b>IMPORTANTE:</b> Em caso de lesão ou incapacidade física, o atleta deve comunicar
-                    obrigatoriamente ao
-                    Professor antes de iniciar o treino.</p>
+                    obrigatoriamente ao Professor antes de iniciar o treino.</p>
                 <p>• É estritamente proibida a permanência de telemóveis na área do tatami.</p>
 
                 <h4 class="highlight-title"><i class='bx bx-wallet'></i> 4. Pagamentos e Mensalidades</h4>
@@ -290,8 +295,7 @@
                 <div class="alert-box">
                     <i class='bx bxs-error-alt'></i>
                     <span><b>MULTA:</b> O pagamento após o dia 8 acresce o valor de <span class="text-danger">20€</span>
-                        de
-                        multa de atraso. O incumprimento suspende o acesso aos treinos.</span>
+                        de multa de atraso. O incumprimento suspende o acesso aos treinos.</span>
                 </div>
 
                 <p>• <b>FÉRIAS E AUSÊNCIAS:</b></p>
@@ -318,8 +322,7 @@
                 <label class="check-label">
                     <input type="checkbox" id="checkAceiteRegulamento">
                     <span class="check-text">Confirmo que li e <b>aceito o Regulamento Interno</b> da Bogas Team e
-                        comprometo-me a
-                        cumpri-lo.</span>
+                        comprometo-me a cumpri-lo.</span>
                 </label>
             </div>
             <div class="modal-footer-full">
@@ -328,29 +331,18 @@
         </div>
     </div>
 
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('Motor PWA Ativado com Sucesso no Portal!', reg))
-                    .catch(err => console.error('Erro no PWA:', err));
-            });
-        }
-    </script>
-    <div id="toast-container"></div>
-
     <div id="modalConfirmarApagar" class="modal-overlay hidden modal-z-index">
         <div class="modal-content glass-panel modal-confirm-delete">
             <i class='bx bx-trash bx-tada icon-delete-warning'></i>
             <h2 class="title-confirm-delete">Apagar Mensagem?</h2>
-            <p class="desc-confirm-delete">Esta ação não pode ser desfeita. Queres mesmo apagar esta notificação?
-            </p>
+            <p class="desc-confirm-delete">Esta ação não pode ser desfeita. Queres mesmo apagar esta notificação?</p>
             <div class="actions-confirm-delete">
                 <button id="btnCancelarApagar" class="btn-tatico btn-outline btn-half">Cancelar</button>
                 <button id="btnConfirmarApagar" class="btn-tatico btn-danger btn-half">Sim, Apagar</button>
             </div>
         </div>
     </div>
+
     <div id="modalConfirmLogout" class="modal-overlay hidden modal-z-index">
         <div class="modal-content glass-panel modal-confirm-delete">
             <i class='bx bx-log-out bx-tada icon-delete-warning'></i>
@@ -363,8 +355,6 @@
         </div>
     </div>
 
-
-    <!-- 🥊 NOVO MODAL DE MARCAÇÃO PREMIUM -->
     <div id="modalAulaParticular" class="modal-overlay hidden modal-z-index">
         <div class="modal-content glass-panel modal-aula-tamanho">
             <div class="modal-header">
@@ -376,7 +366,6 @@
                 <p class="aviso-horarios">
                     <b>Sábado:</b> A partir das 13:00<br>
                     <b>Domingo:</b> A partir das 10:00
-
                 </p>
 
                 <div class="form-group">
@@ -401,6 +390,26 @@
             </form>
         </div>
     </div>
+
+    <div id="ios-install-modal" class="modal-overlay modal-ios hidden">
+        <div class="modal-content modal-ios-content glass-panel">
+            <h3>Instalação</h3>
+            <p>A aguardar validação do sistema.</p>
+            <ol></ol>
+            <button id="close-ios-modal" class="btn-tatico btn-fechar-ios">Compreendi</button>
+        </div>
+    </div>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('Motor PWA Ativado com Sucesso no Portal!', reg))
+                    .catch(err => console.error('Erro no PWA:', err));
+            });
+        }
+    </script>
+    <div id="toast-container"></div>
     <script src="./JS/app-routing.js" defer></script>
 </body>
 
