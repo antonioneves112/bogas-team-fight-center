@@ -526,34 +526,62 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnAbrirModalPass = document.getElementById("btnAbrirModalPass");
   const modalPass = document.getElementById("modalPass");
   const formAlterarPass = document.getElementById("formAlterarPass");
+
   if (btnAbrirModalPass) {
     btnAbrirModalPass.addEventListener("click", () =>
       modalPass.classList.remove("hidden"),
     );
   }
+
   document
     .getElementById("btnFecharModalPass")
     ?.addEventListener("click", () => modalPass.classList.add("hidden"));
+
   if (formAlterarPass) {
     formAlterarPass.addEventListener("submit", async (e) => {
       e.preventDefault();
+
+      const btnGuardarPass = formAlterarPass.querySelector(
+        "button[type='submit']",
+      );
+      const textoOriginalBtnPass = btnGuardarPass.innerHTML;
+
       const nova = document.getElementById("novaPass").value.trim();
       const confirma = document.getElementById("confirmaNovaPass").value.trim();
+
       if (nova.length < 4 || nova !== confirma) {
         mostrarAviso("Erro", "Verifica a password.", "erro");
         return;
       }
+
+      btnGuardarPass.innerHTML =
+        "A alterar... <i class='bx bx-loader-alt bx-spin'></i>";
+      btnGuardarPass.disabled = true;
+
       try {
-        const { error } = await supabase
-          .from("socios")
-          .update({ password: nova })
-          .eq("id", atletaLogadoId);
+        // 🥊 CHAMA A RPC (FUNÇÃO SEGURA) EM VEZ DO UPDATE DIRETO
+        const { error } = await supabase.rpc("alterar_password_atleta", {
+          atleta_id: atletaLogadoId,
+          nova_password: nova,
+        });
+
         if (error) throw error;
-        mostrarAviso("Sucesso", "Password alterada!", "sucesso");
+
+        mostrarAviso("Sucesso", "Password alterada com sucesso!", "sucesso");
+
+        // Atualiza a password no objeto em memória para não dar erro se ele reentrar sem fazer logout
+        if (atletaLogadoObj) {
+          atletaLogadoObj.password = nova;
+        }
+
         modalPass.classList.add("hidden");
         formAlterarPass.reset();
       } catch (err) {
-        mostrarAviso("Erro", "Falha ao alterar.", "erro");
+        console.error("Erro ao alterar pass:", err);
+        mostrarAviso("Erro", "Falha ao alterar a palavra-passe.", "erro");
+      } finally {
+        btnGuardarPass.innerHTML = textoOriginalBtnPass;
+        btnGuardarPass.disabled = false;
       }
     });
   }
@@ -782,7 +810,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ?.classList.add("hidden");
     };
   }
-});
+}); // <-- CORREÇÃO ESTÁ AQUI
 
 // =========================================================================
 // --- SISTEMA DE CAIXA DE MENSAGENS E TOAST ---
