@@ -6,13 +6,122 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestão | Bogas Team Fight Center</title>
 
-    <!-- 🥊 CORREÇÃO: Ícone unificado PNG e Manifest adicionado -->
     <link rel="icon" type="image/png" sizes="192x192" href="./faviicon.png">
     <link rel="manifest" href="./manifest.json">
 
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="./CSS/theme.css">
     <link rel="stylesheet" href="./CSS/gateway.css">
+
+    <style>
+        /* Estilos para o Botão e Modal de Instalação no Gateway */
+        .gateway-install-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 2rem;
+            width: 100%;
+        }
+
+        .btn-tatico {
+            background-color: var(--accent);
+            color: var(--bg-dark);
+            border: none;
+            padding: 12px 24px;
+            font-family: var(--font-primary);
+            font-weight: 800;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(156, 230, 156, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .btn-tatico:hover {
+            background-color: #7acc7a;
+            transform: translateY(-2px);
+        }
+
+        /* Estilos do Modal iOS */
+        .modal-ios {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(8, 9, 8, 0.9);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-ios.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .modal-ios-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            width: 90%;
+            max-width: 400px;
+            text-align: left;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-ios-content h3 {
+            color: var(--accent);
+            font-family: var(--font-primary);
+            margin: 0 0 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-ios-content p {
+            color: var(--text-light);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .modal-ios-content ol {
+            color: var(--text-light);
+            padding-left: 20px;
+            margin-bottom: 20px;
+        }
+
+        .modal-ios-content li {
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        .btn-fechar-ios {
+            background: #2a2e2a;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            width: 100%;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .btn-fechar-ios:hover {
+            background: #3a3f3a;
+        }
+    </style>
 </head>
 
 <body class="page-gateway">
@@ -40,23 +149,35 @@
                     <p>Gestão total de atletas, controlo de pagamentos e envios de notificações.</p>
                 </a>
             </div>
+
+            <!-- 🥊 BOTÃO DE INSTALAÇÃO NO GATEWAY -->
+            <div class="gateway-install-container">
+                <button id="btnInstalarAppGateway" class="btn-tatico">
+                    <i class='bx bx-loader-alt bx-spin'></i> A analisar...
+                </button>
+            </div>
         </div>
     </main>
 
     <footer class="gateway-footer">
         <div id="app-version-top"></div>
     </footer>
+
+    <!-- 🥊 MODAL DE AVISO iOS -->
+    <div id="ios-install-modal" class="modal-ios hidden">
+        <div class="modal-ios-content">
+            <h3>Instalação</h3>
+            <p>A aguardar validação do sistema.</p>
+            <ol></ol>
+            <button id="close-ios-modal" class="btn-fechar-ios">Compreendi</button>
+        </div>
+    </div>
+
+    <!-- 🥊 SCRIPTS SEPARADOS E ORGANIZADOS -->
     <script src="./JS/menu.js" defer></script>
-    <!-- 🥊 CORREÇÃO: Script de Routing e Registo do Service Worker -->
     <script src="./JS/app-routing.js" defer></script>
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .catch(err => console.error('Erro no SW:', err));
-            });
-        }
-    </script>
+    <script src="./JS/gateway.js" defer></script>
+
 </body>
 
 </html>
