@@ -19,6 +19,38 @@
 
 <body class="page-portal">
 
+    <div id="pwa-install-banner">
+        <div class="pwa-banner-info">
+            <img src="./faviicon.png" alt="Bogas Team App">
+            <div class="pwa-banner-text">
+                <h4>BOGAS TEAM APP</h4>
+                <p>Instala para acesso rápido!</p>
+            </div>
+        </div>
+        <div class="pwa-banner-actions">
+            <button id="pwa-close-btn" class="btn-pwa-close"><i class='bx bx-x'></i></button>
+            <button id="pwa-install-btn" class="btn-pwa-install">Instalar</button>
+        </div>
+    </div>
+
+    <div id="ios-install-modal" class="modal-overlay hidden modal-ios-wrapper">
+        <div class="modal-content glass-panel text-center">
+            <div class="modal-header justify-center">
+                <h3><i class='bx bxl-apple icon-2xl'></i> Instalar no iPhone</h3>
+            </div>
+            <div class="p-20-10">
+                <p class="text-muted-mb20">O Safari não permite instalação automática. Segue estes passos:</p>
+                <ol class="list-ios-steps">
+                    <li>Toca no ícone de <strong>Partilhar</strong> <i class='bx bx-export icon-inline-accent'></i> na
+                        barra inferior do Safari.</li>
+                    <li>Desliza para baixo e escolhe <strong>"Ecrã Principal"</strong> (Add to Home Screen).</li>
+                    <li>Clica em <strong>"Adicionar"</strong> no canto superior direito.</li>
+                </ol>
+                <button id="close-ios-modal" class="btn-tatico btn-full-mt20">Compreendi!</button>
+            </div>
+        </div>
+    </div>
+
     <main id="login-section" class="login-wrapper">
         <a href="../index.html" class="btn-back-home">
             <i class='bx bx-left-arrow-alt'></i> Voltar ao site
@@ -61,9 +93,9 @@
         <div class="notificacoes-box glass-panel hidden" id="boxNotificacoes">
             <div class="notificacoes-texto">
                 <h3><i class='bx bx-bell bx-tada'></i> Alertas Bogas Team</h3>
-                <p style="margin: 0; font-size: 0.85rem;">
+                <p class="status-text-sm">
                     Estado neste dispositivo: <span id="statusNotificacoesDispositivo"
-                        style="font-weight: bold; color: #ff4d4d;">Desativado</span>
+                        class="status-desativado">Desativado</span>
                 </p>
             </div>
             <button id="btnAtivarNotificacoes" class="btn-tatico btn-alerta">Ativar Alertas</button>
@@ -97,14 +129,6 @@
             </div>
         </header>
 
-        <!-- 🥊 CORREÇÃO 1: Botão de instalação passa para o topo do portal, visível logo após o login -->
-        <div class="portal-install-container" style="display: flex; justify-content: center; margin: 15px 0;">
-            <button id="btnInstalarAppPortal" class="btn-tatico"
-                style="display: none; padding: 10px 20px; font-size: 0.9rem;">
-                <i class='bx bx-loader-alt bx-spin'></i> A analisar...
-            </button>
-        </div>
-
         <section class="status-card glass-panel" id="cardMensalidade">
             <div class="status-icon" id="iconeMensalidade"><i class='bx bx-loader-alt bx-spin'></i></div>
             <div class="status-text">
@@ -123,10 +147,9 @@
             <div class="info-card glass-panel" id="cardGraduacao">
                 <i class='bx bx-award'></i>
                 <h4>Graduação</h4>
-                <p id="atletaGraduacao" style="margin-bottom: 5px;">---</p>
+                <p id="atletaGraduacao" class="margin-bottom-5">---</p>
                 <div id="statusAptidao" class="badge-status">Verificando...</div>
-                <p id="labelUltimaGrad" style="font-size: 0.65rem; color: var(--muted); margin-top: 8px;">Última:
-                    --/--/----</p>
+                <p id="labelUltimaGrad" class="label-sm-muted">Última: --/--/----</p>
             </div>
             <div class="info-card glass-panel">
                 <i class='bx bx-id-card'></i>
@@ -142,17 +165,12 @@
         </div>
 
         <section class="portal-actions actions-stacked">
-            <button id="btnAbrirModalParticular" class="btn-tatico btn-outline"
-                style="display: flex !important; align-items: center !important; justify-content: center !important; gap: 10px !important; position: relative;">
-                <i class='bx bx-calendar-plus'
-                    style="position: static !important; margin: 0 !important; font-size: 1.2rem;"></i> Marcar Aula
-                Particular
+            <button id="btnAbrirModalParticular" class="btn-tatico btn-outline btn-acao-portal">
+                <i class='bx bx-calendar-plus'></i> Marcar Aula Particular
             </button>
 
-            <button id="btnRegulamento" class="btn-tatico btn-outline"
-                style="display: flex !important; align-items: center !important; justify-content: center !important; gap: 10px !important; position: relative;">
-                <i class='bx bx-book-open'
-                    style="position: static !important; margin: 0 !important; font-size: 1.2rem;"></i> Ler Regulamento
+            <button id="btnRegulamento" class="btn-tatico btn-outline btn-acao-portal">
+                <i class='bx bx-book-open'></i> Ler Regulamento
             </button>
         </section>
     </div>
@@ -196,7 +214,7 @@
                     </div>
                 </div>
 
-                <button type="submit" class="btn-tatico login-btn" style="margin-top: 15px;">
+                <button type="submit" class="btn-tatico login-btn btn-full-mt20">
                     Guardar Alteração <i class='bx bx-save'></i>
                 </button>
             </form>
@@ -204,7 +222,7 @@
     </div>
 
     <div id="modalHistorico" class="modal-overlay hidden">
-        <div class="modal-content glass-panel" style="max-width: 600px;">
+        <div class="modal-content glass-panel modal-historico-size">
             <div class="modal-header">
                 <h3><i class='bx bx-history'></i> O Meu Histórico</h3>
                 <button id="btnFecharHistorico" class="btn-fechar"><i class='bx bx-x'></i></button>
@@ -250,10 +268,9 @@
                 Ainda não ativaste as notificações da Bogas Team no teu telemóvel.<br><br>
                 <strong>Ativa agora para receberes as nossas notificações.</strong>
             </p>
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button id="btnRecusarNotificacoes" class="btn-tatico btn-outline" style="width: 50%;">Mais
-                    Tarde</button>
-                <button id="btnAceitarNotificacoesModal" class="btn-tatico" style="width: 50%;">Ativar Agora</button>
+            <div class="alertas-actions-box">
+                <button id="btnRecusarNotificacoes" class="btn-tatico btn-outline btn-half">Mais Tarde</button>
+                <button id="btnAceitarNotificacoesModal" class="btn-tatico btn-half">Ativar Agora</button>
             </div>
         </div>
     </div>
@@ -270,10 +287,8 @@
                 <p>• Respeitar os professores e colegas. Cumprimentar corretamente ao entrar e sair do Tatami.</p>
                 <p>• Solicitar autorização ao Professor para beber água, sair da aula ou atender chamadas.</p>
                 <p>• Zelar pelo silêncio e manter total atenção às instruções do Professor.</p>
-
                 <p>• <b>Exclusividade:</b> Não é permitido treinar noutra equipa sem a autorização expressa do
-                    Professor.
-                </p>
+                    Professor.</p>
 
                 <h4>2. Higiene, Vestuário e Espaço</h4>
                 <p>• É obrigatório o uso de t-shirt; não é permitido treinar de tronco nu.</p>
@@ -281,8 +296,8 @@
                 <p>• <b>Dever de Limpeza:</b> É dever de todos manter o tatami e os arredores sempre limpos.</p>
 
                 <h4>3. Equipamento e Segurança</h4>
-                <p>• <b>Seguro Desportivo:</b> É obrigatória a subscrição do seguro desportivo, que deve ser
-                    registado através do portal da <b>FPKMT</b>.</p>
+                <p>• <b>Seguro Desportivo:</b> É obrigatória a subscrição do seguro desportivo, que deve ser registado
+                    através do portal da <b>FPKMT</b>.</p>
                 <p>• Uso obrigatório de equipamento de proteção individual, devidamente higienizado.</p>
                 <p>• <b>IMPORTANTE:</b> Em caso de lesão ou incapacidade física, o atleta deve comunicar
                     obrigatoriamente ao Professor antes de iniciar o treino.</p>
@@ -308,8 +323,7 @@
 
                 <h4>5. Assiduidade e Pontualidade</h4>
                 <p>• A pontualidade é um pilar da disciplina. Em caso de atraso, deve-se aguardar autorização para
-                    entrar.
-                </p>
+                    entrar.</p>
                 <p>• <b>AVISO:</b> Se precisar de se ausentar por algum tempo dos treinos (viagens ou doença), avise o
                     Professor antecipadamente.</p>
 
@@ -388,15 +402,6 @@
                     Pedir Aprovação <i class='bx bx-send'></i>
                 </button>
             </form>
-        </div>
-    </div>
-
-    <div id="ios-install-modal" class="modal-overlay modal-ios hidden">
-        <div class="modal-content modal-ios-content glass-panel">
-            <h3>Instalação</h3>
-            <p>A aguardar validação do sistema.</p>
-            <ol></ol>
-            <button id="close-ios-modal" class="btn-tatico btn-fechar-ios">Compreendi</button>
         </div>
     </div>
 

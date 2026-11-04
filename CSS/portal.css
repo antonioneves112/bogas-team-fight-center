@@ -23,6 +23,175 @@ body.page-portal {
 }
 
 /* =========================================================================
+   🥊 BANNER FLUTUANTE & IOS MODAL (PWA)
+   ========================================================================= */
+#pwa-install-banner {
+  position: fixed;
+  bottom: -100px;
+  left: 0;
+  width: 100%;
+  background: rgba(18, 18, 18, 0.95);
+  backdrop-filter: blur(10px);
+  border-top: 2px solid var(--accent);
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 99999;
+  box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.5);
+  transition: bottom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+#pwa-install-banner.show {
+  bottom: 0;
+}
+.pwa-banner-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.pwa-banner-info img {
+  width: 45px;
+  height: 45px;
+  border-radius: 10px;
+  border: 1px solid var(--accent);
+}
+.pwa-banner-text h4 {
+  margin: 0;
+  color: #fff;
+  font-size: 1rem;
+  font-family: "Orbitron", sans-serif;
+}
+.pwa-banner-text p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+.pwa-banner-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.btn-pwa-close {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 5px;
+}
+.btn-pwa-install {
+  background: var(--accent);
+  color: #121212;
+  border: none;
+  padding: 8px 15px;
+  font-weight: bold;
+  border-radius: 5px;
+  cursor: pointer;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+}
+
+/* =========================================================================
+   🥊 CLASSES DE ESTRUTURA E UI (100% LIMPO)
+   ========================================================================= */
+.modal-ios-wrapper {
+  z-index: 100000;
+}
+.text-center {
+  text-align: center;
+}
+.justify-center {
+  justify-content: center;
+}
+.icon-2xl {
+  font-size: 2rem;
+}
+.p-20-10 {
+  padding: 20px 10px;
+}
+.text-muted-mb20 {
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+.list-ios-steps {
+  text-align: left;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 15px 15px 15px 35px;
+  border-radius: 8px;
+  color: #fff;
+  line-height: 1.6;
+}
+.icon-inline-accent {
+  vertical-align: middle;
+  color: var(--accent);
+}
+.btn-full-mt20 {
+  margin-top: 20px;
+  width: 100%;
+}
+
+.status-text-sm {
+  margin: 0;
+  font-size: 0.85rem;
+}
+.status-desativado {
+  font-weight: bold;
+  color: #ff4d4d;
+}
+.status-ativo {
+  font-weight: bold;
+  color: #4ade80;
+}
+
+.margin-bottom-5 {
+  margin-bottom: 5px;
+}
+.label-sm-muted {
+  font-size: 0.65rem;
+  color: var(--muted);
+  margin-top: 8px;
+}
+
+.btn-acao-portal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  position: relative;
+}
+.btn-acao-portal i {
+  position: static !important;
+  margin: 0 !important;
+  font-size: 1.2rem;
+}
+
+.modal-historico-size {
+  max-width: 600px;
+}
+.alertas-actions-box {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+.btn-half {
+  width: 50%;
+}
+
+/* Injeções Diretas do JavaScript */
+.icon-success {
+  color: #4ade80;
+}
+.icon-danger {
+  color: #ff4d4d;
+}
+.font-semibold {
+  font-weight: 600;
+}
+.font-bold {
+  font-weight: bold;
+}
+
+/* =========================================================================
    1. ÁREA DE LOGIN (CÓPIADO MILIMETRICAMENTE DO LOGIN.CSS)
    ========================================================================= */
 .login-wrapper {

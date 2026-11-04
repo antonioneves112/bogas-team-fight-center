@@ -1,15 +1,12 @@
-/* JS/portal.js - MOTOR DO PORTAL (VERSÃO FINAL, BLINDADA E COM EMAIL DE ELITE) */
+/* JS/portal.js - MOTOR DO PORTAL (VERSÃO FINAL E SEPARADA: ZERO CSS INLINE) */
 import { supabase } from "./supabase.js";
 
-// 🥊 VARIÁVEIS DE NÍVEL DE MÓDULO
 let atletaLogadoId = null;
 let atletaLogadoObj = null;
 let notificacaoParaApagarId = null;
 let mensagensAtleta = [];
+let eventoInstalacaoGuardado = null;
 
-// =========================================================================
-// 🥊 DEFESA XSS: FUNÇÃO PARA SANITIZAR TEXTO
-// =========================================================================
 function escapeHTML(str) {
   if (!str) return "";
   return str.replace(
@@ -25,120 +22,85 @@ function escapeHTML(str) {
   );
 }
 
-// =========================================================================
-// 🥊 LÓGICA DO BOTÃO DE INSTALAR A APP NO PORTAL (SISTEMA DE SEMÁFORO)
-// =========================================================================
-function inicializarInstaladorAppPortal() {
-  let eventoInstalacaoGuardado = null;
-  const btnInstalar = document.getElementById("btnInstalarAppPortal");
+function inicializarPWA_Flutuante() {
+  const banner = document.getElementById("pwa-install-banner");
+  const btnInstall = document.getElementById("pwa-install-btn");
+  const btnClose = document.getElementById("pwa-close-btn");
   const iosModal = document.getElementById("ios-install-modal");
-  const closeIosBtn = document.getElementById("close-ios-modal");
-  const modalTitle = iosModal?.querySelector("h3");
-  const modalP = iosModal?.querySelector("p");
-  const modalOl = iosModal?.querySelector("ol");
-
-  if (!btnInstalar) return;
+  const closeIosModal = document.getElementById("close-ios-modal");
 
   const estaNaApp =
     window.matchMedia("(display-mode: standalone)").matches ||
     window.navigator.standalone;
+  const pwaDispensada = localStorage.getItem("bogas_pwa_dispensada");
 
-  if (estaNaApp) {
-    btnInstalar.style.display = "none";
+  if (estaNaApp || pwaDispensada === "true") {
+    if (banner) banner.classList.add("hidden");
     return;
   }
-
-  btnInstalar.style.display = "inline-flex";
-  btnInstalar.innerHTML =
-    "<i class='bx bx-loader-alt bx-spin'></i> A analisar...";
-  btnInstalar.style.opacity = "0.7";
 
   const isIOS =
     /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
-  if (closeIosBtn && iosModal) {
-    closeIosBtn.addEventListener("click", () =>
-      iosModal.classList.add("hidden"),
-    );
-  }
-
-  if (isIOS) {
-    btnInstalar.innerHTML =
-      "<i class='bx bx-download bx-tada'></i> Instalar App";
-    btnInstalar.style.opacity = "1";
-  }
-
   window.addEventListener("beforeinstallprompt", (e) => {
     e.preventDefault();
     eventoInstalacaoGuardado = e;
-    btnInstalar.innerHTML =
-      "<i class='bx bx-download bx-tada'></i> Instalar App";
-    btnInstalar.style.opacity = "1";
+    if (banner) {
+      setTimeout(() => banner.classList.add("show"), 1000);
+    }
   });
 
-  setTimeout(() => {
-    if (!eventoInstalacaoGuardado && !isIOS && !estaNaApp) {
-      btnInstalar.style.display = "none";
+  if (isIOS) {
+    if (banner) {
+      setTimeout(() => banner.classList.add("show"), 2000);
     }
-  }, 6000);
+  }
+
+  if (btnClose) {
+    btnClose.addEventListener("click", () => {
+      banner.classList.remove("show");
+      localStorage.setItem("bogas_pwa_dispensada", "true");
+    });
+  }
+
+  if (btnInstall) {
+    btnInstall.addEventListener("click", async () => {
+      if (isIOS) {
+        banner.classList.remove("show");
+        if (iosModal) iosModal.classList.remove("hidden");
+        return;
+      }
+
+      if (eventoInstalacaoGuardado) {
+        try {
+          await eventoInstalacaoGuardado.prompt();
+          const { outcome } = await eventoInstalacaoGuardado.userChoice;
+          if (outcome === "accepted") {
+            banner.classList.remove("show");
+          }
+        } catch (erro) {
+          console.error("Erro na instalação:", erro);
+        } finally {
+          eventoInstalacaoGuardado = null;
+        }
+      }
+    });
+  }
+
+  if (closeIosModal) {
+    closeIosModal.addEventListener("click", () => {
+      if (iosModal) iosModal.classList.add("hidden");
+    });
+  }
 
   window.addEventListener("appinstalled", () => {
-    btnInstalar.style.display = "none";
+    if (banner) banner.classList.remove("show");
     eventoInstalacaoGuardado = null;
-  });
-
-  btnInstalar.addEventListener("click", async (e) => {
-    e.preventDefault();
-
-    if (isIOS) {
-      if (iosModal) {
-        if (modalTitle)
-          modalTitle.innerHTML =
-            "Instalar no iPhone <i class='bx bxl-apple'></i>";
-        if (modalP)
-          modalP.innerHTML = "Para instalares a App Bogas Team no teu iPhone:";
-        if (modalOl)
-          modalOl.innerHTML = `
-          <li>Toca no ícone de <strong>Partilhar</strong> <i class='bx bx-upload'></i> na barra inferior do Safari.</li>
-          <li>Desliza para baixo e escolhe <strong>"Ecrã Principal"</strong> (Add to Home Screen).</li>
-          <li>Clica em <strong>"Adicionar"</strong> no canto superior direito.</li>
-        `;
-        iosModal.classList.remove("hidden");
-      }
-      return;
-    }
-
-    if (eventoInstalacaoGuardado) {
-      try {
-        await eventoInstalacaoGuardado.prompt();
-        const { outcome } = await eventoInstalacaoGuardado.userChoice;
-        if (outcome === "accepted") {
-          btnInstalar.style.display = "none";
-        }
-      } catch (erro) {
-        console.error("Erro na instalação:", erro);
-      } finally {
-        eventoInstalacaoGuardado = null;
-      }
-    } else {
-      if (iosModal) {
-        if (modalTitle)
-          modalTitle.innerHTML = "Instalação <i class='bx bxl-android'></i>";
-        if (btnInstalar.innerHTML.includes("analisar")) {
-          if (modalP)
-            modalP.innerHTML =
-              "O Google Chrome ainda está a validar o sistema de segurança da App. Aguarda 2 a 3 segundos antes de clicar!";
-          if (modalOl) modalOl.innerHTML = "";
-        }
-        iosModal.classList.remove("hidden");
-      }
-    }
   });
 }
 
-// =========================================================================
-// 🥊 FUNÇÕES GLOBAIS DE CONTEÚDO
-// =========================================================================
+inicializarPWA_Flutuante();
+
 async function buscarProximaAula(atletaId) {
   const elTexto = document.getElementById("atletaProximaAula");
   const elBadge = document.getElementById("statusProximaAula");
@@ -238,17 +200,9 @@ function renderizarNotificacoes() {
     );
 }
 
-// =========================================================================
-// 🥊 ARRANQUE DO MOTOR UNIFICADO
-// =========================================================================
 document.addEventListener("DOMContentLoaded", () => {
-  // 1. Instalação da App e Regras Globais UI
-  inicializarInstaladorAppPortal();
-
-  // 🥊 CORREÇÃO 4 (UX): Fechar qualquer modal clicando fora da caixa
   document.querySelectorAll(".modal-overlay").forEach((modal) => {
     modal.addEventListener("click", (e) => {
-      // Se clicou estritamente no overlay e não no conteúdo interior
       if (e.target === modal) {
         modal.classList.add("hidden");
       }
@@ -260,9 +214,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const portalSection = document.getElementById("portal-section");
   const btnSair = document.getElementById("btnSairPortal");
 
-  // ========================================================================
-  // 🥊 LÓGICA DE LOGIN E CARREGAMENTO
-  // ========================================================================
   async function iniciarPortalParaAtleta(socio) {
     atletaLogadoId = socio.id;
     atletaLogadoObj = socio;
@@ -401,7 +352,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         if (iconMensalidade)
           iconMensalidade.innerHTML =
-            "<i class='bx bx-check-shield' style='color: #4ade80;'></i>";
+            "<i class='bx bx-check-shield icon-success'></i>";
       } else {
         cardMensalidade.classList.add("pendente", "card-alerta-vermelho");
         if (statusH1) {
@@ -410,7 +361,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         if (iconMensalidade)
           iconMensalidade.innerHTML =
-            "<i class='bx bx-error-circle' style='color: #ff4d4d;'></i>";
+            "<i class='bx bx-error-circle icon-danger'></i>";
       }
     }
 
@@ -560,9 +511,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // =========================================================================
-  // 🥊 CLICKS, MODAIS, HISTÓRICOS & SETTINGS
-  // =========================================================================
   const modalConfirmLogout = document.getElementById("modalConfirmLogout");
   if (btnSair) {
     btnSair.addEventListener("click", () =>
@@ -654,7 +602,7 @@ document.addEventListener("DOMContentLoaded", () => {
     btnVerPagamentos.addEventListener("click", async () => {
       if (!atletaLogadoId) return;
       listaPagamentosAtleta.innerHTML =
-        '<tr><td colspan="4" style="text-align:center;">A consultar...</td></tr>';
+        '<tr><td colspan="4" class="text-center">A consultar...</td></tr>';
       modalHistorico.classList.remove("hidden");
       try {
         const { data, error } = await supabase
@@ -685,8 +633,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 return `
           <tr class="${rowClass}">
             <td>${labelFinal}</td>
-            <td style="font-weight: 600;">${tipoDisplay}</td>
-            <td style="font-weight: bold;">${p.valor} €</td>
+            <td class="font-semibold">${tipoDisplay}</td>
+            <td class="font-bold">${p.valor} €</td>
             <td><span class="status-badge ${p.estado.toLowerCase()}">${p.estado.toUpperCase()}</span></td>
           </tr>`;
               })
@@ -788,9 +736,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-  // =========================================================================
-  // 🥊 PUSH NOTIFICATIONS
-  // =========================================================================
   const PUBLIC_VAPID_KEY =
     "BDlSFCtWMO00daEMrL5sLutOo9iw7KfQ_KlxFvL24zhmvPcA2Cn-M8qez3pJgQQzgzeCi8Pwho7s8Ii1-_cDvXo";
   const toastContainer = document.getElementById("toast-container");
@@ -841,12 +786,12 @@ document.addEventListener("DOMContentLoaded", () => {
         box.classList.add("hidden");
         if (statusText) {
           statusText.innerText = "Ativo";
-          statusText.style.color = "#4ade80";
+          statusText.className = "status-ativo";
         }
       } else {
         if (statusText) {
           statusText.innerText = "Desativado";
-          statusText.style.color = "#ff4d4d";
+          statusText.className = "status-desativado";
         }
         setTimeout(() => {
           if (permissao !== "granted") box.classList.remove("hidden");
@@ -856,7 +801,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 "modalAvisoNotificacoes",
               );
               if (modalAviso) {
-                modalAviso.style.zIndex = "9999";
                 modalAviso.classList.remove("hidden");
                 sessionStorage.setItem("avisoPushMostrado", "true");
               }
@@ -889,13 +833,13 @@ document.addEventListener("DOMContentLoaded", () => {
           },
         ]);
         const box = document.getElementById("boxNotificacoes");
-        if (box) box.style.display = "none";
+        if (box) box.classList.add("hidden");
         const statusText = document.getElementById(
           "statusNotificacoesDispositivo",
         );
         if (statusText) {
           statusText.innerText = "Ativo";
-          statusText.style.color = "#4ade80";
+          statusText.className = "status-ativo";
         }
         mostrarAviso("Alertas ativados com sucesso.", "sucesso");
       } else {
@@ -932,8 +876,7 @@ document.addEventListener("DOMContentLoaded", () => {
       window.navigator.standalone;
     if (eTelemovel && !estaNaApp) {
       btn.disabled = true;
-      btn.style.opacity = "0.6";
-      btn.style.cursor = "not-allowed";
+      btn.classList.add("btn-disabled");
       btn.innerHTML = "<i class='bx bx-download'></i> Instala a App";
       btn.parentElement.onclick = (e) => {
         if (btn.disabled)
@@ -975,9 +918,6 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("modalNotificacoes")?.classList.add("hidden"),
     );
 
-  // =========================================================================
-  // 🥊 GESTÃO DE AULAS PARTICULARES (Portal do Sócio)
-  // =========================================================================
   const modalAula = document.getElementById("modalAulaParticular");
   const btnAbrirModal = document.getElementById("btnAbrirModalParticular");
   const btnFecharModal = document.getElementById("btnFecharModalParticular");
@@ -1090,4 +1030,4 @@ document.addEventListener("DOMContentLoaded", () => {
       btnSubmit.disabled = false;
     }
   });
-}); // <-- FIM DO ÚNICO DOMContentLoaded
+});
