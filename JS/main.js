@@ -1123,7 +1123,33 @@ function configurarPagamentoDiretoAula() {
           },
         });
       } catch (e) {}
+      // 🥊 NOVO: DISPARO DE EMAIL DE RECIBO PARA O MAKE (AULAS PARTICULARES)
+      try {
+        const { data: atletaReq } = await supabase
+          .from("socios")
+          .select("nome, email")
+          .eq("id", socioId)
+          .single();
 
+        if (atletaReq && atletaReq.email) {
+          const urlWebhookRecibos =
+            "https://hook.eu1.make.com/vswq8ii3485yoqzndxuwiriuy2vxg6yy";
+
+          await fetch(urlWebhookRecibos, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              atleta: atletaReq.nome,
+              emailAtleta: atletaReq.email,
+              tipo: "Aula Particular",
+              valor: valorLimpo,
+              referencia: `${dia_aula} às ${hora_aula.substring(0, 5)}`,
+            }),
+          });
+        }
+      } catch (erroEmailPT) {
+        console.error("Erro a disparar recibo de PT:", erroEmailPT);
+      }
       mostrarAviso(
         "Nocaute!",
         "Pagamento recebido e fatura lançada com sucesso.",

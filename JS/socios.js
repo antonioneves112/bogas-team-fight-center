@@ -450,7 +450,7 @@ export function initSociosEvents() {
 
         // 🥊 DISPARA O WEBHOOK DE BOAS-VINDAS PARA O MAKE
         if (novoSocio && novoSocio.email) {
-          fetch("https://hook.eu1.make.com/hrx5jlfmciwktkksbe8luvln8uxgp1b3", {
+          fetch("https://hook.eu1.make.com/vswq8ii3485yoqzndxuwiriuy2vxg6yy", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
