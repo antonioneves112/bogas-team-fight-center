@@ -456,6 +456,7 @@ export function initSociosEvents() {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
+              acao: "novo_socio",
               atleta: novoSocio.nome,
               emailAtleta: novoSocio.email,
               modalidade: novoSocio.modalidade,

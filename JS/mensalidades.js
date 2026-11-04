@@ -384,6 +384,7 @@ export function initMensalidadesEvents() {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
+                  acao: "pagamento",
                   atleta: atletaReq.nome,
                   emailAtleta: atletaReq.email,
                   tipo: dados.tipo,
