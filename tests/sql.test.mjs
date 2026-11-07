@@ -224,6 +224,72 @@ const erroAtomico = await como("authenticated", TREINADOR, () => falha("select a
 const estadoA4 = (await q("select estado from aulas_particulares where id = $1", [a4.id]))[0].estado;
 r.ok("Aprovar é 'tudo ou nada': se a fatura falha, a aula continua Pendente", !!erroAtomico && estadoA4 === "Pendente", estadoA4);
 
+// ---------------- VENDAS E STOCK (03) ----------------
+await db.exec(sqlDe("03_vendas_stock.sql"));
+await db.exec(sqlDe("03_vendas_stock.sql"));
+r.ok("Vendas: migração 03 corre sem erros e é idempotente (2x)", true);
+r.ok("Vendas: RLS ligado nas tabelas novas", (await q("select 1 from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind='r' and not c.relrowsecurity")).length === 0);
+
+const T = (fn) => como("authenticated", TREINADOR, fn);
+const varsJson = (lista) => JSON.stringify(lista);
+const luvas = (await T(() => q("select guardar_produto(null, 'Luvas Bogas', 'Proteções', 20, 45, 2, $1::jsonb) as id", [varsJson([{ nome: "10oz", stock: 3 }, { nome: "12oz", stock: 1 }])])))[0].id;
+const sticker = (await T(() => q("select guardar_produto(null, 'Sticker', 'Merchandising', 0.5, 2, 5, $1::jsonb) as id", [varsJson([{ nome: "Único", stock: 10 }])])))[0].id;
+const variantes = await q("select id, nome, stock from produto_variantes where produto_id = $1 order by nome", [luvas]);
+const [v10, v12] = variantes;
+const vSticker = (await q("select id from produto_variantes where produto_id = $1", [sticker]))[0].id;
+r.ok("Vendas: criar produto com variantes (10oz=3, 12oz=1) e stock inicial registado", variantes.length === 2 && v10.stock === 3 && v12.stock === 1 && (await q("select count(*)::int n from stock_movimentos where motivo='Stock inicial'"))[0].n === 3);
+
+const erroAnonVendas = await como("anon", null, () => falha("select * from produtos"));
+r.ok("Vendas: público NÃO lê produtos", /permission denied/.test(erroAnonVendas || ""), erroAnonVendas);
+const erroIntrusoVenda = await como("authenticated", INTRUSO, () => falha("select registar_venda('[{\"variante_id\":1,\"quantidade\":1}]', null, 'X', 'Paga', 'Dinheiro', null, null, null)"));
+r.ok("Vendas: conta não-treinador não regista vendas", erroIntrusoVenda?.includes("SEM_PERMISSAO"), erroIntrusoVenda);
+
+// Venda a sócio, paga, com desconto num item
+const venda1 = (await T(() => q("select registar_venda($1::jsonb, 1, null, 'Paga', 'MB Way', '2026-11-07', null, 'Bogas') as id", [varsJson([{ variante_id: v10.id, quantidade: 2 }, { variante_id: vSticker, quantidade: 3, preco_unitario: 1.5 }])])))[0].id;
+const v1 = (await q("select cliente_nome, total::float, custo_total::float, estado from vendas where id=$1", [venda1]))[0];
+r.ok("Vendas: venda a sócio usa o nome do sócio e calcula total e custo (com desconto)", v1.cliente_nome === "Ana Teste" && v1.total === 2 * 45 + 3 * 1.5 && v1.custo_total === 2 * 20 + 3 * 0.5, JSON.stringify(v1));
+r.ok("Vendas: stock desce (10oz 3→1, sticker 10→7)", (await q("select stock from produto_variantes where id=$1", [v10.id]))[0].stock === 1 && (await q("select stock from produto_variantes where id=$1", [vSticker]))[0].stock === 7);
+
+// Stock insuficiente: nada é gravado (tudo ou nada)
+const nVendasAntes = (await q("select count(*)::int n from vendas"))[0].n;
+const erroStock = await T(() => falha("select registar_venda($1::jsonb, null, 'Cliente Externo', 'Paga', 'Dinheiro', null, null, null)", [varsJson([{ variante_id: vSticker, quantidade: 1 }, { variante_id: v12.id, quantidade: 5 }])]));
+r.ok("Vendas: stock insuficiente é recusado com o nome do produto", erroStock?.includes("STOCK_INSUFICIENTE") && erroStock.includes("Luvas Bogas"), erroStock);
+r.ok("Vendas: venda recusada não grava nada nem mexe no stock",
+  (await q("select count(*)::int n from vendas"))[0].n === nVendasAntes && (await q("select stock from produto_variantes where id=$1", [vSticker]))[0].stock === 7);
+
+const erroCliente = await T(() => falha("select registar_venda($1::jsonb, null, '  ', 'Paga', 'Dinheiro', null, null, null)", [varsJson([{ variante_id: vSticker, quantidade: 1 }])]));
+r.ok("Vendas: não-sócio sem nome é recusado", erroCliente?.includes("CLIENTE_EM_FALTA"));
+const erroMetodo = await T(() => falha("select registar_venda($1::jsonb, null, 'João', 'Paga', null, null, null, null)", [varsJson([{ variante_id: vSticker, quantidade: 1 }])]));
+r.ok("Vendas: venda paga sem método de pagamento é recusada", erroMetodo?.includes("METODO_EM_FALTA"));
+
+// Venda pendente a não-sócio -> marcar paga
+const venda2 = (await T(() => q("select registar_venda($1::jsonb, null, 'João Externo', 'Pendente', null, null, null, null) as id", [varsJson([{ variante_id: v12.id, quantidade: 1 }])])))[0].id;
+r.ok("Vendas: venda pendente a não-sócio, último par de 12oz (stock 0)", (await q("select stock from produto_variantes where id=$1", [v12.id]))[0].stock === 0);
+await T(() => q("select marcar_venda_paga($1, 'Dinheiro')", [venda2]));
+r.ok("Vendas: marcar como paga", (await q("select estado, metodo from vendas where id=$1", [venda2]))[0].metodo === "Dinheiro");
+
+// Anular devolve stock; anular 2x é recusado
+await T(() => q("select anular_venda($1)", [venda1]));
+r.ok("Vendas: anular devolve o stock (10oz 1→3, sticker 7→10)", (await q("select stock from produto_variantes where id=$1", [v10.id]))[0].stock === 3 && (await q("select stock from produto_variantes where id=$1", [vSticker]))[0].stock === 10);
+r.ok("Vendas: venda anulada fica no histórico como 'Anulada'", (await q("select estado from vendas where id=$1", [venda1]))[0].estado === "Anulada");
+const erroAnular2 = await T(() => falha("select anular_venda($1)", [venda1]));
+r.ok("Vendas: anular duas vezes é recusado (não duplica stock)", erroAnular2?.includes("VENDA_JA_ANULADA"));
+
+// Repor e ajustar stock
+await T(() => q("select repor_stock($1, 4, 'Entrada')", [v12.id]));
+r.ok("Vendas: entrada de stock (12oz 0→4) com movimento registado", (await q("select stock from produto_variantes where id=$1", [v12.id]))[0].stock === 4 && (await q("select 1 from stock_movimentos where variante_id=$1 and motivo='Entrada' and quantidade=4", [v12.id])).length === 1);
+const erroAjuste = await T(() => falha("select repor_stock($1, -99, 'Ajuste')", [v12.id]));
+r.ok("Vendas: ajuste que deixaria stock negativo é recusado", erroAjuste?.includes("STOCK_INSUFICIENTE"), erroAjuste);
+
+// Preço muda depois: vendas antigas mantêm o preço do momento
+await T(() => q("select guardar_produto($1, 'Luvas Bogas', 'Proteções', 25, 50, 2, $2::jsonb)", [luvas, varsJson([{ id: v10.id, nome: "10oz" }, { id: v12.id, nome: "12oz" }])]));
+r.ok("Vendas: mudar o preço do produto não altera vendas antigas", (await q("select preco_unitario::float p from venda_itens where venda_id=$1", [venda2]))[0].p === 45);
+r.ok("Vendas: editar produto não mexe no stock", (await q("select stock from produto_variantes where id=$1", [v12.id]))[0].stock === 4);
+const erroRemover = await T(() => falha("select guardar_produto($1, 'Luvas Bogas', 'Proteções', 25, 50, 2, $2::jsonb)", [luvas, varsJson([{ id: v10.id, nome: "10oz" }])]));
+r.ok("Vendas: não deixa apagar uma variante que já foi vendida", erroRemover?.includes("VARIANTE_COM_VENDAS"), erroRemover);
+const erroRepetida = await T(() => falha("select guardar_produto(null, 'Caneleiras', 'Proteções', 10, 25, 2, $1::jsonb)", [varsJson([{ nome: "M", stock: 1 }, { nome: "M", stock: 2 }])]));
+r.ok("Vendas: variantes com nome repetido são recusadas", erroRepetida?.includes("VARIANTE_REPETIDA"), erroRepetida);
+
 // ---------------- EMERGÊNCIA ----------------
 await db.exec(sqlDe("99_emergencia_reverter_fase2.sql"));
 r.ok("Script de emergência corre sem erros", true);

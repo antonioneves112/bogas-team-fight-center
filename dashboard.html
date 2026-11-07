@@ -16,6 +16,7 @@
 
     <link rel="stylesheet" href="./CSS/theme.css" />
     <link rel="stylesheet" href="./CSS/dashboard.css" />
+    <link rel="stylesheet" href="./CSS/vendas.css" />
 
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js"></script>
@@ -48,6 +49,10 @@
 
             <div class="header-actions-group">
                 <input type="month" id="filtroMesMensalidade" class="dash-filter" title="Escolher Mês de Análise">
+
+                <button id="btnAbrirVendas" class="btn-icon-verde" title="Vendas e Stock">
+                    <i class='bx bx-euro'></i>
+                </button>
 
                 <button id="btnParceirosAdmin" class="btn-icon-red" title="Ver Inativos">
                     <i class='bx bx-group'></i>
@@ -255,6 +260,119 @@
                         <tbody id="tabelaAulasParticulares">
                         </tbody>
                     </table>
+                </div>
+            </section>
+        </div>
+
+        <!-- ================= VENDAS E STOCK ================= -->
+        <div id="view-vendas" class="tab-content hidden">
+            <section class="dash-content glass-panel">
+                <div class="content-header header-stack">
+                    <div class="header-title-row">
+                        <h3 id="tituloVendas">Vendas e Stock</h3>
+                        <div class="title-actions-cluster">
+                            <button class="btn-add-inline" id="btnNovaVenda" title="Nova Venda">
+                                <i class='bx bx-cart-add'></i>
+                            </button>
+                            <button class="btn-add-inline" id="btnNovoProduto" title="Novo Produto">
+                                <i class='bx bx-package'></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="vendas-resumo">
+                    <div class="vendas-cartao">
+                        <span class="vendas-cartao-rotulo">Receita do mês</span>
+                        <strong id="vendasReceita">--</strong>
+                    </div>
+                    <div class="vendas-cartao vendas-cartao-lucro">
+                        <span class="vendas-cartao-rotulo">Lucro (pagas)</span>
+                        <strong id="vendasLucro">--</strong>
+                    </div>
+                    <div class="vendas-cartao vendas-cartao-alerta">
+                        <span class="vendas-cartao-rotulo">Por cobrar</span>
+                        <strong id="vendasPorCobrar">--</strong>
+                    </div>
+                    <button type="button" class="vendas-cartao vendas-cartao-stock" id="cartaoStockBaixo"
+                        title="Ver produtos com pouco stock">
+                        <span class="vendas-cartao-rotulo">Stock baixo</span>
+                        <strong id="vendasStockBaixo">--</strong>
+                    </button>
+                </div>
+
+                <div class="vendas-subtabs" role="tablist">
+                    <button type="button" class="vendas-subtab ativo" data-painel="painelVendas" role="tab">
+                        <i class='bx bx-receipt'></i> Vendas do mês
+                    </button>
+                    <button type="button" class="vendas-subtab" data-painel="painelProdutos" role="tab">
+                        <i class='bx bx-package'></i> Produtos e stock
+                    </button>
+                </div>
+
+                <div id="painelVendas" class="vendas-painel">
+                    <div class="search-container full-width">
+                        <i class='bx bx-search search-icon'></i>
+                        <input type="text" id="filtroVendas" autocomplete="off" placeholder="Procurar cliente ou produto...">
+                    </div>
+                    <div class="table-responsive">
+                        <table class="dash-table">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Cliente</th>
+                                    <th>Artigos</th>
+                                    <th>Total</th>
+                                    <th>Lucro</th>
+                                    <th>Estado</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaVendas">
+                                <tr>
+                                    <td colspan="7" class="table-empty-state">A carregar vendas...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="painelProdutos" class="vendas-painel hidden">
+                    <div class="vendas-filtros">
+                        <div class="search-container">
+                            <i class='bx bx-search search-icon'></i>
+                            <input type="text" id="filtroProdutos" autocomplete="off" placeholder="Procurar produto...">
+                        </div>
+                        <select id="filtroCategoria" class="vendas-select" title="Filtrar por categoria">
+                            <option value="">Todas as categorias</option>
+                        </select>
+                        <label class="vendas-check">
+                            <input type="checkbox" id="filtroStockBaixo"> Só stock baixo
+                        </label>
+                        <label class="vendas-check">
+                            <input type="checkbox" id="filtroArquivados"> Mostrar arquivados
+                        </label>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="dash-table">
+                            <thead>
+                                <tr>
+                                    <th>Produto</th>
+                                    <th>Categoria</th>
+                                    <th>Compra</th>
+                                    <th>Venda</th>
+                                    <th>Margem</th>
+                                    <th>Stock</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaProdutos">
+                                <tr>
+                                    <td colspan="7" class="table-empty-state">A carregar produtos...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
         </div>
@@ -687,7 +805,7 @@
                 <button id="btnOpcaoNovaDespesa" class="btn-tatico btn-full-width">
                     <i class='bx bx-plus-circle'></i> Registar Nova
                 </button>
-                <button id="btnOpcaoHistoricoDespesa" class="btn-tatico btn-outline btn-full-width">
+                <button id="btnOpcaoHistoricoDespesa" class="btn-tatico btn-outline-muted btn-full-width">
                     <i class='bx bx-history'></i> Ver Histórico
                 </button>
             </div>
@@ -836,6 +954,245 @@
             </form>
         </div>
     </div>
+    <!-- ================= MODAIS DE VENDAS E STOCK ================= -->
+    <div id="modalNovaVenda" class="modal-overlay hidden modal-z-index">
+        <div class="modal-content glass-panel modal-largo">
+            <div class="modal-header">
+                <h3><i class='bx bx-cart-add'></i> Nova Venda</h3>
+                <button type="button" id="btnFecharNovaVenda" class="btn-fechar"><i class='bx bx-x'></i></button>
+            </div>
+
+            <form id="formNovaVenda" class="dash-form">
+                <div class="form-group">
+                    <label>Cliente</label>
+                    <div class="vendas-alternar" role="radiogroup">
+                        <label class="vendas-alternar-opcao">
+                            <input type="radio" name="tipoCliente" value="socio" checked> Sócio
+                        </label>
+                        <label class="vendas-alternar-opcao">
+                            <input type="radio" name="tipoCliente" value="externo"> Não sócio
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group" id="grupoClienteSocio">
+                    <label for="vendaSocioPesquisa">Sócio</label>
+                    <input type="text" id="vendaSocioPesquisa" list="listaSociosVenda" autocomplete="off"
+                        placeholder="Escreve o nome do sócio...">
+                    <datalist id="listaSociosVenda"></datalist>
+                    <input type="hidden" id="vendaSocioId">
+                </div>
+
+                <div class="form-group hidden" id="grupoClienteExterno">
+                    <label for="vendaClienteNome">Nome do cliente</label>
+                    <input type="text" id="vendaClienteNome" maxlength="80" placeholder="Ex: João Silva">
+                </div>
+
+                <fieldset class="vendas-adicionar">
+                    <legend>Adicionar artigo</legend>
+                    <div class="form-group">
+                        <label for="vendaProduto">Produto</label>
+                        <select id="vendaProduto">
+                            <option value="">Escolhe um produto...</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="vendaVariante">Tamanho / Variante</label>
+                            <select id="vendaVariante" disabled></select>
+                        </div>
+                        <div class="form-group">
+                            <label for="vendaQuantidade">Qtd.</label>
+                            <input type="number" id="vendaQuantidade" min="1" step="1" value="1">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="vendaPreco">Preço unitário (€) <span class="rotulo-opcional">(podes aplicar desconto)</span></label>
+                        <input type="number" id="vendaPreco" min="0" step="0.01" placeholder="0.00">
+                    </div>
+                    <button type="button" id="btnAdicionarArtigo" class="btn-tatico btn-full-width btn-outline-muted">
+                        Adicionar ao carrinho <i class='bx bx-plus'></i>
+                    </button>
+                </fieldset>
+
+                <ul id="vendaCarrinho" class="vendas-carrinho">
+                    <li class="vendas-carrinho-vazio">Ainda não adicionaste artigos.</li>
+                </ul>
+
+                <div class="vendas-totais">
+                    <div><span>Total</span><strong id="vendaTotal">0.00€</strong></div>
+                    <div><span>Lucro</span><strong id="vendaLucro">0.00€</strong></div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="vendaData">Data</label>
+                        <input type="date" id="vendaData" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="vendaEstado">Pagamento</label>
+                        <select id="vendaEstado" required>
+                            <option value="Paga">Pago agora</option>
+                            <option value="Pendente">Fica por pagar</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group" id="grupoVendaMetodo">
+                    <label for="vendaMetodo">Método de pagamento</label>
+                    <select id="vendaMetodo">
+                        <option value="Dinheiro">Dinheiro</option>
+                        <option value="MB Way">MB Way</option>
+                        <option value="Transferência">Transferência</option>
+                        <option value="Multibanco">Multibanco</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="vendaNotas">Notas <span class="rotulo-opcional">(Opcional)</span></label>
+                    <input type="text" id="vendaNotas" maxlength="200" placeholder="Ex: entrega na próxima aula">
+                </div>
+
+                <button type="submit" id="btnRegistarVenda" class="btn-tatico btn-full-width">
+                    Registar Venda <i class='bx bx-check-double'></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div id="modalProduto" class="modal-overlay hidden modal-z-index">
+        <div class="modal-content glass-panel modal-largo">
+            <div class="modal-header">
+                <h3 id="tituloModalProduto"><i class='bx bx-package'></i> Novo Produto</h3>
+                <button type="button" id="btnFecharProduto" class="btn-fechar"><i class='bx bx-x'></i></button>
+            </div>
+
+            <form id="formProduto" class="dash-form">
+                <input type="hidden" id="produtoId">
+                <div class="form-group">
+                    <label for="produtoNome">Nome do produto</label>
+                    <input type="text" id="produtoNome" maxlength="80" placeholder="Ex: Luvas de Boxe Bogas" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="produtoCategoria">Categoria</label>
+                    <input type="text" id="produtoCategoria" list="listaCategorias" maxlength="40"
+                        placeholder="Ex: Proteções" required>
+                    <datalist id="listaCategorias"></datalist>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="produtoPrecoCompra">Preço de compra (€)</label>
+                        <input type="number" id="produtoPrecoCompra" min="0" step="0.01" placeholder="0.00" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="produtoPrecoVenda">Preço de venda (€)</label>
+                        <input type="number" id="produtoPrecoVenda" min="0" step="0.01" placeholder="0.00" required>
+                    </div>
+                </div>
+                <p class="vendas-margem" id="produtoMargem">Margem: --</p>
+
+                <div class="form-group">
+                    <label for="produtoStockMinimo">Avisar quando o stock for igual ou menor que</label>
+                    <input type="number" id="produtoStockMinimo" min="0" step="1" value="2" required>
+                </div>
+
+                <fieldset class="vendas-variantes">
+                    <legend>Tamanhos / Variantes e stock</legend>
+                    <div class="vendas-predefinicoes">
+                        <span>Atalhos:</span>
+                        <button type="button" class="vendas-chip" data-predefinicao="Único">Tamanho único</button>
+                        <button type="button" class="vendas-chip" data-predefinicao="S,M,L,XL">S / M / L / XL</button>
+                        <button type="button" class="vendas-chip" data-predefinicao="10oz,12oz,14oz,16oz">10-16 oz</button>
+                    </div>
+                    <div class="vendas-variante-cabecalho" aria-hidden="true"><span>Nome</span><span>Stock inicial</span></div>
+                    <div id="listaVariantes" class="vendas-lista-variantes"></div>
+                    <button type="button" id="btnAdicionarVariante" class="btn-tatico btn-outline-muted btn-full-width">
+                        Adicionar variante <i class='bx bx-plus'></i>
+                    </button>
+                    <p class="vendas-nota">O stock das variantes já existentes altera-se no botão <i class='bx bx-transfer-alt'></i> (Entrada/Ajuste), para ficar registado no histórico.</p>
+                </fieldset>
+
+                <button type="submit" id="btnGuardarProduto" class="btn-tatico btn-full-width">
+                    Guardar Produto <i class='bx bx-save'></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div id="modalStock" class="modal-overlay hidden modal-z-index">
+        <div class="modal-content glass-panel">
+            <div class="modal-header">
+                <h3><i class='bx bx-transfer-alt'></i> Stock: <span id="stockProdutoNome"></span></h3>
+                <button type="button" id="btnFecharStock" class="btn-fechar"><i class='bx bx-x'></i></button>
+            </div>
+
+            <form id="formStock" class="dash-form">
+                <div class="form-group">
+                    <label for="stockVariante">Variante</label>
+                    <select id="stockVariante" required></select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="stockTipo">Tipo</label>
+                        <select id="stockTipo" required>
+                            <option value="Entrada">Entrada (chegou material)</option>
+                            <option value="Ajuste">Ajuste (contagem / perda)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="stockQuantidade">Quantidade</label>
+                        <input type="number" id="stockQuantidade" step="1" required>
+                    </div>
+                </div>
+                <p class="vendas-nota">No ajuste usa números negativos para tirar (ex.: -1 = artigo danificado).</p>
+                <button type="submit" id="btnGuardarStock" class="btn-tatico btn-full-width">
+                    Atualizar Stock <i class='bx bx-check'></i>
+                </button>
+            </form>
+
+            <h4 class="vendas-subtitulo">Últimos movimentos</h4>
+            <ul id="listaMovimentos" class="vendas-movimentos"></ul>
+        </div>
+    </div>
+
+    <div id="modalPagarVenda" class="modal-overlay hidden modal-z-index">
+        <div class="modal-content glass-panel">
+            <div class="modal-header">
+                <h3><i class='bx bx-check-circle'></i> Receber pagamento</h3>
+                <button type="button" id="btnFecharPagarVenda" class="btn-fechar"><i class='bx bx-x'></i></button>
+            </div>
+            <form id="formPagarVenda" class="dash-form">
+                <p class="desc-confirm" id="pagarVendaResumo"></p>
+                <div class="form-group">
+                    <label for="pagarVendaMetodo">Método de pagamento</label>
+                    <select id="pagarVendaMetodo" required>
+                        <option value="Dinheiro">Dinheiro</option>
+                        <option value="MB Way">MB Way</option>
+                        <option value="Transferência">Transferência</option>
+                        <option value="Multibanco">Multibanco</option>
+                    </select>
+                </div>
+                <button type="submit" id="btnConfirmarPagarVenda" class="btn-tatico btn-full-width">
+                    Marcar como paga <i class='bx bx-check-double'></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div id="modalAnularVenda" class="modal-overlay hidden modal-z-index">
+        <div class="modal-content glass-panel modal-confirm-box">
+            <i class='bx bx-undo icon-confirm-warning'></i>
+            <h2 class="title-confirm">Anular venda?</h2>
+            <p class="desc-confirm" id="anularVendaResumo">Os artigos voltam ao stock e a venda fica marcada como anulada.</p>
+            <div class="actions-confirm">
+                <button type="button" id="btnCancelarAnularVenda" class="btn-tatico btn-outline-muted">Cancelar</button>
+                <button type="button" id="btnConfirmarAnularVenda" class="btn-tatico btn-danger-action">Sim, Anular</button>
+            </div>
+        </div>
+    </div>
+
     <script src="./JS/app-routing.js" defer></script>
     <script src="./JS/registar-sw.js" defer></script>
 </body>

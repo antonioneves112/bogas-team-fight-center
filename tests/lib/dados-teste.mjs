@@ -55,5 +55,12 @@ export function tabelasBase() {
     admin_push_subscriptions: [],
     sistema_ping: [{ id: 1 }],
     treinadores: [{ user_id: "00000000-0000-4000-8000-000000000001", nome: "Bogas" }],
+    produtos: [
+      { id: 500, nome: "Ligaduras", categoria: "Ligaduras", preco_compra: 3, preco_venda: 8, stock_minimo: 2, ativo: true },
+    ],
+    produto_variantes: [{ id: 510, produto_id: 500, nome: "Único", stock: 5 }],
+    vendas: [],
+    venda_itens: [],
+    stock_movimentos: [],
   };
 }

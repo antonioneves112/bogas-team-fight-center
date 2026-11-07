@@ -24,6 +24,7 @@ import {
   renderizarTabelaMensalidades,
   initMensalidadesEvents,
 } from "./mensalidades.js";
+import { initVendasEvents } from "./vendas.js";
 import {
   exportarGuerreirosPDF,
   exportarMensalidadesPDF,
@@ -72,6 +73,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   initSociosEvents();
   initMensalidadesEvents();
   initAulasEvents();
+  initVendasEvents();
 
   configurarAprovacaoAula();
   configurarPagamentoDiretoAula();

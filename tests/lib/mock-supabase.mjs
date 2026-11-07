@@ -183,10 +183,17 @@ export class MockSupabase {
         const embebida = select.match(/(\w+)\(([^)]*)\)/);
         if (embebida) {
           const [, rel] = embebida;
-          resultado = resultado.map((r) => ({
-            ...r,
-            [rel]: clonar((this.tabelas[rel] || []).find((x) => x.id === r[`${rel.replace(/s$/, "")}_id`] || x.id === r.socio_id) || null),
-          }));
+          const singular = (n) => n.replace(/s$/, "");
+          resultado = resultado.map((r) => {
+            const chaveMuitosParaUm = `${singular(rel)}_id`;
+            // muitos-para-um (mensalidades -> socios) devolve objeto;
+            // um-para-muitos (produtos -> produto_variantes) devolve lista.
+            const valor =
+              chaveMuitosParaUm in r
+                ? (this.tabelas[rel] || []).find((x) => x.id === r[chaveMuitosParaUm]) || null
+                : (this.tabelas[rel] || []).filter((x) => x[`${singular(tabela)}_id`] === r.id);
+            return { ...r, [rel]: clonar(valor) };
+          });
         }
         if (colunasPedidas.length && !embebida) {
           resultado = resultado.map((r) => Object.fromEntries(colunasPedidas.map((c) => [c, r[c]])));

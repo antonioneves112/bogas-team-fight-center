@@ -58,12 +58,12 @@ async function capturar(browser, raizUrl, cenario, disp, versao) {
   await contexto.addInitScript(SCRIPT_ESTAVEL);
   if (cenario.treinador) await contexto.addInitScript(scriptSessaoTreinador("bogas@teste.pt"));
   if (cenario.sessaoAtleta) {
-    if (versao === "antes") {
-      await contexto.addInitScript(`localStorage.setItem("bogas_atleta_id", "${SOCIO_TESTE.id}")`);
-    } else {
-      const { token } = mock.rpc.portal_login({ p_email: SOCIO_TESTE.email, p_password: SOCIO_TESTE.password }, mock);
-      await contexto.addInitScript(`localStorage.setItem("bogas_portal_token", "${token}")`);
-    }
+    // Põe as duas formas de sessão: versões anteriores a 2026-11 usam o ID,
+    // as novas usam o token. Cada versão lê a que conhece.
+    const { token } = mock.rpc.portal_login({ p_email: SOCIO_TESTE.email, p_password: SOCIO_TESTE.password }, mock);
+    await contexto.addInitScript(
+      `localStorage.setItem("bogas_atleta_id", "${SOCIO_TESTE.id}"); localStorage.setItem("bogas_portal_token", "${token}");`,
+    );
   }
   const p = await contexto.newPage();
   await p.goto(`${raizUrl}/${cenario.url}`, { waitUntil: "load", timeout: 90000 });

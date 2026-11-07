@@ -52,6 +52,26 @@ Lê esta skill toda antes de alterar código. Quando perguntarem "o que fizemos?
 - O jsPDF só é descarregado quando se exporta um PDF (`carregarJsPDF` no `pdfManager.js`). Os vídeos da homepage têm `preload="none"` e só toca o vídeo do slide visível (`home.js`). Os ícones estão em `img/icones/icon-192.png` e `icon-512.png`. O `supabase-js` está fixo na versão `2.118.0`.
 - Service worker: `CACHE_NAME` tem de subir de versão a cada publicação (`sw.js`).
 
+## 3.1 Vendas e stock (acrescentado em 2026-11-07)
+
+- **Onde está:** botão **€** no cabeçalho do dashboard, logo a seguir ao calendário. Abre `#view-vendas`.
+  - Código: `JS/vendas.js` (registado em `main.js` com `initVendasEvents()`), `CSS/vendas.css` (mobile-first) e `supabase/migracoes/03_vendas_stock.sql`.
+- **Modelo de dados:**
+  - `produtos`: nome, categoria livre, `preco_compra`, `preco_venda`, `stock_minimo`, `ativo`.
+  - `produto_variantes`: uma por tamanho, onças das luvas ou "Único", cada uma com o seu `stock`.
+  - `vendas`: cliente sócio (`socio_id`) ou não sócio (`cliente_nome`); estado `Paga`, `Pendente` ou `Anulada`; método Dinheiro, MB Way, Transferência ou Multibanco.
+  - `venda_itens`: guarda o nome e os preços **do momento da venda**.
+  - `stock_movimentos`: auditoria de todas as entradas e saídas.
+- **Porque é que o stock nunca fica errado:** só as funções da BD mexem em stock, e cada uma corre numa transação ("tudo ou nada"):
+  - `registar_venda` bloqueia as linhas de stock (`FOR UPDATE`), por isso duas vendas ao mesmo tempo não vendem a mesma última unidade. Se faltar stock num artigo, nada é gravado.
+  - `anular_venda` devolve o stock e recusa anular duas vezes.
+  - `repor_stock` faz entradas e ajustes, e recusa deixar o stock negativo.
+  - `guardar_produto` edita nomes e preços, mas nunca o stock das variantes que já existem. Também não deixa apagar uma variante que já foi vendida.
+  - A coluna `stock` tem `check (stock >= 0)`: mesmo um bug no código não consegue pôr o stock negativo.
+- **Porque é que o lucro das vendas antigas não muda:** o `venda_itens` guarda o `custo_unitario` e o `preco_unitario` da altura da venda. Mudar o preço do produto depois não altera o passado.
+- **Relatório PDF:** tem uma secção "VENDAS DE MATERIAL". O balanço passa a ser receitas + **lucro das vendas pagas** − despesas. As vendas anuladas não contam e as pendentes aparecem na tabela, mas não entram no lucro.
+- **Se a migração 03 ainda não tiver corrido:** a área de vendas mostra um aviso a dizer isso, e o resto do dashboard e o PDF continuam a funcionar (há teste para isso).
+
 ## 4. Ordem de publicação (não trocar!)
 
 1. SQL Editor: `00_diagnostico.sql` (só leitura). Confirmar que `auth.users` só tem treinadores.
@@ -71,6 +91,7 @@ npm test           # regras + SQL + browser
 ```
 - `regras.test.mjs`: regra HTML/CSS/JS separados.
 - `sql.test.mjs`: corre as migrações num Postgres 17 real em memória (PGlite) que imita o Supabase (papéis `anon`/`authenticated`, `auth.uid()`), e testa os ataques (ler sem login, entrar pelo ID, token inventado, apagar dados de outro atleta, força bruta) e os bugs de faturação.
+- `e2e-vendas.test.mjs`: vendas e stock no browser (criar produto, carrinho, limite de stock, pendente → paga, anular, não sócio, desconto, PDF, BD sem a migração 03, desktop).
 - `e2e.test.mjs`: Chrome em ecrã de telemóvel com o Supabase simulado (`lib/mock-supabase.mjs` + `lib/mock-rpc.mjs`). Cobre os fluxos do portal, do login e do dashboard. **Nunca toca na BD real.**
 - `visual.test.mjs <pasta-antiga>`: compara screenshots pixel a pixel com uma versão antiga (`git worktree add --detach <pasta> <commit>`). Prova que mexer no CSS não mudou o aspeto. Se falhar, as imagens `-antes`, `-depois` e `-diferencas` ficam em `tests/resultados/visual/`.
 - `fotografia.mjs <nome>`: regista erros, 404 e KB por página, para comparar antes e depois.

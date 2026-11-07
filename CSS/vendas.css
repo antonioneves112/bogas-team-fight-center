@@ -1,0 +1,463 @@
+/* =========================================================
+   CSS/vendas.css — GESTÃO DE VENDAS E STOCK (dashboard)
+   Mobile-first: estilos base para telemóvel, alargados com min-width.
+   ========================================================= */
+
+/* ---------- Botão € no cabeçalho (mesmo tamanho que os vizinhos) ---------- */
+.btn-icon-verde {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  margin: 0;
+  border-radius: 8px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(37, 211, 102, 0.08);
+  color: var(--accent);
+  border: 1px solid rgba(37, 211, 102, 0.3);
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-icon-verde:hover,
+.btn-icon-verde:focus-visible {
+  background: rgba(37, 211, 102, 0.2);
+  border-color: var(--accent);
+  box-shadow: 0 0 10px rgba(37, 211, 102, 0.2);
+  transform: translateY(-2px);
+}
+
+@media (min-width: 401px) {
+  .btn-icon-verde {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+@media (min-width: 769px) {
+  .btn-icon-verde {
+    width: 46px;
+    height: 46px;
+    font-size: 1.5rem;
+  }
+}
+
+/* ---------- Cartões de resumo ---------- */
+.vendas-resumo {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.vendas-cartao {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-light);
+  text-align: left;
+  color: var(--text);
+  font: inherit;
+}
+
+.vendas-cartao strong {
+  font-size: 1.15rem;
+  color: #fff;
+}
+
+.vendas-cartao-rotulo {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+}
+
+.vendas-cartao-lucro strong {
+  color: var(--accent);
+}
+
+.vendas-cartao-alerta strong {
+  color: #f5b041;
+}
+
+.vendas-cartao-stock {
+  cursor: pointer;
+}
+
+.vendas-cartao-stock.tem-alerta {
+  border-color: rgba(255, 77, 77, 0.5);
+}
+
+.vendas-cartao-stock.tem-alerta strong {
+  color: #ff4d4d;
+}
+
+@media (min-width: 769px) {
+  .vendas-resumo {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+  }
+
+  .vendas-cartao strong {
+    font-size: 1.4rem;
+  }
+}
+
+/* ---------- Sub-separadores ---------- */
+.vendas-subtabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.vendas-subtab {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border-light);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.vendas-subtab.ativo {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: rgba(37, 211, 102, 0.08);
+}
+
+/* ---------- Filtros da lista de produtos ---------- */
+.vendas-filtros {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.vendas-select {
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-light);
+  color: #fff;
+  font: inherit;
+}
+
+.vendas-select option {
+  background: #111;
+}
+
+.vendas-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+@media (min-width: 769px) {
+  .vendas-filtros {
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .vendas-filtros .search-container {
+    flex: 1;
+    min-width: 220px;
+  }
+}
+
+/* ---------- Tabelas ---------- */
+.venda-anulada td {
+  opacity: 0.45;
+  text-decoration: line-through;
+}
+
+.venda-anulada td[data-label="Estado"],
+.venda-anulada td[data-label="Ações"] {
+  text-decoration: none;
+}
+
+.venda-icone-socio {
+  color: var(--accent);
+  vertical-align: middle;
+}
+
+.venda-notas,
+.venda-metodo,
+.stock-total {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.produto-arquivado td {
+  opacity: 0.55;
+}
+
+.stock-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.stock-chip {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  background: rgba(37, 211, 102, 0.12);
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.stock-chip.stock-baixo {
+  background: rgba(245, 176, 65, 0.15);
+  color: #f5b041;
+}
+
+.stock-chip.stock-zero {
+  background: rgba(255, 77, 77, 0.15);
+  color: #ff4d4d;
+}
+
+/* ---------- Modal Nova Venda ---------- */
+.vendas-alternar {
+  display: flex;
+  gap: 8px;
+}
+
+.vendas-alternar-opcao {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-light);
+  cursor: pointer;
+}
+
+.vendas-alternar-opcao:has(input:checked) {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(37, 211, 102, 0.08);
+}
+
+.vendas-adicionar,
+.vendas-variantes {
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  padding: 12px;
+  margin: 0 0 15px;
+}
+
+.vendas-adicionar legend,
+.vendas-variantes legend {
+  padding: 0 6px;
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.vendas-carrinho {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.vendas-carrinho-vazio {
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.85rem;
+  padding: 10px;
+}
+
+.vendas-carrinho-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.vendas-carrinho-item > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.vendas-carrinho-item small {
+  display: block;
+  color: var(--muted);
+}
+
+.vendas-carrinho-subtotal {
+  font-weight: bold;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.vendas-totais {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px;
+  margin-bottom: 15px;
+  border-radius: 10px;
+  background: rgba(37, 211, 102, 0.06);
+  border: 1px solid rgba(37, 211, 102, 0.25);
+}
+
+.vendas-totais div {
+  display: flex;
+  flex-direction: column;
+}
+
+.vendas-totais span {
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.vendas-totais strong {
+  font-size: 1.2rem;
+  color: #fff;
+}
+
+/* ---------- Modal Produto ---------- */
+.vendas-margem {
+  margin: -5px 0 15px;
+  font-size: 0.85rem;
+  color: var(--accent);
+}
+
+.vendas-margem.margem-negativa {
+  color: #ff4d4d;
+}
+
+.vendas-predefinicoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.vendas-chip {
+  padding: 5px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border-light);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.vendas-chip:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.vendas-lista-variantes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.vendas-variante-linha {
+  display: grid;
+  grid-template-columns: 1fr 90px auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.dash-form .vendas-variante-linha input {
+  padding: 10px;
+}
+
+.variante-stock-atual {
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+.vendas-nota {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin: 8px 0 0;
+}
+
+/* ---------- Modal Stock ---------- */
+.vendas-subtitulo {
+  margin: 20px 0 10px;
+  font-size: 0.85rem;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.vendas-movimentos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 30vh;
+  overflow-y: auto;
+}
+
+.vendas-movimentos li {
+  display: grid;
+  grid-template-columns: 50px 1fr auto;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-light);
+  font-size: 0.85rem;
+}
+
+.vendas-movimentos small {
+  color: var(--muted);
+}
+
+/* ---------- Ajustes após revisão visual ---------- */
+/* .dash-form input dá width:100% a todos os inputs: os rádios precisam de largura própria */
+.dash-form .vendas-alternar-opcao input[type="radio"] {
+  width: auto;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.vendas-carrinho-item > div {
+  text-align: left;
+}
+
+.vendas-variante-cabecalho {
+  display: grid;
+  grid-template-columns: 1fr 90px 36px;
+  gap: 8px;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 4px;
+}

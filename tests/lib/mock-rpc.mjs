@@ -93,6 +93,69 @@ export function rpcSimuladas() {
       mock.tabelas.mensalidades.push({ id: mock.proximoId++, socio_id: a.socio_id, mes_ano: a.data_aula.slice(0, 7), dia_aula: a.data_aula.split("-").reverse().join("/"), hora_aula: a.hora_aula, tipo: "Aula Particular", estado: "Pendente", valor: p_valor, aula_id: a.id });
       return { socio_id: a.socio_id, data_aula: a.data_aula };
     },
+    // ----- Vendas e stock (03_vendas_stock.sql) -----
+    guardar_produto({ p_id, p_nome, p_categoria, p_preco_compra, p_preco_venda, p_stock_minimo, p_variantes }, mock) {
+      const t = mock.tabelas;
+      let id = p_id;
+      const dados = { nome: p_nome, categoria: p_categoria || "Outros", preco_compra: p_preco_compra, preco_venda: p_preco_venda, stock_minimo: p_stock_minimo };
+      if (!id) {
+        id = mock.proximoId++;
+        t.produtos.push({ id, ativo: true, ...dados });
+      } else Object.assign(t.produtos.find((p) => p.id === id), dados);
+      const mantidos = [];
+      for (const v of p_variantes) {
+        if (v.id) {
+          t.produto_variantes.find((x) => x.id === v.id).nome = v.nome;
+          mantidos.push(v.id);
+        } else {
+          const nova = { id: mock.proximoId++, produto_id: id, nome: v.nome, stock: v.stock || 0 };
+          t.produto_variantes.push(nova);
+          mantidos.push(nova.id);
+        }
+      }
+      t.produto_variantes = t.produto_variantes.filter((x) => x.produto_id !== id || mantidos.includes(x.id));
+      return id;
+    },
+    repor_stock({ p_variante_id, p_quantidade, p_motivo }, mock) {
+      const v = mock.tabelas.produto_variantes.find((x) => x.id === p_variante_id);
+      if (v.stock + p_quantidade < 0) throw new Error("STOCK_INSUFICIENTE");
+      v.stock += p_quantidade;
+      mock.tabelas.stock_movimentos.push({ id: mock.proximoId++, variante_id: v.id, quantidade: p_quantidade, motivo: p_motivo, criado_em: new Date().toISOString() });
+      return v.stock;
+    },
+    registar_venda({ p_itens, p_socio_id, p_cliente_nome, p_estado, p_metodo, p_data, p_notas }, mock) {
+      const t = mock.tabelas;
+      const cliente = p_socio_id ? t.socios.find((s) => s.id === p_socio_id)?.nome : p_cliente_nome;
+      if (!cliente) throw new Error("CLIENTE_EM_FALTA");
+      for (const i of p_itens) {
+        const v = t.produto_variantes.find((x) => x.id === i.variante_id);
+        if (v.stock < i.quantidade) throw new Error(`STOCK_INSUFICIENTE: (${v.nome}) — só há ${v.stock}`);
+      }
+      const venda = { id: mock.proximoId++, data: p_data, socio_id: p_socio_id, cliente_nome: cliente, estado: p_estado, metodo: p_metodo, notas: p_notas, total: 0, custo_total: 0 };
+      for (const i of p_itens) {
+        const v = t.produto_variantes.find((x) => x.id === i.variante_id);
+        const p = t.produtos.find((x) => x.id === v.produto_id);
+        v.stock -= i.quantidade;
+        t.venda_itens.push({ id: mock.proximoId++, venda_id: venda.id, variante_id: v.id, produto_nome: p.nome, variante_nome: v.nome, quantidade: i.quantidade, preco_unitario: i.preco_unitario, custo_unitario: p.preco_compra });
+        venda.total += i.preco_unitario * i.quantidade;
+        venda.custo_total += p.preco_compra * i.quantidade;
+      }
+      t.vendas.push(venda);
+      return venda.id;
+    },
+    marcar_venda_paga({ p_venda_id, p_metodo }, mock) {
+      Object.assign(mock.tabelas.vendas.find((v) => v.id === p_venda_id), { estado: "Paga", metodo: p_metodo });
+      return null;
+    },
+    anular_venda({ p_venda_id }, mock) {
+      const venda = mock.tabelas.vendas.find((v) => v.id === p_venda_id);
+      if (venda.estado === "Anulada") throw new Error("VENDA_JA_ANULADA");
+      for (const i of mock.tabelas.venda_itens.filter((x) => x.venda_id === p_venda_id)) {
+        mock.tabelas.produto_variantes.find((v) => v.id === i.variante_id).stock += i.quantidade;
+      }
+      venda.estado = "Anulada";
+      return null;
+    },
     faturar_aula({ p_aula_id, p_valor }, mock) {
       const a = mock.tabelas.aulas_particulares.find((x) => x.id === p_aula_id);
       if (!a) throw new Error("AULA_NAO_ENCONTRADA");

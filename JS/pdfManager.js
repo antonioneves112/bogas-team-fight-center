@@ -175,6 +175,20 @@ export async function exportarMensalidadesPDF(lista, titulo, mesReferencia) {
     // Sem despesas o "lucro líquido" sairia errado: é melhor falhar e avisar.
     if (erroDespesas) throw erroDespesas;
 
+    // Vendas de material do mês (as anuladas não contam).
+    const { data: vendasMesBrutas, error: erroVendas } = await supabase
+      .from("vendas")
+      .select("data, cliente_nome, estado, total, custo_total, venda_itens(produto_nome, variante_nome, quantidade)")
+      .gte("data", dataInicio)
+      .lte("data", dataFim)
+      .neq("estado", "Anulada")
+      .order("data");
+    // Se o módulo de vendas ainda não existir na BD (migração 03 por correr), o relatório sai sem vendas.
+    const moduloVendasEmFalta =
+      erroVendas && (["PGRST205", "42P01"].includes(erroVendas.code) || /does not exist|Could not find/.test(erroVendas.message || ""));
+    if (erroVendas && !moduloVendasEmFalta) throw erroVendas;
+    const vendasMes = vendasMesBrutas || [];
+
     const desenharTabela = (opcoes) => {
       if (typeof doc.autoTable === "function") {
         doc.autoTable(opcoes);
@@ -266,6 +280,40 @@ export async function exportarMensalidadesPDF(lista, titulo, mesReferencia) {
       finalY = doc.lastAutoTable.finalY + 10;
     }
 
+    // --- TABELA VENDAS DE MATERIAL (AZUL) ---
+    let lucroVendasPagas = 0;
+    let receitaVendas = 0;
+    if (vendasMes.length > 0) {
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(0, 90, 160);
+      doc.text("RECEITAS: VENDAS DE MATERIAL", 14, finalY);
+      doc.setTextColor(0, 0, 0);
+      desenharTabela({
+        startY: finalY + 2,
+        head: [["Data", "Cliente", "Artigos", "Estado", "Total", "Lucro"]],
+        body: vendasMes.map((v) => {
+          const total = limparValorNumerico(v.total);
+          const lucro = total - limparValorNumerico(v.custo_total);
+          receitaVendas += total;
+          if (v.estado === "Paga") lucroVendasPagas += lucro;
+          return [
+            v.data ? v.data.split("-").reverse().join("/") : "-",
+            v.cliente_nome || "-",
+            (v.venda_itens || [])
+              .map((i) => `${i.quantidade}x ${i.produto_nome}${i.variante_nome && i.variante_nome !== "Único" ? ` (${i.variante_nome})` : ""}`)
+              .join(", "),
+            v.estado || "-",
+            `${total.toFixed(2)}€`,
+            `${lucro.toFixed(2)}€`,
+          ];
+        }),
+        theme: "striped",
+        headStyles: { fillColor: [0, 110, 190] },
+        margin: { left: 14, right: 14 },
+      });
+      finalY = doc.lastAutoTable.finalY + 10;
+    }
+
     // --- TABELA DESPESAS (VERMELHO) ---
     let totalDespesas = 0;
     if (despesasMes && despesasMes.length > 0) {
@@ -302,7 +350,8 @@ export async function exportarMensalidadesPDF(lista, titulo, mesReferencia) {
       0,
     );
     const totalReceitas = totalAtletas + totalParcerias;
-    const balancoFinal = totalReceitas - totalDespesas;
+    // Das vendas entra o LUCRO (venda - custo do material) das vendas já pagas.
+    const balancoFinal = totalReceitas + lucroVendasPagas - totalDespesas;
 
     if (finalY > 240) doc.addPage();
 
@@ -315,6 +364,14 @@ export async function exportarMensalidadesPDF(lista, titulo, mesReferencia) {
     doc.text(`${totalReceitas.toFixed(2)}€`, pageWidth - 40, finalY, {
       align: "right",
     });
+
+    if (vendasMes.length > 0) {
+      finalY += 6;
+      doc.text(`(+) Lucro das Vendas pagas (vendido: ${receitaVendas.toFixed(2)}€):`, 14, finalY);
+      doc.text(`${lucroVendasPagas.toFixed(2)}€`, pageWidth - 40, finalY, {
+        align: "right",
+      });
+    }
 
     finalY += 6;
     doc.text(`(-) Total Saídas (Despesas):`, 14, finalY);
