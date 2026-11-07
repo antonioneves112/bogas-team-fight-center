@@ -776,6 +776,8 @@ document.addEventListener("DOMContentLoaded", () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          // "acao" identifica o tipo de email no Router do Make (como pagamento/novo_socio).
+          acao: "marcacao_aula",
           atleta: nomeAtleta,
           dataAula: dataFormatada,
           horaAula: inputHora.value || "--:--",

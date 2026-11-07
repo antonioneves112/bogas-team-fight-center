@@ -115,6 +115,7 @@ try {
     const pedido = mock.pedidosA("rpc", "portal_pedir_aula")[0];
     r.ok("Portal: aula ao sábado é enviada pela função segura", pedido?.corpo?.p_data === PROXIMO_SABADO && pedido?.corpo?.p_hora === "14:30" && !!pedido?.corpo?.p_token);
     r.ok("Portal: treinador é avisado (push + email Make)", mock.pedidosA("function", "notificar-alvo").length === 1 && mock.webhooks.length === 1);
+    r.ok("Portal: pedido ao Make leva acao 'marcacao_aula' (para o Router do Make)", mock.webhooks[0]?.acao === "marcacao_aula" && mock.webhooks[0]?.emailMestre && mock.webhooks[0]?.dataAula, JSON.stringify(mock.webhooks[0]));
     r.ok("Portal: toast 'Pedido Enviado'", (await textoToasts(p)).includes("Pedido Enviado"));
 
     // Logout
