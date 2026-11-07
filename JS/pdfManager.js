@@ -1,6 +1,43 @@
 /* JS/pdfManager.js - GESTOR FINANCEIRO COMPLETO E BLINDADO (Agora com Filtro de Rendimentos) */
 import { formatarNomeCurto } from "./helpers.js";
 import { supabase } from "./supabase.js";
+import { mostrarAviso } from "./toast.js";
+
+// O jsPDF (~400 KB) só é descarregado quando o treinador exporta um PDF,
+// em vez de atrasar a abertura do dashboard.
+const SCRIPTS_PDF = [
+  "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js",
+  "https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js",
+];
+let carregamentoPDF = null;
+
+function carregarScript(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = () => reject(new Error("Não foi possível carregar " + src));
+    document.head.appendChild(s);
+  });
+}
+
+export function carregarJsPDF() {
+  if (window.jspdf?.jsPDF) return Promise.resolve();
+  if (!carregamentoPDF) {
+    carregamentoPDF = SCRIPTS_PDF.reduce(
+      (p, src) => p.then(() => carregarScript(src)),
+      Promise.resolve(),
+    )
+      .then(() => {
+        window.jsPDF = window.jspdf.jsPDF;
+      })
+      .catch((e) => {
+        carregamentoPDF = null;
+        throw e;
+      });
+  }
+  return carregamentoPDF;
+}
 
 // 🥊 Função auxiliar de Limpeza Matemática
 function limparValorNumerico(valor) {
@@ -16,8 +53,9 @@ function limparValorNumerico(valor) {
 // ============================================================================
 // 🥊 1. FUNÇÃO BASE DE TABELAS
 // ============================================================================
-export function exportarPDF(titulo, rows, colunas, filename, footerRow = null) {
+export async function exportarPDF(titulo, rows, colunas, filename, footerRow = null) {
   try {
+    await carregarJsPDF();
     const doc = new window.jspdf.jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
 
@@ -63,14 +101,14 @@ export function exportarPDF(titulo, rows, colunas, filename, footerRow = null) {
     doc.save(filename);
   } catch (e) {
     console.error("Erro PDF:", e);
-    alert("Erro ao gerar PDF.");
+    mostrarAviso("Erro", "Erro ao gerar PDF.", "erro");
   }
 }
 
 // ============================================================================
 // 🥊 2. ESPECIALISTA NA LISTA DE SÓCIOS
 // ============================================================================
-export function exportarGuerreirosPDF(guerreiros) {
+export async function exportarGuerreirosPDF(guerreiros) {
   const rows = guerreiros.map((s) => [
     s.nome ? formatarNomeCurto(s.nome) : "Desconhecido",
     s.modalidade || "-",
@@ -79,7 +117,7 @@ export function exportarGuerreirosPDF(guerreiros) {
     s.estado || "Ativo",
   ]);
 
-  exportarPDF(
+  await exportarPDF(
     "Lista de Sócios - Bogas Team",
     rows,
     ["Nome", "Modalidade", "Graduação", "Federação", "Estado"],
@@ -92,7 +130,7 @@ export function exportarGuerreirosPDF(guerreiros) {
 // ============================================================================
 export async function exportarMensalidadesPDF(lista, titulo, mesReferencia) {
   if (!lista || lista.length === 0) {
-    alert("Sem dados para exportar neste mês.");
+    mostrarAviso("Sem dados", "Sem dados para exportar neste mês.", "erro");
     return;
   }
 
@@ -102,6 +140,7 @@ export async function exportarMensalidadesPDF(lista, titulo, mesReferencia) {
   }
 
   try {
+    await carregarJsPDF();
     const mesesPT = [
       "Janeiro",
       "Fevereiro",
@@ -133,9 +172,8 @@ export async function exportarMensalidadesPDF(lista, titulo, mesReferencia) {
       .filter("data", "gte", dataInicio)
       .filter("data", "lte", dataFim);
 
-    if (erroDespesas) {
-      console.warn("Aviso: Falha ao procurar despesas do mês.", erroDespesas);
-    }
+    // Sem despesas o "lucro líquido" sairia errado: é melhor falhar e avisar.
+    if (erroDespesas) throw erroDespesas;
 
     const desenharTabela = (opcoes) => {
       if (typeof doc.autoTable === "function") {
@@ -302,6 +340,6 @@ export async function exportarMensalidadesPDF(lista, titulo, mesReferencia) {
     doc.save(nomeFicheiro);
   } catch (erro) {
     console.error("Erro PDF:", erro);
-    alert("Erro ao processar balanço: " + erro.message);
+    mostrarAviso("Erro", "Erro ao processar balanço: " + erro.message, "erro");
   }
 }

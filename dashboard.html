@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Painel de Gestão | Bogas Team Fight Center</title>
 
-    <link rel="icon" type="image/png" sizes="192x192" href="./faviicon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="./img/icones/icon-192.png">
     <link rel="manifest" href="./manifest.json">
 
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
@@ -17,11 +17,8 @@
     <link rel="stylesheet" href="./CSS/theme.css" />
     <link rel="stylesheet" href="./CSS/dashboard.css" />
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script>window.jsPDF = window.jspdf.jsPDF;</script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js"></script>
     <script type="module" src="./JS/main.js"></script>
 </head>
 
@@ -90,7 +87,7 @@
             </button>
             <button class="tab-btn" data-target="view-aulas">
                 <i class='bx bx-time-five'></i> Aulas Particulares
-                <span id="badgeAulas" class="badge-tab-inline" style="display: none;"></span>
+                <span id="badgeAulas" class="badge-tab-inline hidden"></span>
             </button>
         </div>
 
@@ -432,19 +429,17 @@
             <form id="formFaturarAula" class="dash-form">
                 <div class="form-group">
                     <label>Atleta</label>
-                    <input type="text" id="faturarAulaNome" readonly
-                        style="color: var(--accent); font-weight: bold; background: rgba(0,0,0,0.2);">
+                    <input type="text" id="faturarAulaNome" readonly class="input-leitura input-destaque">
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label>Data da Aula</label>
-                        <input type="text" id="faturarAulaData" readonly style="background: rgba(0,0,0,0.2);">
+                        <input type="text" id="faturarAulaData" readonly class="input-leitura">
                     </div>
                     <div class="form-group">
                         <label>Valor a Cobrar</label>
-                        <input type="text" id="faturarAulaValor" readonly
-                            style="color: var(--accent); font-weight: bold; background: rgba(0,0,0,0.2);">
+                        <input type="text" id="faturarAulaValor" readonly class="input-leitura input-destaque">
                     </div>
                 </div>
 
@@ -466,7 +461,7 @@
                 <button id="btnFecharModalBroadcast" class="btn-fechar"><i class='bx bx-x'></i></button>
             </div>
 
-            <form id="formBroadcast" class="dash-form" onsubmit="event.preventDefault();">
+            <form id="formBroadcast" class="dash-form">
                 <p class="modal-desc-broadcast">
                     Envia um alerta diretamente para o telemóvel de todos os sócios registados.
                 </p>
@@ -576,7 +571,7 @@
             </div>
 
             <form id="formNovaDespesa" class="dash-form">
-                <p class="modal-desc-broadcast" style="margin-bottom: 20px;">
+                <p class="modal-desc-broadcast modal-desc-espaco">
                     Regista as saídas de caixa do ginásio (Renda, Luz, Material, etc) para o relatório mensal.
                 </p>
 
@@ -607,8 +602,7 @@
                     </div>
                 </div>
 
-                <button type="submit" id="btnGuardarDespesa" class="btn-tatico btn-full-width"
-                    style="border-color: #ff4d4d; color: #ff4d4d;">
+                <button type="submit" id="btnGuardarDespesa" class="btn-tatico btn-full-width btn-perigo">
                     Confirmar Despesa <i class='bx bx-check-double'></i>
                 </button>
             </form>
@@ -701,13 +695,13 @@
     </div>
 
     <div id="modalHistoricoDespesas" class="modal-overlay hidden modal-z-index">
-        <div class="modal-content glass-panel" style="max-width: 800px; width: 95%;">
+        <div class="modal-content glass-panel modal-largo">
             <div class="modal-header">
                 <h3><i class='bx bx-history'></i> Histórico de Despesas</h3>
                 <button id="btnFecharHistoricoDespesas" class="btn-fechar"><i class='bx bx-x'></i></button>
             </div>
 
-            <div class="table-responsive" style="margin-top: 20px; max-height: 60vh; overflow-y: auto;">
+            <div class="table-responsive tabela-rolavel">
                 <table class="dash-table">
                     <thead>
                         <tr>
@@ -784,7 +778,7 @@
             <i class='bx bx-x-circle bx-tada icon-confirm-warning'></i>
             <h2 class="title-confirm">Recusar Aula?</h2>
             <p class="desc-confirm">Tens a certeza que queres recusar a aula particular? <strong
-                    id="spanDataRecusarAula" style="color: #fff;">--/--/----</strong>?<br>O atleta será notificado desta
+                    id="spanDataRecusarAula" class="texto-branco">--/--/----</strong>?<br>O atleta será notificado desta
                 decisão.</p>
             <div class="actions-confirm">
                 <button id="btnCancelarRecusarAula" class="btn-tatico btn-outline-muted">Cancelar</button>
@@ -821,7 +815,7 @@
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Valor (€) <span style="font-size: 0.7rem; color: #aaa;">(Opcional)</span></label>
+                        <label>Valor (€) <span class="rotulo-opcional">(Opcional)</span></label>
                         <div class="input-wrapper-tatico">
                             <input type="number" id="novaAulaValor" step="0.50" min="0" placeholder="0.00">
                             <i class='bx bx-euro'></i>
@@ -843,16 +837,7 @@
         </div>
     </div>
     <script src="./JS/app-routing.js" defer></script>
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .catch(err => console.error('Erro no PWA:', err));
-            });
-        }
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-    <script>eruda.init();</script>
+    <script src="./JS/registar-sw.js" defer></script>
 </body>
 
 </html>

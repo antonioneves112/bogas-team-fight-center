@@ -38,7 +38,7 @@
       <div class="slider-stage welcome-stage">
 
         <!-- <div class="carousel-slide active">
-          <video autoplay muted loop playsinline>
+          <video muted loop playsinline preload="none">
             <source src="./img/modal3.mp4" type="video/mp4">
           </video>
           <div class="welcome-caption">
@@ -49,7 +49,7 @@
 
         <div class="carousel-slide active">
           <img src="./img/cartaz_epoca.jpeg" alt="Junta-te à Bogas Team" fetchpriority="high" loading="eager"
-            style="object-fit: contain; background: #020202;">
+            class="slide-imagem-contida">
           <div class="welcome-caption">
             <h2></h2>
             <p>Não fiques a ver os outros evoluir. Supera os teus limites na nova época.</p>
@@ -58,7 +58,7 @@
 
 
         <div class="carousel-slide">
-          <video autoplay muted loop playsinline>
+          <video muted loop playsinline preload="none">
             <source src="./img/modal6.mp4" type="video/mp4">
           </video>
           <div class="welcome-caption">
@@ -68,7 +68,7 @@
         </div>
 
         <div class="carousel-slide">
-          <video autoplay muted loop playsinline>
+          <video muted loop playsinline preload="none">
             <source src="./img/modal4.mp4" type="video/mp4">
           </video>
           <div class="welcome-caption">
@@ -78,7 +78,7 @@
         </div>
 
         <div class="carousel-slide">
-          <video autoplay muted loop playsinline>
+          <video muted loop playsinline preload="none">
             <source src="./img/modal5.mp4" type="video/mp4">
           </video>
           <div class="welcome-caption">
@@ -88,7 +88,7 @@
         </div>
 
         <div class="carousel-slide">
-          <video autoplay muted loop playsinline>
+          <video muted loop playsinline preload="none">
             <source src="./img/modal6.mp4" type="video/mp4">
           </video>
           <div class="welcome-caption">
@@ -98,7 +98,7 @@
         </div>
 
         <div class="carousel-slide">
-          <video autoplay muted loop playsinline>
+          <video muted loop playsinline preload="none">
             <source src="./img/modal8.mp4" type="video/mp4">
           </video>
           <div class="welcome-caption">
@@ -108,7 +108,7 @@
         </div>
 
         <div class="carousel-slide">
-          <img src="./img/juntate.png" alt="Junta-te à Bogas Team" style="object-fit: contain; background: #020202;">
+          <img src="./img/juntate.png" alt="Junta-te à Bogas Team" class="slide-imagem-contida" loading="lazy">
           <div class="welcome-caption">
             <h2></h2>
             <p>Vem fazer parte desta família e supera os teus limites. Marca já a tua aula!</p>
@@ -169,8 +169,7 @@
 
 
       <div class="dropdown item-app-only">
-        <button class="dropdown-trigger nav-login-btn"
-          style="background: transparent; cursor: pointer; font-family: inherit; font-size: inherit;">
+        <button class="dropdown-trigger nav-login-btn nav-login-btn-reset">
           <i class='bx bx-lock-alt'></i> Área Técnica <i class='bx bx-chevron-down'></i>
         </button>
         <div class="dropdown-menu">
@@ -186,14 +185,13 @@
   <main class="main-content" id="conteudo">
     <div class="home-shell">
       <section class="page-hero" aria-labelledby="hero-title">
-        <span
-          style="display:block; font-size: 0.85rem; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 16px; opacity: 0.7;">
+        <span class="hero-sobretitulo">
           Kickboxing • Boxe • Performance
         </span>
 
         <h1 id="hero-title">
           Vem fazer parte desta família.
-          <span style="display:block; margin-top: 8px; color: var(--accent); font-size: 0.85em;">Desafia-te.</span>
+          <span class="hero-destaque">Desafia-te.</span>
         </h1>
 
         <p>
@@ -258,20 +256,10 @@
 
   <script src="../JS/menu.js" defer></script>
   <script src="../JS/home.js" defer></script>
-  <script src="../JS/ping.js" defer></script>
+  <script type="module" src="./JS/ping.js"></script>
 
 
-  <script>
-    // 🥊 Mantemos apenas o registo essencial aqui
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
-          .then(reg => console.log('Motor PWA Ativado!', reg))
-          .catch(err => console.error('Erro no PWA:', err));
-      });
-    }
-
-  </script>
+  <script src="./JS/registar-sw.js" defer></script>
   <div id="ios-install-modal" class="modal-overlay hidden">
     <div class="modal-content glass-panel">
       <button id="close-ios-modal" class="modal-close"><i class='bx bx-x'></i></button>

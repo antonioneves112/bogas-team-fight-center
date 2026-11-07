@@ -529,3 +529,25 @@
     padding: 12px !important;
   }
 }
+
+/* Classes que substituem os style="" do index.html */
+.slide-imagem-contida {
+  object-fit: contain;
+  background: #020202;
+}
+
+.hero-sobretitulo {
+  display: block;
+  font-size: 0.85rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  opacity: 0.7;
+}
+
+.hero-destaque {
+  display: block;
+  margin-top: 8px;
+  color: var(--accent);
+  font-size: 0.85em;
+}

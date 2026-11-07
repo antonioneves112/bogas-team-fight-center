@@ -1,9 +1,10 @@
 /* JS/mensalidades.js - GESTÃO DE MENSALIDADES (Versão Final c/ Ordem Descendente) */
-import { supabase } from "./supabase.js";
+import { supabase, db } from "./supabase.js";
 import { state } from "./state.js";
-import { formatarNomeCurto, extrairPreco, debounce } from "./helpers.js";
+import { formatarNomeCurto, extrairPreco, escapeHTML, MESES_PT } from "./helpers.js";
 import { carregarGuerreiros } from "./socios.js";
-import { mostrarAviso } from "./main.js";
+import { mostrarAviso } from "./toast.js";
+import { WEBHOOK_MAKE_URL } from "./config.js";
 
 // 🥊 VARIÁVEIS DE CONTROLO DE PAGINAÇÃO
 let paginaAtualMens = 1;
@@ -21,7 +22,7 @@ export function renderizarTabelaMensalidades(lista, manterPagina = false) {
 
   if (listaAtivos.length === 0) {
     tabelaMensalidades.innerHTML =
-      '<tr><td colspan="7" style="text-align: center;">Nenhum registo de atletas ativos.</td></tr>';
+      '<tr><td colspan="7" class="celula-centro">Nenhum registo de atletas ativos.</td></tr>';
     return;
   }
 
@@ -47,14 +48,15 @@ export function renderizarTabelaMensalidades(lista, manterPagina = false) {
     const isAula = m.tipo && m.tipo.trim() === "Aula Particular";
     const labelTempo = "Data";
 
-    let displayTempo = m.mes_ano;
+    const e = escapeHTML;
+    let displayTempo = e(m.mes_ano);
 
-    // Constrói o visual do Dia e Hora para as Aulas (AGORA EMPILHADO)
+    // Constrói o visual do Dia e Hora para as Aulas (empilhado)
     if (isAula && m.dia_aula) {
-      displayTempo = `<div>${m.dia_aula}</div>`;
+      displayTempo = `<div>${e(m.dia_aula)}</div>`;
       if (m.hora_aula) {
-        displayTempo += `<div style="font-size: 0.85rem; color: var(--accent); margin-top: 4px;">
-                            <i class='bx bx-time'></i> ${m.hora_aula.substring(0, 5)}
+        displayTempo += `<div class="hora-aula-tabela">
+                            <i class='bx bx-time'></i> ${e(String(m.hora_aula).substring(0, 5))}
                          </div>`;
       }
     }
@@ -62,15 +64,15 @@ export function renderizarTabelaMensalidades(lista, manterPagina = false) {
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td data-label="${labelTempo}" class="${classeNeon}">${displayTempo}</td>
-      <td data-label="Sócio" class="${classeNeon}" style="font-weight: 600;">${formatarNomeCurto(m.socios?.nome)}</td>
-      <td data-label="Tipo" class="${classeNeon}">${m.tipo || "Mensalidade"}</td>
-      <td data-label="Modalidade" class="${classeNeon}">${m.socios?.modalidade || "N/A"}</td>
-      <td data-label="Valor" class="${classeNeon}">${m.valor}€</td>
-      <td data-label="Estado"><span class="badge ${badgeClass}">${m.estado}</span></td>
+      <td data-label="Sócio" class="${classeNeon} celula-nome">${e(formatarNomeCurto(m.socios?.nome))}</td>
+      <td data-label="Tipo" class="${classeNeon}">${e(m.tipo || "Mensalidade")}</td>
+      <td data-label="Modalidade" class="${classeNeon}">${e(m.socios?.modalidade || "N/A")}</td>
+      <td data-label="Valor" class="${classeNeon}">${e(m.valor)}€</td>
+      <td data-label="Estado"><span class="badge ${badgeClass}">${e(m.estado)}</span></td>
       <td data-label="Ações">
-        <div style="display:flex; gap: 6px; align-items:center; justify-content: center;">
-          <button class="btn-acao btn-edit-mensalidade" data-id="${m.id}"><i class='bx bx-edit'></i></button>
-          <button class="btn-acao btn-delete-mensalidade" data-id="${m.id}"><i class='bx bx-trash'></i></button>
+        <div class="acoes-linha">
+          <button class="btn-acao btn-edit-mensalidade" data-id="${e(m.id)}"><i class='bx bx-edit'></i></button>
+          <button class="btn-acao btn-delete-mensalidade" data-id="${e(m.id)}"><i class='bx bx-trash'></i></button>
         </div>
       </td>`;
     fragment.appendChild(tr);
@@ -79,8 +81,8 @@ export function renderizarTabelaMensalidades(lista, manterPagina = false) {
   if (limiteAtual < listaAtivos.length) {
     const trMore = document.createElement("tr");
     trMore.innerHTML = `
-      <td colspan="7" style="text-align: center; padding: 15px;">
-        <button class="btn-tatico btn-small btn-carregar-mais-mens" style="width: 100%; border-color: var(--accent); color: var(--accent);">
+      <td colspan="7">
+        <button class="btn-tatico btn-small btn-carregar-mais-mens">
           Carregar mais <i class='bx bx-chevron-down bx-fade-down'></i>
         </button>
       </td>`;
@@ -88,10 +90,10 @@ export function renderizarTabelaMensalidades(lista, manterPagina = false) {
   }
 
   const trTotal = document.createElement("tr");
-  trTotal.style.background = "rgba(37, 211, 102, 0.1)";
+  trTotal.className = "linha-total";
   trTotal.innerHTML = `
-    <td colspan="4" style="text-align: right; font-weight: bold; color: var(--accent);">TOTAL FATURADO (ATIVOS):</td>
-    <td style="font-weight: bold; color: var(--accent);">${totalGeral.toFixed(2)}€</td>
+    <td colspan="4" class="total-rotulo">TOTAL FATURADO (ATIVOS):</td>
+    <td>${totalGeral.toFixed(2)}€</td>
     <td colspan="2"></td>
   `;
   fragment.appendChild(trTotal);
@@ -254,17 +256,23 @@ export function initMensalidadesEvents() {
     );
   document
     .getElementById("btnConfirmarDeleteMensalidade")
-    ?.addEventListener("click", async () => {
-      if (mensalidadeIdParaEliminar) {
-        const { error } = await supabase
-          .from("mensalidades")
-          .delete()
-          .eq("id", mensalidadeIdParaEliminar);
-        if (!error) {
-          mostrarAviso("Eliminado", "Registo apagado.", "sucesso");
-          modalDeleteMensalidade.classList.add("hidden");
-          carregarMensalidades();
-        }
+    ?.addEventListener("click", async (e) => {
+      if (!mensalidadeIdParaEliminar) return;
+      const btn = e.currentTarget;
+      btn.disabled = true;
+      try {
+        await db(
+          supabase.from("mensalidades").delete().eq("id", mensalidadeIdParaEliminar),
+        );
+        mostrarAviso("Eliminado", "Registo apagado.", "sucesso");
+        modalDeleteMensalidade.classList.add("hidden");
+        mensalidadeIdParaEliminar = null;
+        carregarMensalidades();
+      } catch (err) {
+        // Antes, uma falha ao apagar não mostrava nada.
+        mostrarAviso("Erro", `Não foi possível apagar: ${err.message}`, "erro");
+      } finally {
+        btn.disabled = false;
       }
     });
 
@@ -312,75 +320,76 @@ export function initMensalidadesEvents() {
       estado: document.getElementById("pagamentoEstado").value,
       tipo: document.getElementById("pagamentoTipo").value,
     };
+    if (isNaN(dados.valor)) {
+      mostrarAviso("Atenção", "Indica um valor válido.", "erro");
+      return;
+    }
+
+    // Bloqueia o botão: dois toques rápidos no telemóvel criavam 2 pagamentos e 2 emails.
+    const btnGuardar = formNovoPagamento.querySelector('button[type="submit"]');
+    if (btnGuardar?.disabled) return;
+    if (btnGuardar) btnGuardar.disabled = true;
 
     try {
       if (isEdicao) {
-        await supabase
-          .from("mensalidades")
-          .update(dados)
-          .eq("id", state.idMensalidadeEmEdicao);
+        await db(
+          supabase
+            .from("mensalidades")
+            .update(dados)
+            .eq("id", state.idMensalidadeEmEdicao),
+        );
       } else {
-        await supabase.from("mensalidades").insert([dados]);
+        await db(supabase.from("mensalidades").insert([dados]));
       }
 
       if (dados.estado === "Pago") {
-        await supabase
-          .from("socios")
-          .update({ estado: "Ativo" })
-          .eq("id", dados.socio_id);
+        await db(
+          supabase
+            .from("socios")
+            .update({ estado: "Ativo" })
+            .eq("id", dados.socio_id),
+        );
 
         if (!isEdicao) {
-          const mesesTexto = [
-            "Janeiro",
-            "Fevereiro",
-            "Março",
-            "Abril",
-            "Maio",
-            "Junho",
-            "Julho",
-            "Agosto",
-            "Setembro",
-            "Outubro",
-            "Novembro",
-            "Dezembro",
-          ];
           let nomeMes = dados.mes_ano;
           if (dados.mes_ano && dados.mes_ano.includes("-")) {
-            const [ano, mesNum] = dados.mes_ano.split("-");
-            nomeMes = mesesTexto[parseInt(mesNum) - 1];
+            const [, mesNum] = dados.mes_ano.split("-");
+            nomeMes = MESES_PT[parseInt(mesNum, 10) - 1];
           }
 
           const t = "Mensalidade Validada";
           const m = `O teu pagamento referente a ${nomeMes} foi validado.`;
 
-          await supabase
-            .from("notificacoes")
-            .insert([
-              { socio_id: dados.socio_id, titulo: t, mensagem: m, lida: false },
-            ]);
+          await db(
+            supabase
+              .from("notificacoes")
+              .insert([
+                { socio_id: dados.socio_id, titulo: t, mensagem: m, lida: false },
+              ]),
+          );
           try {
             await supabase.functions.invoke("notificar-alvo", {
               body: {
-                socio_id: parseInt(dados.socio_id),
+                socio_id: parseInt(dados.socio_id, 10),
                 titulo: t,
                 mensagem: m,
               },
             });
-          } catch (e) {}
-          // 🥊 NOVO: DISPARO DE EMAIL DE RECIBO PARA O MAKE (MENSALIDADES)
+          } catch (erroPush) {
+            console.warn("Aviso Push:", erroPush);
+          }
+          // Recibo por email (Make). Se falhar, o pagamento já está registado.
           try {
-            // Puxar o email e o nome do atleta na BD
-            const { data: atletaReq } = await supabase
-              .from("socios")
-              .select("nome, email")
-              .eq("id", dados.socio_id)
-              .single();
+            const atletaReq = await db(
+              supabase
+                .from("socios")
+                .select("nome, email")
+                .eq("id", dados.socio_id)
+                .single(),
+            );
 
             if (atletaReq && atletaReq.email) {
-              const urlWebhookRecibos =
-                "https://hook.eu1.make.com/vswq8ii3485yoqzndxuwiriuy2vxg6yy";
-
-              await fetch(urlWebhookRecibos, {
+              await fetch(WEBHOOK_MAKE_URL, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -389,7 +398,7 @@ export function initMensalidadesEvents() {
                   emailAtleta: atletaReq.email,
                   tipo: dados.tipo,
                   valor: dados.valor,
-                  referencia: nomeMes, // Variável que já criaste aí em cima
+                  referencia: nomeMes,
                 }),
               });
             }
@@ -421,6 +430,8 @@ export function initMensalidadesEvents() {
       carregarMensalidades();
     } catch (err) {
       mostrarAviso("Erro", err.message, "erro");
+    } finally {
+      if (btnGuardar) btnGuardar.disabled = false;
     }
   });
 }

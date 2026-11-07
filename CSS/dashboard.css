@@ -1388,3 +1388,120 @@ table tr:has(.btn-carregar-mais-mens) td::before {
   color: rgba(255, 255, 255, 0.25) !important;
   font-size: 0.85rem !important;
 }
+
+/* Botão "x" das pesquisas: visível só quando há texto (classe gerida pelo JS) */
+.btn-limpar-pesquisa.visivel {
+  display: block;
+}
+
+/* =========================================================
+   CLASSES QUE SUBSTITUEM ESTILOS QUE ESTAVAM DENTRO DO JS/HTML
+   (regra do projeto: HTML, CSS e JS nunca misturados)
+   ========================================================= */
+.acoes-linha {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+}
+
+.acoes-linha.acoes-fim {
+  justify-content: flex-end;
+}
+
+.celula-erro {
+  color: #ff4d4d;
+  text-align: center;
+}
+
+.celula-centro {
+  text-align: center;
+}
+
+.texto-destaque {
+  color: var(--accent);
+}
+
+.aula-regularizada {
+  color: var(--accent);
+  font-weight: bold;
+  font-size: 0.85rem;
+  margin-left: 5px;
+}
+
+.aula-regularizada i {
+  font-size: 1.2rem;
+  vertical-align: middle;
+}
+
+/* Seletores com id: têm de ganhar a "#tabelaSocios td:nth-child(1)" (como o style="" ganhava) */
+#tabelaSocios td.celula-nome,
+#tabelaInativos td.celula-nome,
+#tabelaMensalidades td.celula-nome {
+  font-weight: 600;
+}
+
+.hora-aula-tabela {
+  font-size: 0.85rem;
+  color: var(--accent);
+  margin-top: 4px;
+}
+
+.linha-total {
+  background: rgba(37, 211, 102, 0.1);
+}
+
+.linha-total td {
+  font-weight: bold;
+  color: var(--accent);
+}
+
+.linha-total .total-rotulo {
+  text-align: right;
+}
+
+.celula-saida {
+  color: #ff4d4d;
+  font-weight: 600;
+}
+
+/* Classes que substituem os style="" do dashboard.html */
+/* .dash-form input.x: tem de ganhar à regra geral ".dash-form input" (como o style="" ganhava) */
+.dash-form input.input-leitura {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.dash-form input.input-destaque {
+  color: var(--accent);
+  font-weight: bold;
+}
+
+.modal-desc-espaco {
+  margin-bottom: 20px;
+}
+
+.btn-perigo {
+  border-color: #ff4d4d;
+  color: #ff4d4d;
+}
+
+.modal-content.modal-largo {
+  max-width: 800px;
+  width: 95%;
+}
+
+.tabela-rolavel {
+  margin-top: 20px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+/* Tem de ganhar a ".modal-content strong" do theme.css */
+.modal-content strong.texto-branco {
+  color: #fff;
+}
+
+.rotulo-opcional {
+  font-size: 0.7rem;
+  color: #aaa;
+}

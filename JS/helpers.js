@@ -68,3 +68,55 @@ export function debounce(func, wait) {
     timeout = setTimeout(later, wait);
   };
 }
+
+export const MESES_PT = [
+  "Janeiro",
+  "Fevereiro",
+  "Março",
+  "Abril",
+  "Maio",
+  "Junho",
+  "Julho",
+  "Agosto",
+  "Setembro",
+  "Outubro",
+  "Novembro",
+  "Dezembro",
+];
+
+// Escapa texto antes de o meter em innerHTML (impede injeção de HTML/JS).
+export function escapeHTML(valor) {
+  if (valor === null || valor === undefined) return "";
+  return String(valor).replace(
+    /[&<>'"]/g,
+    (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[c],
+  );
+}
+
+// Data de HOJE no fuso do utilizador (toISOString usa UTC e, em Portugal no verão,
+// entre a meia-noite e a 1h devolvia o dia anterior).
+export function dataLocalISO(data = new Date()) {
+  const ano = data.getFullYear();
+  const mes = String(data.getMonth() + 1).padStart(2, "0");
+  const dia = String(data.getDate()).padStart(2, "0");
+  return `${ano}-${mes}-${dia}`;
+}
+
+export function mesLocalISO(data = new Date()) {
+  return dataLocalISO(data).slice(0, 7);
+}
+
+export function urlB64ToUint8Array(base64String) {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
+  return outputArray;
+}
+
+// Mostra/esconde um elemento através da classe .hidden (sem mexer em estilos no JS).
+export function mostrar(el, visivel = true) {
+  if (el) el.classList.toggle("hidden", !visivel);
+}

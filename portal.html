@@ -5,14 +5,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal do Atleta | Bogas Team</title>
-    <link rel="icon" type="image/png" sizes="192x192" href="./faviicon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="./img/icones/icon-192.png">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
     <link
         href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Orbitron:wght@400;500;700;900&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="./CSS/theme.css" />
     <link rel="stylesheet" href="./CSS/portal.css" />
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js"></script>
     <script type="module" src="./JS/portal.js"></script>
     <link rel="manifest" href="./manifest.json">
 </head>
@@ -21,7 +21,7 @@
 
     <div id="pwa-install-banner">
         <div class="pwa-banner-info">
-            <img src="./faviicon.png" alt="Bogas Team App">
+            <img src="./img/icones/icon-192.png" alt="Bogas Team App">
             <div class="pwa-banner-text">
                 <h4>BOGAS TEAM APP</h4>
                 <p>Instala para acesso rápido!</p>
@@ -405,15 +405,7 @@
         </div>
     </div>
 
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('Motor PWA Ativado com Sucesso no Portal!', reg))
-                    .catch(err => console.error('Erro no PWA:', err));
-            });
-        }
-    </script>
+    <script src="./JS/registar-sw.js" defer></script>
     <div id="toast-container"></div>
     <script src="./JS/app-routing.js" defer></script>
 </body>

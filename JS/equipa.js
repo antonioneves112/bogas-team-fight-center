@@ -128,7 +128,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 ${
                                   local.dias2
                                     ? `
-                                <div class="local-dias" style="margin-top: 10px;">
+                                <div class="local-dias local-dias-espaco">
                                     <span>${local.dias2}</span>
                                     <span class="hora-badge">${local.hora2}</span>
                                 </div>

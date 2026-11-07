@@ -1,22 +1,16 @@
-/* JS/supabase.js - LIGAÇÃO À BASE DE DADOS */
+/* JS/supabase.js - LIGAÇÃO À BASE DE DADOS (cliente único para todo o site) */
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from "./config.js";
 
-const SUPABASE_URL = "https://lvtodcvtsetapgimkmtl.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_Tv4Hlj5CgW-ZglgDh9JqHQ_I_IQDPTm";
-
-// Exportamos o cliente para que outros ficheiros o possam usar
 export const supabase = window.supabase.createClient(
   SUPABASE_URL,
   SUPABASE_ANON_KEY,
 );
 
-// Função para proteger a página
-export async function verificarSessao() {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  if (!session) {
-    window.location.replace("login.html");
-    return null;
-  }
-  return session;
+// O supabase-js NÃO lança exceções: devolve { data, error }.
+// Esta função lança o erro, para que os try/catch funcionem e nunca
+// apareça "Sucesso" quando a operação falhou.
+export async function db(pedido) {
+  const { data, error } = await pedido;
+  if (error) throw error;
+  return data;
 }

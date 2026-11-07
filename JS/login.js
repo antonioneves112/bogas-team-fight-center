@@ -1,80 +1,58 @@
-/* JS/login.js - Autenticação Treinador (Com Segurança Oficial Supabase) */
+/* JS/login.js - LOGIN DOS TREINADORES (Supabase Auth) */
+import { supabase } from "./supabase.js";
+import { mostrarAviso } from "./toast.js";
+import { obterNomeTreinador } from "./auth.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
-  "use strict";
-
-  const SUPABASE_URL = "https://lvtodcvtsetapgimkmtl.supabase.co";
-  const SUPABASE_ANON_KEY = "sb_publishable_Tv4Hlj5CgW-ZglgDh9JqHQ_I_IQDPTm";
-
-  const supabase = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_ANON_KEY,
-  );
-
-  // 🥊 1. VERIFICAÇÃO DE SEGURANÇA MÁXIMA (Verifica a Sessão Oficial e o Token)
+  // 1. Se já há sessão válida, entra direto.
   const {
     data: { session },
   } = await supabase.auth.getSession();
-
   if (session) {
-    // Se o Supabase confirmar que o token do Mestre é válido, entra direto!
     window.location.replace("dashboard.html");
-    return; // Pára o resto do código
+    return;
   }
 
-  // 2. Lógica do Formulário de Login
+  // 2. Formulário de login
   const loginForm = document.getElementById("loginForm");
   const emailInput = document.getElementById("emailInput");
   const passInput = document.getElementById("passInput");
   const submitBtn = document.querySelector(".login-btn");
+  if (!loginForm) return;
 
-  if (loginForm) {
-    loginForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
+  loginForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const originalBtnText = submitBtn.innerHTML;
+    submitBtn.innerHTML = "<i class='bx bx-loader-alt bx-spin'></i> A verificar...";
+    submitBtn.disabled = true;
 
-      const originalBtnText = submitBtn.innerHTML;
-      submitBtn.innerHTML =
-        "<i class='bx bx-loader-alt bx-spin'></i> A verificar...";
-      submitBtn.disabled = true;
+    const repor = () => {
+      submitBtn.innerHTML = originalBtnText;
+      submitBtn.disabled = false;
+    };
 
-      const email = emailInput.value.trim();
-      const password = passInput.value;
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: emailInput.value.trim(),
+        password: passInput.value,
+      });
 
-      try {
-        // 🥊 3. AUTENTICAÇÃO OFICIAL (Gera o Token JWT)
-        const { error } = await supabase.auth.signInWithPassword({
-          email: email,
-          password: password,
-        });
-
-        if (error) {
-          alert("Acesso negado: Verifica o teu email e palavra-passe.");
-          submitBtn.innerHTML = originalBtnText;
-          submitBtn.disabled = false;
-          return;
-        }
-
-        // Identifica qual treinador entrou para o Dashboard saber a quem atribuir as turmas
-        if (email.toLowerCase().includes("antonio")) {
-          localStorage.setItem("bogas_treinador_nome", "António");
-        } else {
-          localStorage.setItem("bogas_treinador_nome", "Bogas");
-        }
-
-        // Mantemos a flag antiga apenas para compatibilidade visual na app
-        localStorage.setItem("bogas_treinador_ativo", "true");
-
-        submitBtn.innerHTML = "<i class='bx bx-check'></i> Acesso Permitido";
-        submitBtn.classList.add("is-active");
-
-        setTimeout(() => {
-          window.location.replace("dashboard.html");
-        }, 500);
-      } catch (err) {
-        alert("Erro de ligação. Verifica a internet ou tenta novamente.");
-        submitBtn.innerHTML = originalBtnText;
-        submitBtn.disabled = false;
+      if (error) {
+        mostrarAviso("Acesso negado", "Verifica o teu email e palavra-passe.", "erro");
+        repor();
+        return;
       }
-    });
-  }
+
+      // O nome do treinador vem da tabela "treinadores" (já não do texto do email).
+      await obterNomeTreinador();
+      localStorage.setItem("bogas_treinador_ativo", "true");
+
+      submitBtn.innerHTML = "<i class='bx bx-check'></i> Acesso Permitido";
+      submitBtn.classList.add("is-active");
+      setTimeout(() => window.location.replace("dashboard.html"), 500);
+    } catch (err) {
+      mostrarAviso("Erro de ligação", "Verifica a internet ou tenta novamente.", "erro");
+      repor();
+    }
+  });
 });

@@ -65,6 +65,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
     slides[currentSlide].classList.add("active");
     dots[currentSlide].classList.add("active");
+    tocarSoVideoAtivo();
+  };
+
+  // PERFORMANCE: os vídeos têm preload="none" (antes eram ~27 MB descarregados ao abrir
+  // a página). Só o vídeo do slide visível é carregado e reproduzido.
+  const tocarSoVideoAtivo = () => {
+    slides.forEach((slide, i) => {
+      const video = slide.querySelector("video");
+      if (!video) return;
+      if (i === currentSlide && modalWelcome && !modalWelcome.classList.contains("hidden")) {
+        video.play().catch(() => {});
+      } else {
+        video.pause();
+      }
+    });
   };
 
   if (btnNext) {

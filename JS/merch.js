@@ -192,13 +192,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function render() {
-    if (toolsEl) {
-      if (!state.hasInteracted) {
-        toolsEl.style.display = "none";
-      } else {
-        toolsEl.style.display = window.innerWidth <= 768 ? "flex" : "grid";
-      }
-    }
+    // Visível só depois de o utilizador interagir; o CSS decide flex/grid por ecrã.
+    toolsEl?.classList.toggle("hidden", !state.hasInteracted);
 
     const visibleCards = getVisibleCards();
 
@@ -255,11 +250,6 @@ document.addEventListener("DOMContentLoaded", () => {
     render();
   });
 
-  window.addEventListener("resize", () => {
-    if (toolsEl && toolsEl.style.display !== "none") {
-      toolsEl.style.display = window.innerWidth <= 768 ? "flex" : "grid";
-    }
-  });
 
   if (sortSelect) sortSelect.value = state.sort;
   setActiveFilterBtn(state.filter);

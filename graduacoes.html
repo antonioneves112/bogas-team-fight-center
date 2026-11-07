@@ -59,21 +59,21 @@
     </section>
 
     <section class="slider-section" id="gym-modal">
-      <button class="close-slider btn-tatico" onclick="closePremiumModal()">
+      <button class="close-slider btn-tatico">
         <i class='bx bx-x'></i>
       </button>
 
       <div class="slider-wrapper">
         <div class="slider-stage" id="modal-content-area">
-          <img id="modal-main-img" src="" alt="" style="display: none;">
+          <img id="modal-main-img" class="hidden" src="" alt="">
           <video id="modal-main-video" autoplay muted playsinline controls
-            style="display: none; max-width: 100%; max-height: 70vh;"></video>
+            class="hidden"></video>
         </div>
 
-        <button class="slider-btn prev btn-tatico" onclick="changeImage(-1)">
+        <button class="slider-btn prev btn-tatico">
           <i class='bx bx-chevron-left'></i>
         </button>
-        <button class="slider-btn next btn-tatico" onclick="changeImage(1)">
+        <button class="slider-btn next btn-tatico">
           <i class='bx bx-chevron-right'></i>
         </button>
 

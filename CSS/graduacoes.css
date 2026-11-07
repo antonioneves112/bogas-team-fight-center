@@ -251,3 +251,9 @@
     transform: translateY(0);
   }
 }
+
+/* Vídeo do modal da galeria (antes estava em style="" no HTML) */
+#modal-main-video {
+  max-width: 100%;
+  max-height: 70vh;
+}

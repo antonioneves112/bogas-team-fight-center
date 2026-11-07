@@ -168,3 +168,8 @@
     gap: 40px;
   }
 }
+
+/* Antes em style="" dentro do equipa.js */
+.local-dias.local-dias-espaco {
+  margin-top: 10px;
+}

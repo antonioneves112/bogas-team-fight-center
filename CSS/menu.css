@@ -384,3 +384,11 @@
     letter-spacing: 0.35px;
   }
 }
+
+/* Botão "Área Técnica" (antes com style="" no HTML) */
+.nav-login-btn.nav-login-btn-reset {
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+}

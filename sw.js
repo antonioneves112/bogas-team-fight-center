@@ -1,20 +1,37 @@
 // =========================================================================
 // 🥊 MOTOR DA APP (SERVICE WORKER) - BOGAS TEAM - V14
 // =========================================================================
-const CACHE_NAME = "bogas-team-v105";
+// Mudar a versão força todos os telemóveis a descarregar o código novo.
+const CACHE_NAME = "bogas-team-v106";
 
+// Ficheiros essenciais da app (o load3.png de 1,1 MB saiu: não era usado em nenhuma página).
 const ASSETS_TO_CACHE = [
   "./",
   "./dashboard.html",
   "./index.html",
   "./portal.html",
+  "./login.html",
   "./CSS/theme.css",
   "./CSS/home.css",
   "./CSS/portal.css",
   "./CSS/dashboard.css",
+  "./CSS/login.css",
+  "./JS/config.js",
+  "./JS/supabase.js",
+  "./JS/helpers.js",
+  "./JS/toast.js",
+  "./JS/state.js",
+  "./JS/ui.js",
+  "./JS/auth.js",
   "./JS/main.js",
+  "./JS/socios.js",
+  "./JS/mensalidades.js",
+  "./JS/pdfManager.js",
   "./JS/portal.js",
-  "./load3.png",
+  "./JS/login.js",
+  "./JS/registar-sw.js",
+  "./JS/app-routing.js",
+  "./img/icones/icon-192.png",
   "./manifest.json",
 ];
 
@@ -75,7 +92,7 @@ self.addEventListener("push", (event) => {
 
   const options = {
     body: mensagem,
-    icon: "./faviicon.png",
+    icon: "./img/icones/icon-192.png",
     badge: "./icone.png",
     vibrate: [200, 100, 200, 100, 200, 100, 200], // Vibração tática de alerta
     requireInteraction: true, // 🥊 NOVO: Obriga o pop-up a ficar no ecrã até ser fechado ou clicado!

@@ -1,8 +1,10 @@
 /* JS/socios.js - GESTÃO DE SÓCIOS (Parcerias como Obrigação Mensal) */
 import { supabase } from "./supabase.js";
 import { state } from "./state.js";
-import { formatarNomeCurto } from "./helpers.js";
-import { mostrarAviso, abrirModalEliminarSocio } from "./main.js"; // 🥊 IMPORTA A FUNÇÃO SEGURA
+import { formatarNomeCurto, escapeHTML, MESES_PT, mesLocalISO } from "./helpers.js";
+import { abrirModalEliminarSocio } from "./main.js";
+import { mostrarAviso } from "./toast.js";
+import { WEBHOOK_MAKE_URL } from "./config.js";
 
 let paginaAtualAtivos = 1;
 const ITENS_POR_PAGINA = 10;
@@ -16,19 +18,26 @@ export async function carregarGuerreiros() {
       '<tr><td colspan="5">A carregar e a calcular...</td></tr>';
   }
 
-  const { data: todosSocios } = await supabase
-    .from("socios")
-    .select("*")
-    .eq("treinador", state.treinadorAtual);
+  const mesAtual = filtroMes ? filtroMes.value : mesLocalISO();
 
-  const mesAtual = filtroMes
-    ? filtroMes.value
-    : new Date().toISOString().slice(0, 7);
+  // As duas consultas são independentes: correm em paralelo.
+  const [respSocios, respMensalidades] = await Promise.all([
+    supabase.from("socios").select("*").eq("treinador", state.treinadorAtual),
+    supabase
+      .from("mensalidades")
+      .select("socio_id, estado, tipo")
+      .eq("mes_ano", mesAtual),
+  ]);
 
-  const { data: mensalidadesMes } = await supabase
-    .from("mensalidades")
-    .select("socio_id, estado, tipo")
-    .eq("mes_ano", mesAtual);
+  if (respSocios.error || respMensalidades.error) {
+    console.error(respSocios.error || respMensalidades.error);
+    if (tabelaSocios)
+      tabelaSocios.innerHTML =
+        '<tr><td colspan="5" class="celula-erro">Erro ao carregar sócios. Tenta novamente.</td></tr>';
+    return;
+  }
+  const todosSocios = respSocios.data;
+  const mensalidadesMes = respMensalidades.data;
 
   if (todosSocios) {
     state.todosOsGuerreiros = todosSocios;
@@ -147,7 +156,7 @@ export function renderizarTabelaSocios(
 
   if (lista.length === 0) {
     tabelaSocios.innerHTML =
-      '<tr><td colspan="5" style="text-align: center; color: #888;">Nenhum guerreiro encontrado.</td></tr>';
+      '<tr><td colspan="5" class="table-empty-state">Nenhum guerreiro encontrado.</td></tr>';
     return;
   }
 
@@ -232,7 +241,7 @@ export function renderizarTabelaSocios(
     }
 
     const btnFaturar = mostrarEuro
-      ? `<button class="btn-acao btn-faturar" data-id="${s.id}" title="Faturar"><i class='bx bx-euro'></i></button>`
+      ? `<button class="btn-acao btn-faturar" data-id="${escapeHTML(s.id)}" title="Faturar"><i class='bx bx-euro'></i></button>`
       : "";
 
     let msgWhatsApp = "";
@@ -274,18 +283,18 @@ export function renderizarTabelaSocios(
       textoMensalidade === "PENDENTE" &&
       s.telemovel &&
       s.modalidade !== "Rendimento"
-        ? `<a href="https://wa.me/351${s.telemovel}?text=${encodeURIComponent(msgWhatsApp)}" target="_blank" class="btn-acao btn-whatsapp" title="Avisar"><i class='bx bxl-whatsapp'></i></a>`
+        ? `<a href="https://wa.me/351${encodeURIComponent(String(s.telemovel).replace(/\D/g, ""))}?text=${encodeURIComponent(msgWhatsApp)}" target="_blank" class="btn-acao btn-whatsapp" title="Avisar"><i class='bx bxl-whatsapp'></i></a>`
         : "";
 
     tr.innerHTML = `
-      <td data-label="Nome" style="font-weight: 600;">${nomeCortado}</td>
-      <td data-label="Modalidade">${modalidadeExibida}</td>
-      <td data-label="Estado"><span class="badge ${isInativo ? "badge-inativo" : "badge-ativo"}">${s.estado}</span></td>
+      <td data-label="Nome" class="celula-nome">${escapeHTML(nomeCortado)}</td>
+      <td data-label="Modalidade">${escapeHTML(modalidadeExibida)}</td>
+      <td data-label="Estado"><span class="badge ${isInativo ? "badge-inativo" : "badge-ativo"}">${escapeHTML(s.estado)}</span></td>
       <td data-label="Mensalidade"><span class="badge ${badgeMensalidade}">${textoMensalidade}</span></td>
       <td data-label="Ações">
-        <div style="display:flex; gap: 6px; align-items:center; justify-content: center;">
-          <button class="btn-acao btn-edit" data-id="${s.id}" title="Editar"><i class='bx bx-edit'></i></button>
-          <button class="btn-acao btn-delete" data-id="${s.id}" title="Eliminar"><i class='bx bx-trash'></i></button>
+        <div class="acoes-linha">
+          <button class="btn-acao btn-edit" data-id="${escapeHTML(s.id)}" title="Editar"><i class='bx bx-edit'></i></button>
+          <button class="btn-acao btn-delete" data-id="${escapeHTML(s.id)}" title="Eliminar"><i class='bx bx-trash'></i></button>
           ${btnFaturar}
           ${btnWhatsApp}
         </div>
@@ -297,7 +306,7 @@ export function renderizarTabelaSocios(
   if (limiteAtual < lista.length) {
     const trMore = document.createElement("tr");
     trMore.innerHTML = `
-      <td colspan="5" style="text-align: center; padding: 15px;">
+      <td colspan="5">
         <button class="btn-tatico btn-small btn-carregar-mais">
           CARREGAR MAIS <i class='bx bx-chevron-down bx-fade-down'></i>
         </button>
@@ -315,7 +324,7 @@ export function renderizarTabelaInativos(lista) {
 
   if (!lista || lista.length === 0) {
     tabela.innerHTML =
-      '<tr><td colspan="5" style="text-align: center; color: #888;">Não existem sócios inativos registados.</td></tr>';
+      '<tr><td colspan="5" class="table-empty-state">Não existem sócios inativos registados.</td></tr>';
     return;
   }
 
@@ -336,14 +345,14 @@ export function renderizarTabelaInativos(lista) {
     }
 
     tr.innerHTML = `
-      <td data-label="Nome" style="font-weight: 600;">${formatarNomeCurto(s.nome)}</td>
-      <td data-label="Modalidade">${modalidadeExibida}</td>
-      <td data-label="Estado"><span class="badge badge-inativo">${s.estado}</span></td>
-      <td data-label="Data de Saída" style="color: #ff4d4d; font-weight: 600;">${dataSaida}</td>
+      <td data-label="Nome" class="celula-nome">${escapeHTML(formatarNomeCurto(s.nome))}</td>
+      <td data-label="Modalidade">${escapeHTML(modalidadeExibida)}</td>
+      <td data-label="Estado"><span class="badge badge-inativo">${escapeHTML(s.estado)}</span></td>
+      <td data-label="Data de Saída" class="celula-saida">${escapeHTML(dataSaida)}</td>
       <td data-label="Ações">
-        <div style="display:flex; gap: 6px; align-items:center; justify-content: center;">
-          <button class="btn-acao btn-edit" data-id="${s.id}" title="Editar"><i class='bx bx-edit'></i></button>
-          <button class="btn-acao btn-delete" data-id="${s.id}" title="Eliminar"><i class='bx bx-trash'></i></button>
+        <div class="acoes-linha">
+          <button class="btn-acao btn-edit" data-id="${escapeHTML(s.id)}" title="Editar"><i class='bx bx-edit'></i></button>
+          <button class="btn-acao btn-delete" data-id="${escapeHTML(s.id)}" title="Eliminar"><i class='bx bx-trash'></i></button>
         </div>
       </td>`;
 
@@ -415,7 +424,13 @@ export function initSociosEvents() {
         btnGuardar.innerHTML =
           "A enviar foto... <i class='bx bx-loader-alt bx-spin'></i>";
         const file = fotoInput.files[0];
-        const fileExt = file.name.split(".").pop();
+        if (!file.type.startsWith("image/")) {
+          throw new Error("A foto tem de ser uma imagem (JPG, PNG ou WEBP).");
+        }
+        if (file.size > 5 * 1024 * 1024) {
+          throw new Error("A foto é demasiado grande (máximo 5 MB).");
+        }
+        const fileExt = file.name.split(".").pop().toLowerCase();
         const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
 
         const { error: uploadError } = await supabase.storage
@@ -450,7 +465,7 @@ export function initSociosEvents() {
 
         // 🥊 DISPARA O WEBHOOK DE BOAS-VINDAS PARA O MAKE
         if (novoSocio && novoSocio.email) {
-          fetch("https://hook.eu1.make.com/vswq8ii3485yoqzndxuwiriuy2vxg6yy", {
+          fetch(WEBHOOK_MAKE_URL, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",

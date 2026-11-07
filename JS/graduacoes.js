@@ -415,26 +415,31 @@ function updateModalContent() {
 
   setTimeout(() => {
     // 1. Limpar fontes anteriores para não haver conflitos de áudio/carregamento
-    img.style.display = "none";
-    video.style.display = "none";
+    img.classList.add("hidden");
+    video.classList.add("hidden");
     video.pause();
-    video.src = "";
+    video.removeAttribute("src");
 
     // 2. Verificar tipo de conteúdo
     if (item.type === "video") {
       video.src = item.src;
-      video.style.display = "block";
+      video.classList.remove("hidden");
       video.style.opacity = "1";
       video.load(); // Garante que o vídeo carrega o novo src
     } else {
       img.src = item.src;
-      img.style.display = "block";
+      img.classList.remove("hidden");
       img.style.opacity = "1";
     }
 
     caption.innerText = item.caption || "";
   }, 200);
 }
+
+// Botões do modal (antes eram onclick="..." no HTML)
+modal?.querySelector(".close-slider")?.addEventListener("click", () => closePremiumModal());
+modal?.querySelector(".slider-btn.prev")?.addEventListener("click", () => changeImage(-1));
+modal?.querySelector(".slider-btn.next")?.addEventListener("click", () => changeImage(1));
 
 // Suporte para Teclado (ESC e Setas)
 document.addEventListener("keydown", (e) => {

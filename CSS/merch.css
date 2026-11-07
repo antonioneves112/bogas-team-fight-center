@@ -423,3 +423,15 @@ body.no-scroll {
     margin-top: 10px;
   }
 }
+
+/* Classes que substituem os style="" do merchandising.html */
+.preco-destaque {
+  color: var(--accent);
+}
+
+/* No telemóvel as ferramentas ficam em coluna (antes era feito no JS) */
+@media (max-width: 768px) {
+  .page-merch .tools {
+    display: flex;
+  }
+}

@@ -1,9 +1,18 @@
-/* JS/main.js - O CÉREBRO DA APLICAÇÃO (Versão Blindada 2.1 - c/ Validação por Clique) */
-import { supabase } from "./supabase.js";
+/* JS/main.js - O CÉREBRO DO DASHBOARD DOS TREINADORES */
+import { supabase, db } from "./supabase.js";
 import { state } from "./state.js";
-import { formatarNomeCurto, extrairPreco, debounce } from "./helpers.js";
+import {
+  formatarNomeCurto,
+  debounce,
+  escapeHTML,
+  mesLocalISO,
+  dataLocalISO,
+  urlB64ToUint8Array,
+} from "./helpers.js";
 import { inicializarTabs, inicializarFechoModais } from "./ui.js";
-import { executarLogout } from "./auth.js";
+import { executarLogout, obterNomeTreinador } from "./auth.js";
+import { mostrarAviso } from "./toast.js";
+import { PUBLIC_VAPID_KEY, WEBHOOK_MAKE_URL, EMAIL_ADMIN } from "./config.js";
 import {
   carregarGuerreiros,
   renderizarTabelaSocios,
@@ -20,41 +29,23 @@ import {
   exportarMensalidadesPDF,
 } from "./pdfManager.js";
 
-// =========================================================================
-// 🥊 FUNÇÃO GLOBAL DE TOAST (AVISOS VISUAIS DE ELITE)
-// =========================================================================
-export function mostrarAviso(titulo, mensagem, tipo = "sucesso") {
-  const container = document.getElementById("toast-container");
-  if (!container) return;
+// Mantido por compatibilidade: outros módulos importavam o aviso daqui.
+export { mostrarAviso };
 
-  // 🥊 BLINDAGEM ANTI-SPAM: Impede que o ecrã acumule demasiados alertas.
-  while (container.children.length >= 2) {
-    container.removeChild(container.firstChild);
+// Envia notificação (BD + push) a um atleta. Falhar o push não anula a notificação.
+async function notificarAtleta(socioId, titulo, mensagem) {
+  await db(
+    supabase
+      .from("notificacoes")
+      .insert([{ socio_id: socioId, titulo, mensagem, lida: false }]),
+  );
+  try {
+    await supabase.functions.invoke("notificar-alvo", {
+      body: { socio_id: parseInt(socioId, 10), titulo, mensagem },
+    });
+  } catch (erroPush) {
+    console.warn("Aviso Push:", erroPush);
   }
-
-  const toast = document.createElement("div");
-  toast.className = `toast toast-${tipo}`;
-  const icone = tipo === "sucesso" ? "bx-check-circle" : "bx-error-circle";
-
-  toast.innerHTML = `
-    <i class='bx ${icone}'></i>
-    <div class="toast-content">
-      <h4>${titulo}</h4>
-      <p>${mensagem}</p>
-    </div>
-  `;
-
-  container.appendChild(toast);
-  requestAnimationFrame(() => toast.classList.add("show"));
-
-  setTimeout(() => {
-    toast.classList.remove("show");
-    setTimeout(() => toast.remove(), 400);
-  }, 4000);
-}
-
-if (window.jspdf && window.jspdf.jsPDF && !window.jsPDF) {
-  window.jsPDF = window.jspdf.jsPDF;
 }
 
 // =========================================================================
@@ -72,9 +63,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
-  // 2. RECUPERA O NOME DO TREINADOR LOGADO
-  state.treinadorAtual =
-    localStorage.getItem("bogas_treinador_nome") || "Bogas";
+  // 2. NOME DO TREINADOR LOGADO (vem da tabela "treinadores" na BD)
+  state.treinadorAtual = await obterNomeTreinador();
 
   // 3. INICIALIZAR EVENTOS E MÓDULOS DE UI
   inicializarTabs();
@@ -268,7 +258,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             mensagem: mensagem,
             lida: false,
           }));
-          await supabase.from("notificacoes").insert(novasNotificacoes);
+          await db(supabase.from("notificacoes").insert(novasNotificacoes));
         }
 
         mostrarAviso(
@@ -309,13 +299,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     filtroNome.addEventListener("input", (e) => {
       const termo = e.target.value.toLowerCase();
       if (btnLimparSocio)
-        btnLimparSocio.style.display = termo.length > 0 ? "block" : "none";
+        btnLimparSocio.classList.toggle("visivel", termo.length > 0);
       renderizaFiltroSocio(termo);
     });
 
     btnLimparSocio?.addEventListener("click", () => {
       filtroNome.value = "";
-      btnLimparSocio.style.display = "none";
+      btnLimparSocio.classList.remove("visivel");
       renderizarTabelaSocios(state.guerreirosAtuais);
       filtroNome.focus();
     });
@@ -326,7 +316,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           filtroNome.contains(e.target) || btnLimparSocio?.contains(e.target);
         if (!isClickInside) {
           filtroNome.value = "";
-          if (btnLimparSocio) btnLimparSocio.style.display = "none";
+          if (btnLimparSocio) btnLimparSocio.classList.remove("visivel");
           renderizarTabelaSocios(state.guerreirosAtuais);
         }
       }
@@ -347,13 +337,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     filtroInativo.addEventListener("input", (e) => {
       const termo = e.target.value.toLowerCase();
       if (btnLimparInativo)
-        btnLimparInativo.style.display = termo.length > 0 ? "block" : "none";
+        btnLimparInativo.classList.toggle("visivel", termo.length > 0);
       renderizaFiltroInativo(termo);
     });
 
     btnLimparInativo?.addEventListener("click", () => {
       filtroInativo.value = "";
-      btnLimparInativo.style.display = "none";
+      btnLimparInativo.classList.remove("visivel");
       renderizarTabelaInativos(state.inativosAtuais);
     });
 
@@ -364,7 +354,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           btnLimparInativo?.contains(e.target);
         if (!isClickInside) {
           filtroInativo.value = "";
-          if (btnLimparInativo) btnLimparInativo.style.display = "none";
+          if (btnLimparInativo) btnLimparInativo.classList.remove("visivel");
           renderizarTabelaInativos(state.inativosAtuais);
         }
       }
@@ -387,14 +377,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     filtroNomeMensalidade.addEventListener("input", (e) => {
       const termo = e.target.value.toLowerCase();
       if (btnLimparMensalidade)
-        btnLimparMensalidade.style.display =
-          termo.length > 0 ? "block" : "none";
+        btnLimparMensalidade.classList.toggle("visivel",
+          termo.length > 0);
       renderizaFiltroMensalidade(termo);
     });
 
     btnLimparMensalidade?.addEventListener("click", () => {
       filtroNomeMensalidade.value = "";
-      btnLimparMensalidade.style.display = "none";
+      btnLimparMensalidade.classList.remove("visivel");
       renderizarTabelaMensalidades(state.mensalidadesAtuais);
     });
 
@@ -405,7 +395,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           btnLimparMensalidade?.contains(e.target);
         if (!isClickInside) {
           filtroNomeMensalidade.value = "";
-          if (btnLimparMensalidade) btnLimparMensalidade.style.display = "none";
+          if (btnLimparMensalidade) btnLimparMensalidade.classList.remove("visivel");
           renderizarTabelaMensalidades(state.mensalidadesAtuais);
         }
       }
@@ -477,14 +467,15 @@ function configurarAprovacaoAula() {
     const socioId = document.getElementById("hiddenSocioIdAula").value;
     const dataAulaDb = document.getElementById("hiddenDataAula").value;
 
-    let valorDigitado = document.getElementById("valorAulaParticular").value;
+    const valorDigitado = document.getElementById("valorAulaParticular").value;
     const valorLimpo = parseFloat(
       valorDigitado.replace("€", "").replace(",", ".").trim(),
     );
-    const mesAnoFormatado = dataAulaDb.substring(0, 7);
-
+    if (isNaN(valorLimpo)) {
+      mostrarAviso("Atenção", "Indica um valor válido.", "erro");
+      return;
+    }
     const dia_aula = dataAulaDb.split("-").reverse().join("/");
-    const hora_aula = window.aulaSelecionadaHora || "";
 
     const btnConfirmar = document.getElementById("btnConfirmarAprovacao");
     const textoOriginal = btnConfirmar.innerHTML;
@@ -493,48 +484,19 @@ function configurarAprovacaoAula() {
     btnConfirmar.disabled = true;
 
     try {
-      const { error: erroAula } = await supabase
-        .from("aulas_particulares")
-        .update({ estado: "Aceite", valor: valorLimpo })
-        .eq("id", aulaId);
-      if (erroAula) throw erroAula;
+      // Aprovar + criar fatura (ligada à aula) numa única transação na BD.
+      await db(
+        supabase.rpc("aprovar_aula", {
+          p_aula_id: Number(aulaId),
+          p_valor: valorLimpo,
+        }),
+      );
 
-      const { error: erroFatura } = await supabase.from("mensalidades").insert([
-        {
-          socio_id: socioId,
-          mes_ano: mesAnoFormatado,
-          dia_aula: dia_aula,
-          hora_aula: hora_aula,
-          tipo: "Aula Particular",
-          estado: "Pendente",
-          valor: valorLimpo,
-        },
-      ]);
-      if (erroFatura) throw erroFatura;
-
-      const tituloNotif = "Aula Aprovada ✅";
-      const mensagemNotif = `O Mestre aprovou a tua aula particular do dia ${dia_aula}. Foi adicionado um pagamento pendente de ${valorLimpo}€ ao teu portal.`;
-
-      await supabase.from("notificacoes").insert([
-        {
-          socio_id: socioId,
-          titulo: tituloNotif,
-          mensagem: mensagemNotif,
-          lida: false,
-        },
-      ]);
-
-      try {
-        await supabase.functions.invoke("notificar-alvo", {
-          body: {
-            socio_id: parseInt(socioId),
-            titulo: tituloNotif,
-            mensagem: mensagemNotif,
-          },
-        });
-      } catch (erroPush) {
-        console.warn("Aviso Push:", erroPush);
-      }
+      await notificarAtleta(
+        socioId,
+        "Aula Aprovada ✅",
+        `O Mestre aprovou a tua aula particular do dia ${dia_aula}. Foi adicionado um pagamento pendente de ${valorLimpo}€ ao teu portal.`,
+      );
 
       mostrarAviso(
         "Nocaute Técnico",
@@ -565,8 +527,7 @@ export async function carregarAulasParticulares() {
     '<tr><td colspan="7">A procurar pedidos... <i class="bx bx-loader-alt bx-spin"></i></td></tr>';
 
   try {
-    const mesReferencia =
-      filtroMes?.value || new Date().toISOString().substring(0, 7);
+    const mesReferencia = filtroMes?.value || mesLocalISO();
     const [ano, mesNum] = mesReferencia.split("-");
     const ultimoDia = new Date(parseInt(ano), parseInt(mesNum), 0).getDate();
 
@@ -601,7 +562,7 @@ export async function carregarAulasParticulares() {
     atualizarBadgeAulasPendentes();
   } catch (err) {
     tabela.innerHTML =
-      '<tr><td colspan="7" style="color: #ff4d4d; text-align: center;">Erro ao carregar pedidos.</td></tr>';
+      '<tr><td colspan="7" class="celula-erro">Erro ao carregar pedidos.</td></tr>';
   }
 }
 
@@ -615,6 +576,8 @@ export function renderizarTabelaAulas(lista) {
     return;
   }
 
+  // Todos os dados vindos da BD passam por escapeHTML (e = atalho).
+  const e = escapeHTML;
   tabela.innerHTML = lista
     .map((p) => {
       const dataF = p.data_aula.split("-").reverse().join("/");
@@ -629,31 +592,31 @@ export function renderizarTabelaAulas(lista) {
       const nomeCurto = formatarNomeCurto(p.socios.nome).toUpperCase();
 
       const btnAcoesBase = `
-        <button class="btn-acao btn-edit btn-edit-aula" data-id="${p.id}" title="Editar Pedido"><i class='bx bx-edit'></i></button>
-        <button class="btn-acao btn-delete btn-delete-aula" data-id="${p.id}" title="Eliminar Aula"><i class='bx bx-trash'></i></button>
+        <button class="btn-acao btn-edit btn-edit-aula" data-id="${e(p.id)}" title="Editar Pedido"><i class='bx bx-edit'></i></button>
+        <button class="btn-acao btn-delete btn-delete-aula" data-id="${e(p.id)}" title="Eliminar Aula"><i class='bx bx-trash'></i></button>
       `;
 
       let botoesContexto = "";
       if (p.estado === "Pendente") {
         botoesContexto = `
-          <button class="btn-acao btn-edit btn-aceitar-aula" data-id="${p.id}" data-socio="${p.socio_id}" data-datadb="${p.data_aula}" data-hora="${p.hora_aula}" title="Aprovar Aula"><i class='bx bx-check'></i></button>
-          <button class="btn-acao btn-delete btn-recusar-aula" data-id="${p.id}" data-socio="${p.socio_id}" data-data="${dataF}" title="Recusar Aula"><i class='bx bx-x'></i></button>
+          <button class="btn-acao btn-edit btn-aceitar-aula" data-id="${e(p.id)}" data-socio="${e(p.socio_id)}" data-datadb="${e(p.data_aula)}" data-hora="${e(p.hora_aula)}" title="Aprovar Aula"><i class='bx bx-check'></i></button>
+          <button class="btn-acao btn-delete btn-recusar-aula" data-id="${e(p.id)}" data-socio="${e(p.socio_id)}" data-data="${e(dataF)}" title="Recusar Aula"><i class='bx bx-x'></i></button>
         `;
       } else if (p.estado === "Aceite" && !p.pago) {
-        botoesContexto = `<button class="btn-tatico btn-small btn-faturar-aula-direto" data-id="${p.id}" data-socio="${p.socio_id}" data-nome="${p.socios.nome}" data-valor="${p.valor}" data-data="${dataF}" data-datadb="${p.data_aula}" data-hora="${p.hora_aula}"><i class='bx bx-euro'></i> FATURAR</button>`;
+        botoesContexto = `<button class="btn-tatico btn-small btn-faturar-aula-direto" data-id="${e(p.id)}" data-socio="${e(p.socio_id)}" data-nome="${e(p.socios.nome)}" data-valor="${e(p.valor)}" data-data="${e(dataF)}" data-datadb="${e(p.data_aula)}" data-hora="${e(p.hora_aula)}"><i class='bx bx-euro'></i> FATURAR</button>`;
       } else if (p.pago) {
-        botoesContexto = `<span style="color: var(--accent); font-weight: bold; font-size: 0.85rem; margin-left: 5px;"><i class='bx bx-check-double' style="font-size:1.2rem; vertical-align: middle;"></i> REGULARIZADA</span>`;
+        botoesContexto = `<span class="aula-regularizada"><i class='bx bx-check-double'></i> REGULARIZADA</span>`;
       }
 
       return `
     <tr>
-      <td data-label="SÓCIO:">${nomeCurto}</td>
-      <td data-label="DATA:">${dataF}</td>
-      <td data-label="HORA:">${p.hora_aula.substring(0, 5)}</td>
-      <td data-label="VALOR:"><strong style="color: var(--accent);">${valorExibido}</strong></td>
-      <td data-label="ESTADO:"><span class="badge ${badgeClass}">${p.estado.toUpperCase()}</span></td>
+      <td data-label="SÓCIO:">${e(nomeCurto)}</td>
+      <td data-label="DATA:">${e(dataF)}</td>
+      <td data-label="HORA:">${e(String(p.hora_aula).substring(0, 5))}</td>
+      <td data-label="VALOR:"><strong class="texto-destaque">${e(valorExibido)}</strong></td>
+      <td data-label="ESTADO:"><span class="badge ${badgeClass}">${e(String(p.estado).toUpperCase())}</span></td>
       <td data-label="PAGO:"><span class="badge ${badgePagoClass}">${p.pago ? "SIM" : "NÃO"}</span></td>
-      <td data-label="AÇÕES:"><div style="display:flex; gap: 6px; align-items:center; justify-content: flex-end;">${btnAcoesBase} ${botoesContexto}</div></td>
+      <td data-label="AÇÕES:"><div class="acoes-linha acoes-fim">${btnAcoesBase} ${botoesContexto}</div></td>
     </tr>`;
     })
     .join("");
@@ -675,13 +638,13 @@ export function initAulasEvents() {
     filtroAtletaAula.addEventListener("input", (e) => {
       const termo = e.target.value.toLowerCase();
       if (limparAulaPesquisa)
-        limparAulaPesquisa.style.display = termo.length > 0 ? "block" : "none";
+        limparAulaPesquisa.classList.toggle("visivel", termo.length > 0);
       renderizaFiltroAula(termo);
     });
 
     limparAulaPesquisa?.addEventListener("click", () => {
       filtroAtletaAula.value = "";
-      limparAulaPesquisa.style.display = "none";
+      limparAulaPesquisa.classList.remove("visivel");
       renderizarTabelaAulas(state.aulasParticulares);
     });
   }
@@ -706,7 +669,6 @@ export function initAulasEvents() {
         btnAceitar.dataset.socio;
       document.getElementById("hiddenDataAula").value =
         btnAceitar.dataset.datadb;
-      window.aulaSelecionadaHora = btnAceitar.dataset.hora;
       document.getElementById("modalAprovarAula").classList.remove("hidden");
     }
 
@@ -733,7 +695,6 @@ export function initAulasEvents() {
         btnCobrar.dataset.socio;
       document.getElementById("faturarAulaDataDb").value =
         btnCobrar.dataset.datadb;
-      window.aulaSelecionadaHora = btnCobrar.dataset.hora;
       document.getElementById("modalFaturarAula").classList.remove("hidden");
     }
 
@@ -870,18 +831,22 @@ export function initAulasEvents() {
       btnConfirma.disabled = true;
 
       try {
-        await supabase
-          .from("aulas_particulares")
-          .update({ estado: "Recusada" })
-          .eq("id", aulaParaRecusar.id);
-        await supabase.from("notificacoes").insert([
-          {
-            socio_id: aulaParaRecusar.socio,
-            titulo: "Aula Recusada ❌",
-            mensagem: `O Mestre não tem disponibilidade para dia ${aulaParaRecusar.data}.`,
-            lida: false,
-          },
-        ]);
+        await db(
+          supabase
+            .from("aulas_particulares")
+            .update({ estado: "Recusada" })
+            .eq("id", aulaParaRecusar.id),
+        );
+        await db(
+          supabase.from("notificacoes").insert([
+            {
+              socio_id: aulaParaRecusar.socio,
+              titulo: "Aula Recusada ❌",
+              mensagem: `O Mestre não tem disponibilidade para dia ${aulaParaRecusar.data}.`,
+              lida: false,
+            },
+          ]),
+        );
 
         mostrarAviso("Recusada", "Aula recusada.", "sucesso");
         document
@@ -968,41 +933,48 @@ formNovaAula?.addEventListener("submit", async (e) => {
     const socioId = inputSocioIdAula.value;
     const valorLimpo = valorInput ? parseFloat(valorInput) : null;
 
-    const { error: errAula } = await supabase
-      .from("aulas_particulares")
-      .insert([
-        {
-          socio_id: socioId,
-          data_aula: dataAula,
-          hora_aula: horaAula,
-          valor: valorLimpo,
-          estado: estadoAula,
-          pago: false,
-        },
-      ]);
-    if (errAula) throw errAula;
+    const novaAula = await db(
+      supabase
+        .from("aulas_particulares")
+        .insert([
+          {
+            socio_id: socioId,
+            data_aula: dataAula,
+            hora_aula: horaAula,
+            valor: valorLimpo,
+            estado: estadoAula,
+            pago: false,
+          },
+        ])
+        .select("id")
+        .single(),
+    );
 
     if (estadoAula === "Aceite" && valorLimpo !== null) {
       const mesAnoFormatado = dataAula.substring(0, 7);
       const diaF = dataAula.split("-").reverse().join("/");
 
-      await supabase.from("mensalidades").insert([
-        {
-          socio_id: socioId,
-          mes_ano: mesAnoFormatado,
-          dia_aula: diaF,
-          hora_aula: horaAula,
-          tipo: "Aula Particular",
-          estado: "Pendente",
-          valor: valorLimpo,
-        },
-      ]);
+      await db(
+        supabase.from("mensalidades").insert([
+          {
+            socio_id: socioId,
+            mes_ano: mesAnoFormatado,
+            dia_aula: diaF,
+            hora_aula: horaAula,
+            tipo: "Aula Particular",
+            estado: "Pendente",
+            valor: valorLimpo,
+            aula_id: novaAula.id,
+          },
+        ]),
+      );
 
-      const t = "Aula Marcada ✅";
-      const m = `O Mestre marcou-te uma aula particular para dia ${diaF} às ${horaAula.substring(0, 5)}. A fatura foi gerada!`;
-      await supabase
-        .from("notificacoes")
-        .insert([{ socio_id: socioId, titulo: t, message: m, lida: false }]);
+      // Corrigido: a coluna chama-se "mensagem" (antes "message" -> nunca era criada).
+      await notificarAtleta(
+        socioId,
+        "Aula Marcada ✅",
+        `O Mestre marcou-te uma aula particular para dia ${diaF} às ${horaAula.substring(0, 5)}. A fatura foi gerada!`,
+      );
     }
 
     mostrarAviso("Nocaute Técnico", "Aula agendada com sucesso!", "sucesso");
@@ -1031,11 +1003,11 @@ export async function atualizarBadgeAulasPendentes() {
     const total = count || 0;
     if (badgeId) {
       badgeId.innerText = total;
-      badgeId.style.display = total > 0 ? "flex" : "none";
+      badgeId.classList.toggle("hidden", total === 0);
     }
     if (badgeClass) {
       badgeClass.innerText = total;
-      badgeClass.style.display = total > 0 ? "flex" : "none";
+      badgeClass.classList.toggle("hidden", total === 0);
     }
   } catch (err) {
     console.error("Erro a contar aulas:", err);
@@ -1054,14 +1026,15 @@ function configurarPagamentoDiretoAula() {
     const aulaId = document.getElementById("faturarAulaId").value;
     const socioId = document.getElementById("faturarAulaSocioId").value;
     const dataAulaDb = document.getElementById("faturarAulaDataDb").value;
-    const mesAnoFormatado = dataAulaDb.substring(0, 7);
     const valorCampo = document.getElementById("faturarAulaValor").value;
     const valorLimpo = parseFloat(
       valorCampo.replace("€", "").replace(",", ".").trim(),
     );
-
+    if (isNaN(valorLimpo)) {
+      mostrarAviso("Atenção", "Indica um valor válido.", "erro");
+      return;
+    }
     const dia_aula = dataAulaDb.split("-").reverse().join("/");
-    const hora_aula = window.aulaSelecionadaHora || "";
 
     const btnConfirmar = formFaturar.querySelector('button[type="submit"]');
     const textoOriginal = btnConfirmar.innerHTML;
@@ -1070,72 +1043,30 @@ function configurarPagamentoDiretoAula() {
     btnConfirmar.disabled = true;
 
     try {
-      const { error: errAula } = await supabase
-        .from("aulas_particulares")
-        .update({ pago: true })
-        .eq("id", aulaId);
-      if (errAula) throw errAula;
+      // Marca a aula como paga e a fatura DESTA aula como paga, numa só transação.
+      // (Antes procurava "a fatura do mês" e, com 2 aulas no mesmo mês, falhava.)
+      const resultado = await db(
+        supabase.rpc("faturar_aula", {
+          p_aula_id: Number(aulaId),
+          p_valor: valorLimpo,
+        }),
+      );
+      const hora_aula = String(resultado?.hora_aula || "");
 
-      const { data: faturaExistente } = await supabase
-        .from("mensalidades")
-        .select("id")
-        .eq("socio_id", socioId)
-        .eq("tipo", "Aula Particular")
-        .eq("mes_ano", mesAnoFormatado)
-        .maybeSingle();
+      await notificarAtleta(
+        socioId,
+        "Pagamento Recebido 🏆",
+        `O pagamento referente à aula particular de ${dia_aula} foi liquidado.`,
+      );
 
-      if (faturaExistente) {
-        await supabase
-          .from("mensalidades")
-          .update({ estado: "Pago", valor: valorLimpo, dia_aula, hora_aula })
-          .eq("id", faturaExistente.id);
-      } else {
-        await supabase.from("mensalidades").insert([
-          {
-            socio_id: socioId,
-            mes_ano: mesAnoFormatado,
-            dia_aula,
-            hora_aula,
-            tipo: "Aula Particular",
-            estado: "Pago",
-            valor: valorLimpo,
-          },
-        ]);
-      }
-
-      const tituloPagamento = "Pagamento Recebido 🏆";
-      const msg = `O pagamento referente à aula particular de ${dia_aula} foi liquidado.`;
-
-      await supabase.from("notificacoes").insert([
-        {
-          socio_id: socioId,
-          titulo: tituloPagamento,
-          mensagem: msg,
-          lida: false,
-        },
-      ]);
+      // Recibo por email (Make). Se falhar, o pagamento já está registado.
       try {
-        await supabase.functions.invoke("notificar-alvo", {
-          body: {
-            socio_id: parseInt(socioId),
-            titulo: tituloPagamento,
-            mensagem: msg,
-          },
-        });
-      } catch (e) {}
-      // 🥊 NOVO: DISPARO DE EMAIL DE RECIBO PARA O MAKE (AULAS PARTICULARES)
-      try {
-        const { data: atletaReq } = await supabase
-          .from("socios")
-          .select("nome, email")
-          .eq("id", socioId)
-          .single();
+        const atletaReq = await db(
+          supabase.from("socios").select("nome, email").eq("id", socioId).single(),
+        );
 
         if (atletaReq && atletaReq.email) {
-          const urlWebhookRecibos =
-            "https://hook.eu1.make.com/vswq8ii3485yoqzndxuwiriuy2vxg6yy";
-
-          await fetch(urlWebhookRecibos, {
+          await fetch(WEBHOOK_MAKE_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -1187,10 +1118,12 @@ function configurarRegistoDespesas() {
     ?.addEventListener("click", () => {
       modalOpcoes?.classList.add("hidden");
       modalNova?.classList.remove("hidden");
-      document.getElementById("despesaData").value = new Date()
-        .toISOString()
-        .split("T")[0];
+      document.getElementById("despesaData").value = dataLocalISO();
     });
+
+  // Eventos do histórico registados UMA vez (antes eram registados de novo cada vez
+  // que o histórico abria, e um clique em "apagar" executava várias vezes).
+  configurarAcoesHistoricoDespesas();
 
   document
     .getElementById("btnOpcaoHistoricoDespesa")
@@ -1219,17 +1152,20 @@ function configurarRegistoDespesas() {
     btnGuardar.disabled = true;
 
     try {
-      await supabase.from("despesas").insert([
-        {
-          descricao: document.getElementById("despesaDescricao").value.trim(),
-          categoria: document.getElementById("despesaCategoria").value,
-          data: document.getElementById("despesaData").value,
-          valor,
-          treinador:
-            state.treinadorAtual ||
-            localStorage.getItem("bogas_treinador_nome"),
-        },
-      ]);
+      if (isNaN(valor)) throw new Error("Indica um valor válido.");
+      await db(
+        supabase.from("despesas").insert([
+          {
+            descricao: document.getElementById("despesaDescricao").value.trim(),
+            categoria: document.getElementById("despesaCategoria").value,
+            data: document.getElementById("despesaData").value,
+            valor,
+            treinador:
+              state.treinadorAtual ||
+              localStorage.getItem("bogas_treinador_nome"),
+          },
+        ]),
+      );
       mostrarAviso(
         "Despesa Registada",
         `Saída de ${valor.toFixed(2)}€ guardada.`,
@@ -1266,28 +1202,28 @@ async function carregarHistoricoDespesas() {
       return;
     }
 
+    const e = escapeHTML;
     tabela.innerHTML = despesas
       .map((d) => {
-        const dataF = d.data.split("-").reverse().join("/");
+        const dataF = String(d.data).split("-").reverse().join("/");
         return `
             <tr>
-                <td data-label="Data:">${dataF}</td>
-                <td data-label="Descrição:">${d.descricao}</td>
-                <td data-label="Categoria:">${d.categoria}</td>
-                <td data-label="Valor:"><strong>${d.valor.toFixed(2)}€</strong></td>
+                <td data-label="Data:">${e(dataF)}</td>
+                <td data-label="Descrição:">${e(d.descricao)}</td>
+                <td data-label="Categoria:">${e(d.categoria)}</td>
+                <td data-label="Valor:"><strong>${(Number(d.valor) || 0).toFixed(2)}€</strong></td>
                 <td data-label="Ações:">
-                    <div style="display:flex; gap: 6px; align-items:center; justify-content: center;">
-                        <button class="btn-acao btn-edit btn-edit-despesa" data-id="${d.id}"><i class='bx bx-edit'></i></button>
-                        <button class="btn-acao btn-delete btn-delete-despesa" data-id="${d.id}"><i class='bx bx-trash'></i></button>
+                    <div class="acoes-linha">
+                        <button class="btn-acao btn-edit btn-edit-despesa" data-id="${e(d.id)}"><i class='bx bx-edit'></i></button>
+                        <button class="btn-acao btn-delete btn-delete-despesa" data-id="${e(d.id)}"><i class='bx bx-trash'></i></button>
                     </div>
                 </td>
             </tr>`;
       })
       .join("");
-    configurarAcoesHistoricoDespesas();
   } catch (err) {
     tabela.innerHTML =
-      '<tr><td colspan="5" style="color: #ff4d4d;">Erro ao carregar histórico.</td></tr>';
+      '<tr><td colspan="5" class="celula-erro">Erro ao carregar histórico.</td></tr>';
   }
 }
 
@@ -1297,6 +1233,7 @@ function configurarAcoesHistoricoDespesas() {
   const formEditar = document.getElementById("formEditarDespesa");
   const modalDelete = document.getElementById("modalConfirmDeleteDespesa");
   let idParaEliminar = null;
+  state.despesasCache = state.despesasCache || [];
 
   tabela?.addEventListener("click", (e) => {
     const btnEdit = e.target.closest(".btn-edit-despesa");
@@ -1346,31 +1283,40 @@ function configurarAcoesHistoricoDespesas() {
       data: document.getElementById("editDespesaData").value,
       valor: parseFloat(document.getElementById("editDespesaValor").value),
     };
+    const btnGuardar = formEditar.querySelector('button[type="submit"]');
+    if (btnGuardar) btnGuardar.disabled = true;
     try {
-      await supabase.from("despesas").update(dados).eq("id", id);
+      await db(supabase.from("despesas").update(dados).eq("id", id));
       mostrarAviso("Atualizada", "Dados da despesa corrigidos.", "sucesso");
       modalEditar?.classList.add("hidden");
       await carregarHistoricoDespesas();
     } catch (err) {
       mostrarAviso("Erro", err.message, "erro");
+    } finally {
+      if (btnGuardar) btnGuardar.disabled = false;
     }
   });
 
   document
     .getElementById("btnConfirmarDeleteDespesa")
-    ?.addEventListener("click", async () => {
+    ?.addEventListener("click", async (e) => {
       if (!idParaEliminar) return;
+      const btn = e.currentTarget;
+      btn.disabled = true;
       try {
-        await supabase.from("despesas").delete().eq("id", idParaEliminar);
+        await db(supabase.from("despesas").delete().eq("id", idParaEliminar));
         mostrarAviso(
           "Eliminada",
           "Registo removido permanentemente.",
           "sucesso",
         );
         modalDelete?.classList.add("hidden");
+        idParaEliminar = null;
         await carregarHistoricoDespesas();
       } catch (err) {
         mostrarAviso("Erro", err.message, "erro");
+      } finally {
+        btn.disabled = false;
       }
     });
 }
@@ -1525,8 +1471,6 @@ if (btnAlertasAdmin) {
   btnAlertasAdmin.addEventListener("click", async (e) => {
     e.preventDefault();
 
-    const PUBLIC_VAPID_KEY =
-      "BDlSFCtWMO00daEMrL5sLutOo9iw7KfQ_KlxFvL24zhmvPcA2Cn-M8qez3pJgQQzgzeCi8Pwho7s8Ii1-_cDvXo";
     const btnIcon = btnAlertasAdmin.innerHTML;
     btnAlertasAdmin.innerHTML =
       "<i class='bx bx-loader-alt bx-spin'></i> <span>Aguarde...</span>";
@@ -1553,22 +1497,7 @@ if (btnAlertasAdmin) {
         const {
           data: { session },
         } = await supabase.auth.getSession();
-        const emailTreinador = session
-          ? session.user.email
-          : "antonio.carlos.cosme.boturao@gmail.com";
-
-        // 🥊 BLINDAGEM ANTI-DUPLICADOS: Remove registos antigos deste treinador antes de inserir o novo
-        await supabase
-          .from("admin_push_subscriptions")
-          .delete()
-          .eq("treinador_email", emailTreinador);
-
-        await supabase.from("admin_push_subscriptions").insert([
-          {
-            treinador_email: emailTreinador,
-            subscricao: JSON.stringify(sub),
-          },
-        ]);
+        await guardarSubscricaoAdmin(session ? session.user.email : EMAIL_ADMIN, sub);
 
         mostrarAviso(
           "Radar Ativo",
@@ -1598,29 +1527,25 @@ if (btnAlertasAdmin) {
   });
 }
 
-// =========================================================================
-// 🥊 FUNÇÃO GLOBAL DE CONVERSÃO VAPID
-// =========================================================================
-function urlB64ToUint8Array(base64String) {
-  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding)
-    .replace(/\-/g, "+")
-    .replace(/_/g, "/");
-  const rawData = window.atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
-  }
-  return outputArray;
+// Uma subscrição por treinador: apaga a antiga e grava a nova (com erros verificados).
+async function guardarSubscricaoAdmin(emailTreinador, sub) {
+  await db(
+    supabase
+      .from("admin_push_subscriptions")
+      .delete()
+      .eq("treinador_email", emailTreinador),
+  );
+  await db(
+    supabase.from("admin_push_subscriptions").insert([
+      { treinador_email: emailTreinador, subscricao: JSON.stringify(sub) },
+    ]),
+  );
 }
 
 // =======================================================================
 // 🥊 DISPARADOR AUTOMÁTICO DE RADAR (BLINDAGEM MÓVEL)
 // =======================================================================
 async function ativarRadarAutomaticamente() {
-  const PUBLIC_VAPID_KEY =
-    "BDlSFCtWMO00daEMrL5sLutOo9iw7KfQ_KlxFvL24zhmvPcA2Cn-M8qez3pJgQQzgzeCi8Pwho7s8Ii1-_cDvXo";
-
   try {
     if (!("Notification" in window) || !("serviceWorker" in navigator)) return;
 
@@ -1647,20 +1572,7 @@ async function ativarRadarAutomaticamente() {
           .eq("treinador_email", emailTreinador)
           .maybeSingle();
 
-        if (!existe) {
-          // 🥊 BLINDAGEM ANTI-DUPLICADOS
-          await supabase
-            .from("admin_push_subscriptions")
-            .delete()
-            .eq("treinador_email", emailTreinador);
-
-          await supabase.from("admin_push_subscriptions").insert([
-            {
-              treinador_email: emailTreinador,
-              subscricao: JSON.stringify(sub),
-            },
-          ]);
-        }
+        if (!existe) await guardarSubscricaoAdmin(emailTreinador, sub);
       }
     }
   } catch (err) {
