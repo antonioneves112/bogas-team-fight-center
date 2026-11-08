@@ -1624,3 +1624,8 @@ table tr:has(.btn-carregar-mais-mens) td::before {
     background-size: 22px !important;
   }
 }
+
+/* Sem o título "Visão Geral": no computador os botões continuam à direita. */
+.dash-header {
+  justify-content: flex-end;
+}
