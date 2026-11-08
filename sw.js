@@ -2,7 +2,7 @@
 // 🥊 MOTOR DA APP (SERVICE WORKER) - BOGAS TEAM - V14
 // =========================================================================
 // Mudar a versão força todos os telemóveis a descarregar o código novo.
-const CACHE_NAME = "bogas-team-v108";
+const CACHE_NAME = "bogas-team-v109";
 
 // Ficheiros essenciais da app (o load3.png de 1,1 MB saiu: não era usado em nenhuma página).
 const ASSETS_TO_CACHE = [
@@ -39,7 +39,12 @@ const ASSETS_TO_CACHE = [
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE)),
+    // cache: "reload" -> vai sempre ao servidor (nunca guarda uma cópia antiga do browser)
+    caches
+      .open(CACHE_NAME)
+      .then((cache) =>
+        cache.addAll(ASSETS_TO_CACHE.map((url) => new Request(url, { cache: "reload" }))),
+      ),
   );
   self.skipWaiting();
 });
@@ -62,8 +67,17 @@ self.addEventListener("fetch", (event) => {
     event.request.url.match(/\.(mp4|webm|ogg)$/i)
   )
     return;
+  // JS/CSS/JSON: confirmar sempre com o servidor (cache "no-cache" -> 304 se não mudou).
+  // Evita HTML novo com JavaScript antigo guardado no telemóvel.
+  // (Pedidos de navegação não podem levar opções novas: seguem como estão.)
+  const caminho = new URL(event.request.url).pathname;
+  const pedido =
+    event.request.mode !== "navigate" && /\.(js|css|json)$/i.test(caminho)
+      ? new Request(event.request, { cache: "no-cache" })
+      : event.request;
+
   event.respondWith(
-    fetch(event.request)
+    fetch(pedido)
       .then((res) => {
         if (!res || res.status !== 200 || res.type !== "basic") return res;
         const clone = res.clone();

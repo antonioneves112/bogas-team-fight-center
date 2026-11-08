@@ -34,4 +34,10 @@ for (const f of jss) {
   r.ok(`${f}: HTML gerado sem style=""`, estilos.length === 0, estilos.join("\n      "));
 }
 
+// Cache: sem isto o telemóvel fica com HTML novo e JavaScript antigo (até 4 h no Cloudflare).
+const cabecalhos = fs.existsSync(path.join(RAIZ, "_headers")) ? fs.readFileSync(path.join(RAIZ, "_headers"), "utf8") : "";
+r.ok("_headers: JS e CSS confirmados sempre com o servidor (no-cache)", /\/JS\/\*\s*\r?\n\s*Cache-Control: no-cache/.test(cabecalhos) && /\/CSS\/\*\s*\r?\n\s*Cache-Control: no-cache/.test(cabecalhos));
+const sw = fs.readFileSync(path.join(RAIZ, "sw.js"), "utf8");
+r.ok("sw.js: JS/CSS pedidos com cache 'no-cache' (nunca a cópia antiga)", sw.includes('cache: "no-cache"') && sw.includes('cache: "reload"'));
+
 process.exitCode = r.fim() ? 0 : 1;

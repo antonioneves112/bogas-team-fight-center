@@ -1,0 +1,15 @@
+# Cloudflare Pages: regras de cache por caminho.
+# JS, CSS, service worker e manifest: o browser guarda, mas confirma SEMPRE com o
+# servidor (ETag -> 304 se não mudou). Sem isto, o Cloudflare mandava guardar 4 horas
+# e o telemóvel ficava com HTML novo e JavaScript antigo (ex.: botão € que não fazia nada).
+/JS/*
+  Cache-Control: no-cache
+
+/CSS/*
+  Cache-Control: no-cache
+
+/sw.js
+  Cache-Control: no-cache
+
+/manifest.json
+  Cache-Control: no-cache
