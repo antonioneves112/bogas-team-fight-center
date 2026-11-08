@@ -74,7 +74,9 @@ try {
   r.ok("Guardar produto envia nome, preços e variantes com stock", chamada?.p_nome === "Luvas Bogas" && chamada?.p_preco_venda === 45 && chamada?.p_variantes?.[1]?.stock === 2, JSON.stringify(chamada));
   await clicar(p, '.vendas-subtab[data-painel="painelProdutos"]');
   const textoProdutos = await p.evaluate(() => document.getElementById("tabelaProdutos").innerText);
-  r.ok("Produto novo aparece com os stocks por tamanho", textoProdutos.includes("Luvas Bogas") && textoProdutos.includes("12oz: 2") && textoProdutos.includes("14oz: 0"), textoProdutos);
+  r.ok("Produto novo mostra só os tamanhos COM stock (12oz: 2 sim, 14oz esgotado não)", textoProdutos.includes("Luvas Bogas") && textoProdutos.includes("12oz: 2") && !textoProdutos.includes("14oz"), textoProdutos);
+  const dicaEsgotados = await p.evaluate((id) => document.querySelector(`#tabelaProdutos .btn-editar-produto[data-id="${id}"]`)?.closest("tr").querySelector(".stock-celula")?.getAttribute("title") || "", mock.tabelas.produtos.find((x) => x.nome === "Luvas Bogas").id);
+  r.ok("Os tamanhos esgotados ficam na dica (Esgotado: 14oz)", dicaEsgotados === "Esgotado: 14oz", dicaEsgotados);
   r.ok("Stock baixo conta produtos no limite (luvas: 14oz=0, 16oz=1)", (await p.textContent("#vendasStockBaixo")).trim() === "1");
 
   // ---------- Nova venda a sócio, pendente ----------

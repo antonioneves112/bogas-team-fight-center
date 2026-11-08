@@ -228,12 +228,20 @@ function renderizarProdutos() {
       const venda = Number(p.preco_venda);
       const margem = venda - compra;
       const pct = venda > 0 ? Math.round((margem / venda) * 100) : 0;
-      const chips = p.produto_variantes
-        .map((v) => {
-          const classe = v.stock === 0 ? "stock-zero" : varianteBaixa(p, v) ? "stock-baixo" : "";
-          return `<span class="stock-chip ${classe}">${e(v.nome)}: ${e(v.stock)}</span>`;
-        })
-        .join("");
+      // Só os tamanhos COM stock (mais limpo no telemóvel). Os esgotados ficam na dica
+      // e na janela de stock; se não houver nenhum, mostra só "Esgotado".
+      const comStock = p.produto_variantes.filter((v) => v.stock > 0);
+      const esgotados = p.produto_variantes.filter((v) => v.stock === 0).map((v) => v.nome);
+      const unico = p.produto_variantes.length === 1 && p.produto_variantes[0].nome === "Único";
+      const chips = comStock.length
+        ? comStock
+            .map((v) => {
+              const classe = varianteBaixa(p, v) ? "stock-baixo" : "";
+              return `<span class="stock-chip ${classe}">${unico ? "" : `${e(v.nome)}: `}${e(v.stock)}</span>`;
+            })
+            .join("")
+        : `<span class="stock-chip stock-zero">Esgotado</span>`;
+      const dicaStock = esgotados.length && comStock.length ? ` title="Esgotado: ${e(esgotados.join(", "))}"` : "";
       return `
       <tr class="${p.ativo ? "" : "produto-arquivado"}">
         <td data-label="Produto"><strong>${e(p.nome)}</strong>${p.ativo ? "" : " <span class='badge badge-inativo'>Arquivado</span>"}</td>
@@ -241,7 +249,7 @@ function renderizarProdutos() {
         <td data-label="Compra">${euros(compra)}</td>
         <td data-label="Venda">${euros(venda)}</td>
         <td data-label="Margem" class="${margem >= 0 ? "texto-destaque" : "celula-saida"}"><span>${euros(margem)} <small>(${pct}%)</small></span></td>
-        <td data-label="Stock"><div class="stock-chips">${chips}</div><small class="stock-total">Total: ${stockTotal(p)}</small></td>
+        <td data-label="Stock"><div class="stock-celula"${dicaStock}><div class="stock-chips">${chips}</div>${comStock.length && !unico ? `<small class="stock-total">Total: ${stockTotal(p)}</small>` : ""}</div></td>
         <td data-label="Ações">
           <div class="acoes-linha">
             <button class="btn-acao btn-edit btn-editar-produto" data-id="${e(p.id)}" title="Editar produto"><i class='bx bx-edit'></i></button>
