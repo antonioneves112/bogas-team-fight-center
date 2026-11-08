@@ -492,3 +492,34 @@
     justify-content: flex-start;
   }
 }
+
+/* ---------- Nome do produto como título do cartão (telemóvel) ----------
+   Igual aos cartões dos sócios: linha própria, centrada, largura toda, sem o
+   rótulo "PRODUTO". Nomes longos ("Luvas Venum Challenger Verde Tropa") partem
+   em linhas equilibradas em vez de ficarem espremidos à direita.
+   Só até 768px: é a largura em que o dashboard mostra as tabelas como cartões
+   (dashboard.css); no computador a tabela fica como está. */
+@media (max-width: 768px) {
+  #tabelaProdutos td[data-label="Produto"] {
+    display: block;
+    text-align: center;
+    padding: 6px 0 12px;
+    border-bottom: 1px solid rgba(37, 211, 102, 0.2);
+    font-size: 1rem;
+    line-height: 1.3;
+    text-wrap: balance;
+  }
+
+  #tabelaProdutos td[data-label="Produto"]::before {
+    display: none;
+  }
+
+  #tabelaProdutos td[data-label="Produto"] strong {
+    color: var(--accent);
+  }
+
+  #tabelaProdutos td[data-label="Produto"] .badge {
+    display: inline-block;
+    margin-top: 4px;
+  }
+}
