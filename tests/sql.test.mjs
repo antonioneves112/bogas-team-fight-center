@@ -290,6 +290,21 @@ r.ok("Vendas: não deixa apagar uma variante que já foi vendida", erroRemover?.
 const erroRepetida = await T(() => falha("select guardar_produto(null, 'Caneleiras', 'Proteções', 10, 25, 2, $1::jsonb)", [varsJson([{ nome: "M", stock: 1 }, { nome: "M", stock: 2 }])]));
 r.ok("Vendas: variantes com nome repetido são recusadas", erroRepetida?.includes("VARIANTE_REPETIDA"), erroRepetida);
 
+// ---------------- AULAS EM ATRASO NO PORTAL (04) ----------------
+await db.exec(sqlDe("04_aulas_em_atraso.sql"));
+await db.exec(sqlDe("04_aulas_em_atraso.sql"));
+await q("delete from aulas_particulares where socio_id = 1");
+await q("insert into aulas_particulares (socio_id, data_aula, hora_aula, estado, pago) values (1, '2026-11-21', '15:00', 'Aceite', false)");
+const tokenAtraso = (await login("ana@teste.pt", "novapass")).token;
+const resumoFuturo = await como("anon", null, async () => (await q("select portal_resumo($1, '2026-11', '2026-11-08') as r", [tokenAtraso]))[0].r);
+r.ok("Portal: aula FUTURA aceite e não paga NÃO conta como dívida", resumoFuturo.tem_aula_por_pagar === false && resumoFuturo.proxima_aula?.estado === "Aceite");
+await q("insert into aulas_particulares (socio_id, data_aula, hora_aula, estado, pago) values (1, '2026-11-01', '15:00', 'Aceite', false)");
+const resumoAtraso = await como("anon", null, async () => (await q("select portal_resumo($1, '2026-11', '2026-11-08') as r", [tokenAtraso]))[0].r);
+r.ok("Portal: aula JÁ DADA e não paga conta como dívida", resumoAtraso.tem_aula_por_pagar === true);
+await q("update aulas_particulares set pago = true where socio_id = 1 and data_aula = '2026-11-01'");
+const resumoPago = await como("anon", null, async () => (await q("select portal_resumo($1, '2026-11', '2026-11-08') as r", [tokenAtraso]))[0].r);
+r.ok("Portal: depois de paga deixa de contar", resumoPago.tem_aula_por_pagar === false);
+
 // ---------------- EMERGÊNCIA ----------------
 await db.exec(sqlDe("99_emergencia_reverter_fase2.sql"));
 r.ok("Script de emergência corre sem erros", true);

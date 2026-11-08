@@ -1,7 +1,7 @@
 /* JS/socios.js - GESTÃO DE SÓCIOS (Parcerias como Obrigação Mensal) */
 import { supabase } from "./supabase.js";
 import { state } from "./state.js";
-import { formatarNomeCurto, escapeHTML, MESES_PT, mesLocalISO } from "./helpers.js";
+import { formatarNomeCurto, escapeHTML, MESES_PT, mesLocalISO, dataLocalISO, ehSocioPT } from "./helpers.js";
 import { abrirModalEliminarSocio } from "./main.js";
 import { mostrarAviso } from "./toast.js";
 import { WEBHOOK_MAKE_URL } from "./config.js";
@@ -20,17 +20,31 @@ export async function carregarGuerreiros() {
 
   const mesAtual = filtroMes ? filtroMes.value : mesLocalISO();
 
-  // As duas consultas são independentes: correm em paralelo.
-  const [respSocios, respMensalidades] = await Promise.all([
+  // Aulas particulares EM ATRASO: aceites, não pagas e com data já passada
+  // (até ao fim do mês escolhido, sem passar de hoje). Uma aula futura já aprovada não é atraso.
+  const [ano, mes] = mesAtual.split("-").map(Number);
+  const inicioMesSeguinte = dataLocalISO(new Date(ano, mes, 1));
+  const hoje = dataLocalISO();
+  const limiteAtraso = hoje < inicioMesSeguinte ? hoje : inicioMesSeguinte;
+
+  // As três consultas são independentes: correm em paralelo.
+  const [respSocios, respMensalidades, respAtraso] = await Promise.all([
     supabase.from("socios").select("*").eq("treinador", state.treinadorAtual),
     supabase
       .from("mensalidades")
       .select("socio_id, estado, tipo")
       .eq("mes_ano", mesAtual),
+    supabase
+      .from("aulas_particulares")
+      .select("id, socio_id, data_aula, hora_aula, valor")
+      .eq("estado", "Aceite")
+      .eq("pago", false)
+      .lt("data_aula", limiteAtraso)
+      .order("data_aula"),
   ]);
 
-  if (respSocios.error || respMensalidades.error) {
-    console.error(respSocios.error || respMensalidades.error);
+  if (respSocios.error || respMensalidades.error || respAtraso.error) {
+    console.error(respSocios.error || respMensalidades.error || respAtraso.error);
     if (tabelaSocios)
       tabelaSocios.innerHTML =
         '<tr><td colspan="5" class="celula-erro">Erro ao carregar sócios. Tenta novamente.</td></tr>';
@@ -42,6 +56,8 @@ export async function carregarGuerreiros() {
   if (todosSocios) {
     state.todosOsGuerreiros = todosSocios;
     state.faturasMesAtual = mensalidadesMes || [];
+    state.aulasEmAtraso = respAtraso.data || [];
+    const idsComAulaEmAtraso = new Set(state.aulasEmAtraso.map((a) => a.socio_id));
 
     state.inativosAtuais = todosSocios
       .filter((s) => s.estado === "Inativo")
@@ -79,8 +95,9 @@ export async function carregarGuerreiros() {
       )
         return false;
 
-      if (s.modalidade === "Aulas Particulares")
-        return todosIdsFaturados.includes(s.id);
+      // Sócios PT aparecem no mês se tiveram aulas faturadas ou têm aulas em atraso.
+      if (ehSocioPT(s.modalidade))
+        return todosIdsFaturados.includes(s.id) || idsComAulaEmAtraso.has(s.id);
 
       return s.estado === "Ativo" || todosIdsFaturados.includes(s.id);
     });
@@ -114,12 +131,11 @@ export async function carregarGuerreiros() {
       : [];
 
     const pendentesReais = socios.filter((s) => {
-      const temFaturaPendente = idsComDividaAtiva.includes(s.id);
-      const isObrigatorioMensal =
-        s.estado === "Ativo" && s.modalidade !== "Aulas Particulares";
-      const naoTemFatura =
-        isObrigatorioMensal && !state.idsPagosGlobal.includes(s.id);
+      // PT não paga mensalidade: só está pendente com uma aula particular em atraso.
+      if (ehSocioPT(s.modalidade)) return idsComAulaEmAtraso.has(s.id);
 
+      const temFaturaPendente = idsComDividaAtiva.includes(s.id);
+      const naoTemFatura = s.estado === "Ativo" && !state.idsPagosGlobal.includes(s.id);
       return temFaturaPendente || naoTemFatura;
     });
 
@@ -197,24 +213,27 @@ export function renderizarTabelaSocios(
       badgeMensalidade = "badge-inativo";
       textoMensalidade = "N/A";
     } else {
-      const isPTOnly = s.modalidade === "Aulas Particulares";
+      const isPTOnly = ehSocioPT(s.modalidade);
       const isParceria =
         s.modalidade === "Rendimento" ||
         (s.nome || "").toUpperCase().includes("GYM");
 
       if (isPTOnly) {
-        const temPendente =
-          aulasPendentes.length > 0 ||
-          faturasDoSocio.some((f) => f.estado === "Pendente");
+        // Só fica PENDENTE com uma aula aceite, já dada e por pagar.
+        // Uma aula futura aprovada (com fatura pendente) ainda não é atraso.
+        const emAtraso = (state.aulasEmAtraso || []).some((a) => a.socio_id === s.id);
         const temPago = faturasDoSocio.some((f) => f.estado === "Pago");
 
-        if (temPendente) {
+        if (emAtraso) {
           badgeMensalidade = "badge-pendente";
           textoMensalidade = "PENDENTE";
           isPendentePT = true;
         } else if (temPago) {
           badgeMensalidade = "badge-pago";
           textoMensalidade = "REGULARIZADO";
+        } else if (faturasDoSocio.length > 0) {
+          badgeMensalidade = "badge-ativo";
+          textoMensalidade = "EM DIA";
         } else {
           badgeMensalidade = "badge-inativo";
           textoMensalidade = "S/ AULAS";
@@ -248,9 +267,8 @@ export function renderizarTabelaSocios(
     const nomeCortado = formatarNomeCurto(s.nome);
 
     if (isPendentePT) {
-      const ptPendente = (state.aulasParticulares || []).find(
-        (a) => a.socio_id === s.id && a.estado === "Aceite" && !a.pago,
-      );
+      // A aula em atraso mais antiga (a lista vem ordenada por data).
+      const ptPendente = (state.aulasEmAtraso || []).find((a) => a.socio_id === s.id);
 
       if (ptPendente) {
         const dataF = ptPendente.data_aula.split("-").reverse().join("/");

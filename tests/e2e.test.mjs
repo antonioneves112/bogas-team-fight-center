@@ -275,6 +275,52 @@ try {
     await contexto.close();
   }
 
+  // ---- Sócios PT: só pendentes com aula particular EM ATRASO ----
+  {
+    const t = tabelasBase();
+    const pt = (id, nome) => ({ ...SOCIO_TESTE, id, nome, email: `pt${id}@teste.pt`, modalidade: "Aulas Particulares" });
+    t.socios.push(pt(11, "Pt Atrasado Silva"), pt(12, "Pt Futuro Costa"), pt(13, "Pt Semaulas Dias"), { ...pt(14, "Pt Variante Reis"), modalidade: "Aula Particular" });
+    const hoje = new Date();
+    const dia = (delta) => {
+      const d = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() + delta);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    };
+    // 11: aula de ontem aceite e não paga (ATRASO). 12: aula daqui a 5 dias aceite e não paga (fatura já criada).
+    // 13: sem aulas. 14: modalidade escrita "Aula Particular", aula aceite de ontem por pagar (ATRASO).
+    t.aulas_particulares.push(
+      { id: 900, socio_id: 11, data_aula: dia(-1), hora_aula: "10:00:00", estado: "Aceite", valor: 25, pago: false },
+      { id: 901, socio_id: 12, data_aula: dia(5), hora_aula: "10:00:00", estado: "Aceite", valor: 25, pago: false },
+      { id: 902, socio_id: 14, data_aula: dia(-1), hora_aula: "11:00:00", estado: "Aceite", valor: 25, pago: false },
+    );
+    const mesDe = (d) => d.slice(0, 7);
+    t.mensalidades.push(
+      { id: 950, socio_id: 11, mes_ano: mesDe(dia(-1)), valor: 25, estado: "Pendente", tipo: "Aula Particular", dia_aula: null, hora_aula: null, aula_id: 900 },
+      { id: 951, socio_id: 12, mes_ano: mesDe(dia(0)), valor: 25, estado: "Pendente", tipo: "Aula Particular", dia_aula: null, hora_aula: null, aula_id: 901 },
+      { id: 952, socio_id: 14, mes_ano: mesDe(dia(-1)), valor: 25, estado: "Pendente", tipo: "Aula Particular", dia_aula: null, hora_aula: null, aula_id: 902 },
+    );
+    const mock = new MockSupabase({ tabelas: t, rpc: rpcSimuladas() });
+    const { contexto, registo, p } = await abrirDashboard(mock);
+    const linhaDe = (nome) =>
+      p.evaluate((n) => [...document.querySelectorAll("#tabelaSocios tr")].map((tr) => tr.innerText.replace(/\s+/g, " ")).find((l) => l.toUpperCase().includes(n.toUpperCase())) || "", nome);
+
+    r.ok("PT com aula JÁ DADA e por pagar aparece PENDENTE", (await linhaDe("Pt Silva")).includes("PENDENTE"), await linhaDe("Pt Silva"));
+    const futuro = await linhaDe("Pt Costa");
+    r.ok("PT com aula FUTURA aprovada (fatura pendente) NÃO aparece pendente, aparece EM DIA", futuro.includes("EM DIA") && !futuro.includes("PENDENTE"), futuro);
+    r.ok("PT sem aulas não aparece na lista do mês", (await linhaDe("Pt Dias")) === "");
+    r.ok("Modalidade escrita 'Aula Particular' também é reconhecida como PT", (await linhaDe("Pt Reis")).includes("PENDENTE"), await linhaDe("Pt Reis"));
+
+    // Card: socio 2 (mensalidade pendente) + PT 11 + PT 14 = 3. PT 12 e 13 não contam.
+    r.ok("Card 'Pagamentos Pendentes' conta só PT em atraso (+ mensalidades): 3", (await p.textContent("#pagamentosPendentes")).trim() === "3", await p.textContent("#pagamentosPendentes"));
+    await clicar(p, "#cardPendentes");
+    await espera(400);
+    const listaPendentes = await p.evaluate(() => document.getElementById("tabelaSocios").innerText.toUpperCase());
+    r.ok("Clicar no card mostra a mesma lista do número (sem PT em dia nem sem aulas)",
+      listaPendentes.includes("PT SILVA") && listaPendentes.includes("PT REIS") && !listaPendentes.includes("PT COSTA") && !listaPendentes.includes("PT DIAS"), listaPendentes);
+    r.ok("Lembrete WhatsApp do PT em atraso indica a data da aula", await p.evaluate((d) => [...document.querySelectorAll("#tabelaSocios a.btn-whatsapp")].some((a) => decodeURIComponent(a.href).includes(d)), dia(-1).split("-").reverse().join("/")));
+    r.ok("Dashboard PT: sem erros de JavaScript", registo.erros.length === 0, registo.erros.join(" | "));
+    await contexto.close();
+  }
+
   // ---- Erros da BD já não aparecem como "Sucesso" ----
   {
     const mock = novoMock();

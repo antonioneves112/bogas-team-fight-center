@@ -89,6 +89,16 @@ Lê esta skill toda antes de alterar código. Quando perguntarem "o que fizemos?
   - num mês passado ("fechado") não há estimativas.
 - **Cores:** validadas com a skill dataviz contra o fundo `#1a1a19` (daltonismo e contraste). Azul/laranja para as séries; azul/vermelho para positivo/negativo.
 
+## 3.2.1 Sócios PT (só aulas particulares) — quando estão pendentes
+
+- **Quem é PT:** modalidade "Aulas Particulares" ou "Aula Particular". Usa `ehSocioPT()` de `JS/helpers.js`, nunca uma comparação com um só nome.
+- **Regra:** um sócio PT **não paga mensalidade**. Só fica pendente com uma aula **em atraso**: estado `Aceite`, `pago = false` e `data_aula` **anterior a hoje**.
+  - Uma aula futura já aprovada não é atraso, mesmo tendo fatura "Pendente" (a fatura é criada logo na aprovação). No dashboard aparece como "EM DIA".
+- **Onde se aplica:**
+  - dashboard: `JS/socios.js` (`state.aulasEmAtraso` e `state.guerreirosPendentes`);
+  - card "Pagamentos Pendentes": o número e a lista ao clicar usam a mesma `state.guerreirosPendentes`;
+  - portal: `portal_resumo.tem_aula_por_pagar` (migração `04_aulas_em_atraso.sql`).
+
 ## 3.3 Imagens e cache
 
 - **Fotos da equipa:** em `img/equipa/*.webp` (900 px de largura, qualidade 0,82). Passaram de 19,4 MB para cerca de 540 KB. Para otimizar outras imagens:

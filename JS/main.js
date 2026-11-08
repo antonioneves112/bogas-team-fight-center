@@ -191,20 +191,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     cardPendentes.addEventListener("click", () => {
       document.querySelector('.tab-btn[data-target="view-socios"]')?.click();
 
-      const faturasMes = state.mensalidadesAtuais || [];
-      const idsComDivida = faturasMes
-        .filter((m) => m.estado === "Pendente")
-        .map((m) => m.socio_id);
-      const idsFaturados = faturasMes.map((m) => m.socio_id);
-
-      const pendentes = state.guerreirosAtuais.filter((s) => {
-        if (s.estado === "Inativo") return false;
-        const temFaturaPendente = idsComDivida.includes(s.id);
-        const naoTemNenhumaFatura = !idsFaturados.includes(s.id);
-        return temFaturaPendente || naoTemNenhumaFatura;
-      });
-
-      renderizarTabelaSocios(pendentes);
+      // A mesma lista que dá o número do card (calculada em socios.js),
+      // para o número e a lista nunca discordarem. Sócios PT só entram com aula em atraso.
+      renderizarTabelaSocios(state.guerreirosPendentes || []);
     });
   }
 

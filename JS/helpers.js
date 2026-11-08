@@ -120,3 +120,8 @@ export function urlB64ToUint8Array(base64String) {
 export function mostrar(el, visivel = true) {
   if (el) el.classList.toggle("hidden", !visivel);
 }
+
+// Sócio que só faz aulas particulares (PT): não paga mensalidade.
+export function ehSocioPT(modalidade) {
+  return modalidade === "Aulas Particulares" || modalidade === "Aula Particular";
+}
