@@ -2,7 +2,7 @@
 // 🥊 MOTOR DA APP (SERVICE WORKER) - BOGAS TEAM - V14
 // =========================================================================
 // Mudar a versão força todos os telemóveis a descarregar o código novo.
-const CACHE_NAME = "bogas-team-v117";
+const CACHE_NAME = "bogas-team-v118";
 
 // Ficheiros essenciais da app (o load3.png de 1,1 MB saiu: não era usado em nenhuma página).
 const ASSETS_TO_CACHE = [

@@ -1587,3 +1587,40 @@ table tr:has(.btn-carregar-mais-mens) td::before {
 .congelar-item > div {
   text-align: left;
 }
+
+/* =========================================================
+   CABEÇALHO NO TELEMÓVEL: botões por baixo de "Visão Geral"
+   5 botões (calendário, €, gráfico, inativos, despesas) numa grelha de
+   colunas iguais com a largura toda; 44px de altura (alvo de toque).
+   No fim do ficheiro para ganhar às regras antigas de 36px/30px.
+   ========================================================= */
+@media (max-width: 768px) {
+  .dash-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 14px;
+  }
+
+  .dash-header .header-actions-group {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    width: 100%;
+  }
+
+  /* min-width: 0 — sem isto o campo do mês (type=month) tem largura mínima própria
+     e esmaga os outros botões. */
+  .dash-header .header-actions-group > * {
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 44px !important;
+  }
+
+  .dash-header .header-actions-group i {
+    font-size: 1.35rem !important;
+  }
+
+  .dash-header #filtroMesMensalidade {
+    background-size: 22px !important;
+  }
+}
