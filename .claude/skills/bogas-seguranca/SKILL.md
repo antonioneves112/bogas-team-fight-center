@@ -72,6 +72,32 @@ Lê esta skill toda antes de alterar código. Quando perguntarem "o que fizemos?
 - **Relatório PDF:** tem uma secção "VENDAS DE MATERIAL". O balanço passa a ser receitas + **lucro das vendas pagas** − despesas. As vendas anuladas não contam e as pendentes aparecem na tabela, mas não entram no lucro.
 - **Se a migração 03 ainda não tiver corrido:** a área de vendas mostra um aviso a dizer isso, e o resto do dashboard e o PDF continuam a funcionar (há teste para isso).
 
+## 3.2 Estatísticas (acrescentado em 2026-11-08)
+
+- **Onde está:** botão com ícone de gráfico no cabeçalho do dashboard, a seguir ao €. Usa o seletor de mês do dashboard (mostra os 12 meses até ao mês escolhido).
+- **Código:**
+  - `JS/estatisticas-calculos.js`: só cálculos (funções puras), testados em `tests/estatisticas.test.mjs` com números feitos à mão;
+  - `JS/estatisticas.js`: lê a BD e desenha os gráficos em SVG, sem bibliotecas;
+  - `CSS/estatisticas.css`: cores, mobile-first.
+- **Regras dos números** (iguais às do PDF):
+  - receita = mensalidades e aulas **pagas** + vendas **pagas**;
+  - resultado = mensalidades pagas + lucro das vendas pagas − despesas;
+  - entradas = inscrições + reentradas; saídas = `data_inativo` no mês.
+- **Previsão do mês** = recebido + por receber + estimado + vendas previstas:
+  - estimado = sócios ativos (exceto os só de aulas particulares) sem mensalidade lançada × média das mensalidades dos últimos 3 meses mais o atual;
+  - vendas previstas = vendas ao ritmo atual até ao fim do mês (só no mês corrente);
+  - num mês passado ("fechado") não há estimativas.
+- **Cores:** validadas com a skill dataviz contra o fundo `#1a1a19` (daltonismo e contraste). Azul/laranja para as séries; azul/vermelho para positivo/negativo.
+
+## 3.3 Imagens e cache
+
+- **Fotos da equipa:** em `img/equipa/*.webp` (900 px de largura, qualidade 0,82). Passaram de 19,4 MB para cerca de 540 KB. Para otimizar outras imagens:
+  `cd tests && node ferramentas/otimizar-imagens.mjs 900 0.82 ../img/<pasta> ../img/<foto.png>`
+  - Não ponhas `width`/`height` num `<img>` cuja altura vem do CSS (`aspect-ratio`): a altura fixa anula o quadrado.
+- **Cache:** o `_headers` pede `no-cache` para JS/CSS, e o `sw.js` pede JS/CSS com `cache: "no-cache"`. Assim o telemóvel nunca fica com HTML novo e JavaScript antigo, que foi o que deixou o botão € sem reagir.
+  - Na conta Cloudflare, o "Browser Cache TTL" deve estar em **"Respect Existing Headers"**; com outro valor, sobrepõe-se ao `_headers`.
+  - Sobe o `CACHE_NAME` do `sw.js` a cada publicação.
+
 ## 4. Ordem de publicação (não trocar!)
 
 1. SQL Editor: `00_diagnostico.sql` (só leitura). Confirmar que `auth.users` só tem treinadores.

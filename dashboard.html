@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="./CSS/theme.css" />
     <link rel="stylesheet" href="./CSS/dashboard.css" />
     <link rel="stylesheet" href="./CSS/vendas.css" />
+    <link rel="stylesheet" href="./CSS/estatisticas.css" />
 
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js"></script>
@@ -52,6 +53,10 @@
 
                 <button id="btnAbrirVendas" class="btn-icon-verde" title="Vendas e Stock">
                     <i class='bx bx-euro'></i>
+                </button>
+
+                <button id="btnAbrirEstatisticas" class="btn-icon-verde" title="Estatísticas">
+                    <i class='bx bx-bar-chart-alt-2'></i>
                 </button>
 
                 <button id="btnParceirosAdmin" class="btn-icon-red" title="Ver Inativos">
@@ -261,6 +266,81 @@
                         </tbody>
                     </table>
                 </div>
+            </section>
+        </div>
+
+        <!-- ================= ESTATÍSTICAS ================= -->
+        <div id="view-estatisticas" class="tab-content hidden">
+            <section class="dash-content glass-panel est-area">
+                <div class="content-header header-stack">
+                    <div class="header-title-row">
+                        <h3 id="tituloEstatisticas">Estatísticas</h3>
+                    </div>
+                    <p class="est-ajuda">Os gráficos mostram os 12 meses até ao mês escolhido no calendário.</p>
+                </div>
+
+                <p id="estMensagem" class="est-mensagem hidden" role="status"></p>
+
+                <article class="est-cartao est-previsao" aria-labelledby="estPrevisaoTitulo">
+                    <h4 id="estPrevisaoTitulo" class="est-cartao-titulo">Previsão de receita</h4>
+                    <p id="estPrevisaoValor" class="est-heroi">--</p>
+                    <p id="estPrevisaoNota" class="est-nota"></p>
+                    <div id="estPrevisaoBarra" class="est-segmentos" role="img"></div>
+                    <ul id="estPrevisaoLegenda" class="est-legenda-lista"></ul>
+                </article>
+
+                <div class="est-indicadores">
+                    <div class="est-indicador">
+                        <span class="est-indicador-rotulo">Recebido no mês</span>
+                        <strong id="estKpiRecebido">--</strong>
+                        <span id="estKpiRecebidoDelta" class="est-delta"></span>
+                    </div>
+                    <div class="est-indicador">
+                        <span class="est-indicador-rotulo">Despesas do mês</span>
+                        <strong id="estKpiDespesas">--</strong>
+                        <span id="estKpiDespesasDelta" class="est-delta"></span>
+                    </div>
+                    <div class="est-indicador">
+                        <span class="est-indicador-rotulo">Resultado do mês</span>
+                        <strong id="estKpiResultado">--</strong>
+                        <span id="estKpiResultadoDelta" class="est-delta"></span>
+                    </div>
+                    <div class="est-indicador">
+                        <span class="est-indicador-rotulo">Sócios ativos</span>
+                        <strong id="estKpiAtivos">--</strong>
+                        <span id="estKpiAtivosDelta" class="est-delta"></span>
+                    </div>
+                </div>
+
+                <article class="est-cartao" aria-labelledby="estTituloReceita">
+                    <h4 id="estTituloReceita" class="est-cartao-titulo">Receita por mês</h4>
+                    <p class="est-nota">Valores recebidos (pagos). Mensalidades incluem aulas particulares.</p>
+                    <div class="est-grafico" id="estGraficoReceita"></div>
+                    <details class="est-tabela"><summary>Ver tabela</summary><div id="estTabelaReceita"></div></details>
+                </article>
+
+                <article class="est-cartao" aria-labelledby="estTituloResultado">
+                    <h4 id="estTituloResultado" class="est-cartao-titulo">Resultado líquido por mês</h4>
+                    <p class="est-nota">Mensalidades + lucro das vendas − despesas.</p>
+                    <div class="est-grafico" id="estGraficoResultado"></div>
+                    <details class="est-tabela"><summary>Ver tabela</summary><div id="estTabelaResultado"></div></details>
+                </article>
+
+                <article class="est-cartao" aria-labelledby="estTituloSocios">
+                    <h4 id="estTituloSocios" class="est-cartao-titulo">Sócios: entradas e saídas</h4>
+                    <p class="est-nota">Entradas = inscrições e regressos. Saídas = sócios que ficaram inativos.</p>
+                    <div class="est-grafico" id="estGraficoSocios"></div>
+                    <details class="est-tabela"><summary>Ver tabela</summary><div id="estTabelaSocios"></div></details>
+                </article>
+
+                <article class="est-cartao" aria-labelledby="estTituloVendas">
+                    <h4 id="estTituloVendas" class="est-cartao-titulo">Vendas de material por mês</h4>
+                    <p class="est-nota">Receita das vendas pagas. O lucro aparece ao tocar em cada mês.</p>
+                    <div class="est-grafico" id="estGraficoVendas"></div>
+                    <details class="est-tabela"><summary>Ver tabela</summary><div id="estTabelaVendas"></div></details>
+                </article>
+
+                <div id="estTooltip" class="est-tooltip hidden" role="tooltip"></div>
             </section>
         </div>
 

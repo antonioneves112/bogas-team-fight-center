@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const equipa = [
     {
       nome: "José 'Bogas' Oliveira",
-      foto: "./img/equipa_bogas2.png",
+      foto: "./img/equipa/equipa_bogas2.webp",
       locais: [
         {
           ginasio: "Bogas Team Sede (Queluz)",
@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
     },
     {
       nome: "António Neves",
-      foto: "./img/equipa_tone.png",
+      foto: "./img/equipa/equipa_tone.webp",
       locais: [
         {
           ginasio: "Bogas Team Sede (Queluz)",
@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
     },
     {
       nome: "Francisco António",
-      foto: "./img/equipa_chiquinho.jpg",
+      foto: "./img/equipa/equipa_chiquinho.webp",
       locais: [
         {
           ginasio: "Bogas Team Sede (Queluz)",
@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
     },
     {
       nome: "Paulo Caro",
-      foto: "./img/equipa_paulinho.png",
+      foto: "./img/equipa/equipa_paulinho.webp",
       locais: [
         {
           ginasio: "MonsterGym (Cacém)",
@@ -79,7 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
     },
     {
       nome: "Mauro Nunes",
-      foto: "./img/equipa_mauro.png",
+      foto: "./img/equipa/equipa_mauro.webp",
       locais: [
         {
           ginasio: "XL Gym (Pontinha)",
@@ -104,9 +104,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     grelha.innerHTML = equipa
       .map(
-        (treinador) => `
+        (treinador, indice) => `
             <div class="treinador-card">
-                <img src="${treinador.foto}" alt="${treinador.nome}" class="treinador-foto">
+                <img src="${treinador.foto}" alt="${treinador.nome}" class="treinador-foto" decoding="async" loading="${indice === 0 ? "eager" : "lazy"}">
                 <div class="treinador-info">
                     <h2 class="treinador-nome">${treinador.nome}</h2>
                     

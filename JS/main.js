@@ -25,6 +25,7 @@ import {
   initMensalidadesEvents,
 } from "./mensalidades.js";
 import { initVendasEvents } from "./vendas.js";
+import { initEstatisticasEvents } from "./estatisticas.js";
 import {
   exportarGuerreirosPDF,
   exportarMensalidadesPDF,
@@ -74,6 +75,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   initMensalidadesEvents();
   initAulasEvents();
   initVendasEvents();
+  initEstatisticasEvents();
 
   configurarAprovacaoAula();
   configurarPagamentoDiretoAula();

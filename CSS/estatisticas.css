@@ -1,0 +1,391 @@
+/* =========================================================
+   CSS/estatisticas.css — GRÁFICOS DO DASHBOARD
+   Mobile-first. Cores validadas para o fundo escuro #1a1a19
+   (contraste ≥ 3:1 e distinguíveis por daltónicos).
+   ========================================================= */
+
+.est-area {
+  position: relative;
+  --est-superficie: #1a1a19;
+  --est-tinta: #f0efec;
+  --est-tinta-2: #c3c2b7;
+  --est-tinta-fraca: #898781;
+  --est-grelha: #2c2c2a;
+  --est-base: #383835;
+  --est-cor-1: #3987e5; /* azul   — mensalidades / recebido */
+  --est-cor-2: #d95926; /* laranja — vendas / por receber */
+  --est-cor-3: #199e70; /* verde-água — estimado */
+  --est-cor-4: #c98500; /* amarelo — vendas previstas */
+  --est-pos: #3987e5;   /* lucro / entradas */
+  --est-neg: #e66767;   /* prejuízo / saídas */
+  --est-bom: #0ca30c;
+  --est-mau: #d03b3b;
+  transition: opacity 0.2s ease;
+}
+
+.est-area.est-a-carregar {
+  opacity: 0.5;
+}
+
+.est-ajuda,
+.est-nota {
+  margin: 4px 0 0;
+  font-size: 0.8rem;
+  color: var(--est-tinta-fraca);
+}
+
+.est-mensagem {
+  padding: 12px;
+  border-radius: 10px;
+  background: rgba(208, 59, 59, 0.12);
+  color: var(--est-tinta);
+  font-size: 0.85rem;
+}
+
+/* ---------- Cartões ---------- */
+.est-cartao {
+  margin-top: 15px;
+  padding: 16px 14px;
+  border-radius: 14px;
+  background: var(--est-superficie);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.est-cartao-titulo {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--est-tinta);
+}
+
+/* ---------- Previsão (número em destaque + barra segmentada) ---------- */
+.est-heroi {
+  margin: 8px 0 2px;
+  font-size: 2.6rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--est-tinta);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.est-segmentos {
+  display: flex;
+  gap: 2px;
+  height: 28px;
+  margin: 14px 0 10px;
+}
+
+.est-segmento {
+  width: var(--est-parte);
+  min-width: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  padding-left: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #fff;
+  overflow: visible;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.est-segmento.est-cor-1,
+.est-chave.est-cor-1,
+.est-chave-linha.est-cor-1 {
+  background: var(--est-cor-1);
+}
+
+.est-segmento.est-cor-2,
+.est-chave.est-cor-2,
+.est-chave-linha.est-cor-2 {
+  background: var(--est-cor-2);
+}
+
+.est-segmento.est-cor-3,
+.est-chave.est-cor-3 {
+  background: var(--est-cor-3);
+}
+
+.est-segmento.est-cor-4,
+.est-chave.est-cor-4 {
+  background: var(--est-cor-4);
+}
+
+.est-chave.est-pos,
+.est-chave-linha.est-pos {
+  background: var(--est-pos);
+}
+
+.est-chave.est-neg,
+.est-chave-linha.est-neg {
+  background: var(--est-neg);
+}
+
+.est-legenda-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--est-tinta-2);
+}
+
+.est-legenda-lista li {
+  display: grid;
+  grid-template-columns: 12px 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.est-legenda-lista strong {
+  color: var(--est-tinta);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Indicadores (KPI) ---------- */
+.est-indicadores {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.est-indicador {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--est-superficie);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.est-indicador-rotulo {
+  font-size: 0.75rem;
+  color: var(--est-tinta-fraca);
+}
+
+.est-indicador strong {
+  font-size: 1.2rem;
+  color: var(--est-tinta);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.est-indicador strong.est-negativo {
+  color: var(--est-neg);
+}
+
+.est-delta {
+  font-size: 0.72rem;
+  color: var(--est-tinta-fraca);
+}
+
+.est-delta-bom {
+  color: var(--est-bom);
+}
+
+.est-delta-mau {
+  color: var(--est-mau);
+}
+
+/* ---------- Gráficos ---------- */
+.est-grafico {
+  margin-top: 10px;
+  width: 100%;
+}
+
+.est-svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.est-legenda {
+  list-style: none;
+  margin: 0 0 6px;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-size: 0.78rem;
+  color: var(--est-tinta-2);
+}
+
+.est-legenda li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.est-chave {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+.est-grelha {
+  stroke: var(--est-grelha);
+  stroke-width: 1;
+}
+
+.est-base {
+  stroke: var(--est-base);
+  stroke-width: 1;
+}
+
+.est-eixo {
+  fill: var(--est-tinta-fraca);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.est-rotulo-valor {
+  fill: var(--est-tinta);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.est-barra.est-cor-1 {
+  fill: var(--est-cor-1);
+}
+
+.est-barra.est-cor-2 {
+  fill: var(--est-cor-2);
+}
+
+.est-barra.est-pos {
+  fill: var(--est-pos);
+}
+
+.est-barra.est-neg {
+  fill: var(--est-neg);
+}
+
+.est-coluna.ativa .est-barra {
+  filter: brightness(1.25);
+}
+
+.est-alvo {
+  fill: transparent;
+  cursor: pointer;
+  outline: none;
+}
+
+.est-alvo:focus-visible {
+  stroke: var(--est-tinta-2);
+  stroke-width: 1;
+}
+
+/* ---------- Dica (tooltip) ---------- */
+.est-tooltip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: translate(var(--est-tt-x, 0), var(--est-tt-y, 0));
+  z-index: 20;
+  min-width: 160px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #0d0d0d;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+  font-size: 0.8rem;
+  color: var(--est-tinta-2);
+}
+
+.est-tooltip-titulo {
+  margin-bottom: 6px;
+  color: var(--est-tinta-fraca);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.est-tooltip-linha {
+  display: grid;
+  grid-template-columns: 12px auto 1fr;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 0;
+}
+
+.est-tooltip-linha strong {
+  color: var(--est-tinta);
+  font-variant-numeric: tabular-nums;
+}
+
+.est-chave-linha {
+  width: 12px;
+  height: 2px;
+  border-radius: 1px;
+}
+
+.est-chave-linha.sem-cor {
+  background: transparent;
+}
+
+/* ---------- Tabela (alternativa acessível ao gráfico) ---------- */
+.est-tabela {
+  margin-top: 8px;
+  font-size: 0.8rem;
+  color: var(--est-tinta-2);
+}
+
+.est-tabela summary {
+  cursor: pointer;
+  color: var(--est-tinta-fraca);
+}
+
+.est-tabela > div {
+  overflow-x: auto;
+}
+
+.est-tabela-dados {
+  width: 100%;
+  margin-top: 8px;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.est-tabela-dados th,
+.est-tabela-dados td {
+  padding: 6px 8px;
+  text-align: right;
+  border-bottom: 1px solid var(--est-grelha);
+  white-space: nowrap;
+}
+
+.est-tabela-dados th:first-child,
+.est-tabela-dados td:first-child {
+  text-align: left;
+}
+
+/* ---------- Ecrãs maiores ---------- */
+@media (min-width: 769px) {
+  .est-indicadores {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .est-cartao {
+    padding: 20px 22px;
+  }
+
+  .est-heroi {
+    font-size: 3.2rem;
+  }
+
+  .est-legenda-lista {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+  }
+
+  .est-legenda-lista li {
+    grid-template-columns: 12px auto auto;
+  }
+}
