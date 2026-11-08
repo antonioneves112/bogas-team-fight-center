@@ -212,6 +212,7 @@ export function renderizarTabelaSocios(
 
     let badgeMensalidade = "";
     let textoMensalidade = "";
+    let tituloMensalidade = "";
     let mostrarEuro = false;
 
     let modalidadeExibida = s.modalidade;
@@ -261,9 +262,11 @@ export function renderizarTabelaSocios(
 
         if (congelamento && !mensalidadePaga && !faturaPendenteLancada) {
           // Congelado: não deve mensalidade este mês. Volta a pagar no mês a seguir a mes_fim.
-          const [, mesFim] = congelamento.mes_fim.split("-");
+          // Só "CONGELADO" (cabe no telemóvel); o mês de regresso fica na dica e no modal ⏸.
+          const [anoFim, mesFim] = congelamento.mes_fim.split("-");
           badgeMensalidade = "badge-congelado";
-          textoMensalidade = `CONGELADO ATÉ ${MESES_PT[Number(mesFim) - 1].slice(0, 3).toUpperCase()}`;
+          textoMensalidade = "CONGELADO";
+          tituloMensalidade = `Congelado até ${MESES_PT[Number(mesFim) - 1]} ${anoFim} (${congelamento.motivo})`;
         } else if (!mensalidadePaga) {
           badgeMensalidade = "badge-pendente";
           textoMensalidade = "PENDENTE";
@@ -330,7 +333,7 @@ export function renderizarTabelaSocios(
       <td data-label="Nome" class="celula-nome">${escapeHTML(nomeCortado)}</td>
       <td data-label="Modalidade">${escapeHTML(modalidadeExibida)}</td>
       <td data-label="Estado"><span class="badge ${isInativo ? "badge-inativo" : "badge-ativo"}">${escapeHTML(s.estado)}</span></td>
-      <td data-label="Mensalidade"><span class="badge ${badgeMensalidade}">${textoMensalidade}</span></td>
+      <td data-label="Mensalidade"><span class="badge ${badgeMensalidade}"${tituloMensalidade ? ` title="${escapeHTML(tituloMensalidade)}"` : ""}>${textoMensalidade}</span></td>
       <td data-label="Ações">
         <div class="acoes-linha">
           <button class="btn-acao btn-edit" data-id="${escapeHTML(s.id)}" title="Editar"><i class='bx bx-edit'></i></button>

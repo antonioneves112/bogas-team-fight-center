@@ -60,7 +60,9 @@ try {
     r.ok("Grava o congelamento (sócio, meses, motivo)", gravado?.socio_id === 20 && gravado?.mes_inicio === MES_ATUAL && gravado?.mes_fim === fim && gravado?.motivo === "Lesão", JSON.stringify(gravado));
 
     const textoLinha = await linha();
-    r.ok(`Tabela mostra "CONGELADO ATÉ ${MESES[Number(fim.slice(5)) - 1]}" e não PENDENTE`, textoLinha.includes(`CONGELADO ATÉ ${MESES[Number(fim.slice(5)) - 1]}`) && !textoLinha.includes("PENDENTE"), textoLinha);
+    r.ok("Tabela mostra só CONGELADO (sem \"até ...\") e não PENDENTE", textoLinha.includes("CONGELADO") && !textoLinha.includes("ATÉ") && !textoLinha.includes("PENDENTE"), textoLinha);
+    const dica = await p.evaluate(() => document.querySelector(".badge-congelado")?.getAttribute("title") || "");
+    r.ok("O mês de regresso continua na dica da etiqueta", dica.startsWith("Congelado até") && dica.includes("Lesão"), dica);
     r.ok("Card 'Pagamentos Pendentes' desce 1", (await cartao()) === pendentesAntes - 1, `${pendentesAntes} -> ${await cartao()}`);
     r.ok("Congelado não tem botão de faturar nem de WhatsApp", await p.evaluate(() => {
       const tr = [...document.querySelectorAll("#tabelaSocios tr")].find((t) => t.innerText.toUpperCase().includes("LOPES"));
