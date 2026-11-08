@@ -45,18 +45,26 @@ async function lerDados(mesFinal) {
   // A média da mensalidade usa até 3 meses antes do primeiro mês do gráfico.
   const inicioMensalidades = ultimosMeses(inicio, 4)[0];
 
-  const [rMens, rVendas, rDesp, rSocios] = await Promise.all([
+  const [rMens, rVendas, rDesp, rSocios, rCong] = await Promise.all([
     supabase.from("mensalidades").select("socio_id, mes_ano, valor, estado, tipo").gte("mes_ano", inicioMensalidades).lte("mes_ano", fim),
     supabase.from("vendas").select("data, total, custo_total, estado").gte("data", dataInicio).lte("data", dataFim),
     supabase.from("despesas").select("data, valor").gte("data", dataInicio).lte("data", dataFim),
     supabase.from("socios").select("id, estado, modalidade, data_inscricao, data_inativo, data_reentrada"),
+    supabase.from("socio_congelamentos").select("socio_id, mes_inicio, mes_fim").gte("mes_fim", inicio).lte("mes_inicio", fim),
   ]);
   for (const r of [rMens, rDesp, rSocios]) if (r.error) throw r.error;
   if (rVendas.error && !moduloEmFalta(rVendas.error)) throw rVendas.error;
+  if (rCong.error && !moduloEmFalta(rCong.error)) throw rCong.error;
 
   return {
     meses,
-    linhas: { mensalidades: rMens.data, vendas: rVendas.data || [], despesas: rDesp.data, socios: rSocios.data },
+    linhas: {
+      mensalidades: rMens.data,
+      vendas: rVendas.data || [],
+      despesas: rDesp.data,
+      socios: rSocios.data,
+      congelamentos: rCong.data || [],
+    },
   };
 }
 

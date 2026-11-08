@@ -5,6 +5,7 @@ import { formatarNomeCurto, escapeHTML, MESES_PT, mesLocalISO, dataLocalISO, ehS
 import { abrirModalEliminarSocio } from "./main.js";
 import { mostrarAviso } from "./toast.js";
 import { WEBHOOK_MAKE_URL } from "./config.js";
+import { abrirModalCongelar } from "./congelamentos.js";
 
 let paginaAtualAtivos = 1;
 const ITENS_POR_PAGINA = 10;
@@ -27,8 +28,8 @@ export async function carregarGuerreiros() {
   const hoje = dataLocalISO();
   const limiteAtraso = hoje < inicioMesSeguinte ? hoje : inicioMesSeguinte;
 
-  // As três consultas são independentes: correm em paralelo.
-  const [respSocios, respMensalidades, respAtraso] = await Promise.all([
+  // As consultas são independentes: correm em paralelo.
+  const [respSocios, respMensalidades, respAtraso, respCongelados] = await Promise.all([
     supabase.from("socios").select("*").eq("treinador", state.treinadorAtual),
     supabase
       .from("mensalidades")
@@ -41,7 +42,18 @@ export async function carregarGuerreiros() {
       .eq("pago", false)
       .lt("data_aula", limiteAtraso)
       .order("data_aula"),
+    // Sócios congelados no mês escolhido (lesão, férias, pausa): não devem mensalidade.
+    supabase
+      .from("socio_congelamentos")
+      .select("socio_id, mes_inicio, mes_fim, motivo")
+      .lte("mes_inicio", mesAtual)
+      .gte("mes_fim", mesAtual),
   ]);
+  // Se a migração 05 ainda não correu, a tabela não existe: segue sem congelamentos.
+  const congelamentosMes =
+    respCongelados.error && /does not exist|Could not find|PGRST205|42P01/.test(`${respCongelados.error.message} ${respCongelados.error.code}`)
+      ? []
+      : respCongelados.data || [];
 
   if (respSocios.error || respMensalidades.error || respAtraso.error) {
     console.error(respSocios.error || respMensalidades.error || respAtraso.error);
@@ -58,6 +70,7 @@ export async function carregarGuerreiros() {
     state.faturasMesAtual = mensalidadesMes || [];
     state.aulasEmAtraso = respAtraso.data || [];
     const idsComAulaEmAtraso = new Set(state.aulasEmAtraso.map((a) => a.socio_id));
+    state.congelamentosMes = new Map(congelamentosMes.map((c) => [c.socio_id, c]));
 
     state.inativosAtuais = todosSocios
       .filter((s) => s.estado === "Inativo")
@@ -135,7 +148,9 @@ export async function carregarGuerreiros() {
       if (ehSocioPT(s.modalidade)) return idsComAulaEmAtraso.has(s.id);
 
       const temFaturaPendente = idsComDividaAtiva.includes(s.id);
-      const naoTemFatura = s.estado === "Ativo" && !state.idsPagosGlobal.includes(s.id);
+      // Congelado no mês: não deve mensalidade (só conta uma fatura pendente lançada à mão).
+      const congelado = state.congelamentosMes.has(s.id);
+      const naoTemFatura = s.estado === "Ativo" && !congelado && !state.idsPagosGlobal.includes(s.id);
       return temFaturaPendente || naoTemFatura;
     });
 
@@ -241,8 +256,15 @@ export function renderizarTabelaSocios(
       } else {
         const mensalidadePaga =
           faturaMensalidade && faturaMensalidade.estado === "Pago";
+        const congelamento = state.congelamentosMes?.get(s.id);
+        const faturaPendenteLancada = faturaMensalidade && faturaMensalidade.estado === "Pendente";
 
-        if (!mensalidadePaga) {
+        if (congelamento && !mensalidadePaga && !faturaPendenteLancada) {
+          // Congelado: não deve mensalidade este mês. Volta a pagar no mês a seguir a mes_fim.
+          const [, mesFim] = congelamento.mes_fim.split("-");
+          badgeMensalidade = "badge-congelado";
+          textoMensalidade = `CONGELADO ATÉ ${MESES_PT[Number(mesFim) - 1].slice(0, 3).toUpperCase()}`;
+        } else if (!mensalidadePaga) {
           badgeMensalidade = "badge-pendente";
           textoMensalidade = "PENDENTE";
           mostrarEuro = true;
@@ -313,6 +335,7 @@ export function renderizarTabelaSocios(
         <div class="acoes-linha">
           <button class="btn-acao btn-edit" data-id="${escapeHTML(s.id)}" title="Editar"><i class='bx bx-edit'></i></button>
           <button class="btn-acao btn-delete" data-id="${escapeHTML(s.id)}" title="Eliminar"><i class='bx bx-trash'></i></button>
+          ${isInativo ? "" : `<button class="btn-acao btn-congelar" data-id="${escapeHTML(s.id)}" title="Congelar (lesão, férias, pausa)"><i class='bx bx-pause-circle'></i></button>`}
           ${btnFaturar}
           ${btnWhatsApp}
         </div>
@@ -531,6 +554,13 @@ export function initSociosEvents() {
       }
 
       renderizarTabelaSocios(listaAUsar, state.idsPagosGlobal, null, true);
+      return;
+    }
+
+    const btnCongelar = e.target.closest(".btn-congelar");
+    if (btnCongelar) {
+      const socio = state.todosOsGuerreiros?.find((s) => s.id == btnCongelar.dataset.id);
+      if (socio) abrirModalCongelar(socio);
       return;
     }
 

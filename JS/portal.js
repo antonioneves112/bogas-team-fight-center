@@ -21,6 +21,7 @@ import {
   mesLocalISO,
   urlB64ToUint8Array,
   mostrar,
+  ehSocioPT,
 } from "./helpers.js";
 
 let atletaLogadoObj = null;
@@ -213,28 +214,38 @@ function renderizarPortal(resumo) {
   const faturaMensalidade = (resumo.faturas_mes || []).find(
     (p) => !p.tipo || p.tipo === "Mensalidade" || p.tipo === "Rendimento",
   );
-  const isPTOnly =
-    socio.modalidade === "Aulas Particulares" || socio.modalidade === "Aula Particular";
+  const isPTOnly = ehSocioPT(socio.modalidade);
   const isParceria =
     socio.modalidade === "Rendimento" || (socio.nome || "").toUpperCase().includes("GYM");
+  // Congelado este mês (lesão, férias, pausa): não deve mensalidade.
+  const congelamento = resumo.congelamento || null;
+  const mensalidadePendenteLancada = (faturaMensalidade?.estado || "").trim().toLowerCase() === "pendente";
 
   let statusTexto = "PAGO";
   let tipoDivida = "";
   if (resumo.tem_aula_por_pagar) {
     statusTexto = "AULA N PAGA";
     tipoDivida = "aula";
+  } else if (congelamento && !mensalidadePendenteLancada) {
+    statusTexto = "CONGELADO";
   } else if (
     !isPTOnly &&
     !isParceria &&
-    (!faturaMensalidade || (faturaMensalidade.estado || "").trim().toLowerCase() === "pendente")
+    (!faturaMensalidade || mensalidadePendenteLancada)
   ) {
     statusTexto = "N PAGA";
     tipoDivida = "mensalidade";
   }
   const isDivida = tipoDivida !== "";
+  const mostrarCongelado = statusTexto === "CONGELADO";
 
   const labelMesRef = document.getElementById("mesReferencia");
-  if (labelMesRef) labelMesRef.innerText = `Referente a ${MESES_PT[hoje.getMonth()]}`;
+  if (labelMesRef) {
+    const [, mesFim] = (congelamento?.mes_fim || "").split("-");
+    labelMesRef.innerText = mostrarCongelado
+      ? `Congelado até ${MESES_PT[Number(mesFim) - 1]} (${congelamento.motivo})`
+      : `Referente a ${MESES_PT[hoje.getMonth()]}`;
+  }
 
   const cardMensalidade = document.getElementById("cardMensalidade");
   const statusH1 = document.getElementById("statusMensalidade");
@@ -243,13 +254,15 @@ function renderizarPortal(resumo) {
     cardMensalidade.classList.toggle("pendente", isDivida);
     cardMensalidade.classList.toggle("card-alerta-vermelho", isDivida);
     if (statusH1) {
-      statusH1.className = isDivida ? "status-em-divida" : "status-pago";
+      statusH1.className = isDivida ? "status-em-divida" : mostrarCongelado ? "status-congelado" : "status-pago";
       statusH1.innerText = statusTexto;
     }
     if (iconMensalidade)
       iconMensalidade.innerHTML = isDivida
         ? "<i class='bx bx-error-circle icon-danger'></i>"
-        : "<i class='bx bx-check-shield icon-success'></i>";
+        : mostrarCongelado
+          ? "<i class='bx bx-pause-circle icon-congelado'></i>"
+          : "<i class='bx bx-check-shield icon-success'></i>";
   }
 
   if (isDivida && hoje.getDate() > 8) {

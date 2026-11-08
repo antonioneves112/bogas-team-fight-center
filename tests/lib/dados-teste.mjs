@@ -62,5 +62,6 @@ export function tabelasBase() {
     vendas: [],
     venda_itens: [],
     stock_movimentos: [],
+    socio_congelamentos: [],
   };
 }

@@ -1505,3 +1505,85 @@ table tr:has(.btn-carregar-mais-mens) td::before {
   font-size: 0.7rem;
   color: #aaa;
 }
+
+/* =========================================================
+   CONGELAR SÓCIO
+   ========================================================= */
+.badge-congelado {
+  background: rgba(120, 180, 255, 0.15);
+  color: #8cc4ff;
+  border: 1px solid rgba(120, 180, 255, 0.35);
+}
+
+.btn-acao.btn-congelar {
+  color: #8cc4ff;
+}
+
+.congelar-nome {
+  margin: 0 0 6px;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: #fff;
+}
+
+.congelar-explicacao,
+.congelar-regresso {
+  margin: 0 0 12px;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.congelar-regresso {
+  color: #8cc4ff;
+}
+
+.congelar-regresso.congelar-erro {
+  color: #ff4d4d;
+}
+
+.congelar-subtitulo {
+  margin: 14px 0 8px;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.congelar-lista {
+  list-style: none;
+  margin: 0 0 6px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.congelar-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-light);
+}
+
+.congelar-item strong {
+  display: block;
+  color: #fff;
+  font-size: 0.9rem;
+}
+
+.congelar-meta {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.congelar-vazio {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.congelar-item > div {
+  text-align: left;
+}

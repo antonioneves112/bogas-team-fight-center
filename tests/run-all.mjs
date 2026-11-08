@@ -3,7 +3,7 @@
 //   npm test -- --visual <pasta-da-versao-antiga>
 import { spawnSync } from "node:child_process";
 
-const testes = [["regras.test.mjs"], ["sql.test.mjs"], ["e2e.test.mjs"], ["e2e-vendas.test.mjs"], ["estatisticas.test.mjs"], ["e2e-estatisticas.test.mjs"]];
+const testes = [["regras.test.mjs"], ["sql.test.mjs"], ["e2e.test.mjs"], ["e2e-vendas.test.mjs"], ["estatisticas.test.mjs"], ["e2e-estatisticas.test.mjs"], ["e2e-congelar.test.mjs"]];
 const iVisual = process.argv.indexOf("--visual");
 if (iVisual > -1) testes.push(["visual.test.mjs", process.argv[iVisual + 1]]);
 

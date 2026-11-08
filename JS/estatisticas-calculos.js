@@ -90,7 +90,7 @@ export function seriesMensais(meses, { mensalidades = [], vendas = [], despesas 
  *  - vendasPrevistas: (só no mês corrente) vendas ao ritmo atual até ao fim do mês
  * @param hoje Date usada para saber se o mês é o corrente (injetável nos testes)
  */
-export function previsaoDoMes(mes, { mensalidades = [], vendas = [], socios = [] }, hoje = new Date()) {
+export function previsaoDoMes(mes, { mensalidades = [], vendas = [], socios = [], congelamentos = [] }, hoje = new Date()) {
   const mesHoje = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}`;
   const estado = mes < mesHoje ? "fechado" : mes === mesHoje ? "corrente" : "futuro";
 
@@ -119,13 +119,16 @@ export function previsaoDoMes(mes, { mensalidades = [], vendas = [], socios = []
   let vendasPrevistas = 0;
   if (estado !== "fechado") {
     const comMensalidade = new Set(doMes.filter((m) => ehMensalidade(m.tipo)).map((m) => m.socio_id));
+    // Congelados neste mês (lesão, férias, pausa) não devem mensalidade.
+    const congelados = new Set(congelamentos.filter((c) => c.mes_inicio <= mes && c.mes_fim >= mes).map((c) => c.socio_id));
     const fimDoMes = `${mes}-${String(diasNoMes(mes)).padStart(2, "0")}`;
     semFatura = socios.filter(
       (s) =>
         s.estado === "Ativo" &&
         !ehSoAulasParticulares(s.modalidade) &&
         (!s.data_inscricao || String(s.data_inscricao) <= fimDoMes) &&
-        !comMensalidade.has(s.id),
+        !comMensalidade.has(s.id) &&
+        !congelados.has(s.id),
     ).length;
     estimado = semFatura * mensalidadeMedia;
 

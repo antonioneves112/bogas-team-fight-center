@@ -305,6 +305,26 @@ await q("update aulas_particulares set pago = true where socio_id = 1 and data_a
 const resumoPago = await como("anon", null, async () => (await q("select portal_resumo($1, '2026-11', '2026-11-08') as r", [tokenAtraso]))[0].r);
 r.ok("Portal: depois de paga deixa de contar", resumoPago.tem_aula_por_pagar === false);
 
+// ---------------- CONGELAMENTOS (05) ----------------
+await db.exec(sqlDe("05_congelamentos.sql"));
+await db.exec(sqlDe("05_congelamentos.sql"));
+r.ok("Congelar: migração 05 corre e é idempotente (2x)", true);
+const erroAnonCong = await como("anon", null, () => falha("select * from socio_congelamentos"));
+r.ok("Congelar: público NÃO lê congelamentos", /permission denied/.test(erroAnonCong || ""), erroAnonCong);
+await como("authenticated", TREINADOR, () => q("insert into socio_congelamentos (socio_id, mes_inicio, mes_fim, motivo) values (1, '2026-08', '2026-09', 'Férias')"));
+r.ok("Congelar: treinador cria congelamento de agosto a setembro", (await q("select count(*)::int n from socio_congelamentos where socio_id = 1"))[0].n === 1);
+const erroSobreposto = await como("authenticated", TREINADOR, () => falha("insert into socio_congelamentos (socio_id, mes_inicio, mes_fim) values (1, '2026-09', '2026-10')"));
+r.ok("Congelar: congelamentos sobrepostos são recusados", erroSobreposto?.includes("CONGELAMENTO_SOBREPOSTO"), erroSobreposto);
+const erroAoContrario = await como("authenticated", TREINADOR, () => falha("insert into socio_congelamentos (socio_id, mes_inicio, mes_fim) values (1, '2026-12', '2026-11')"));
+r.ok("Congelar: mês final antes do inicial é recusado", !!erroAoContrario);
+const erroIntrusoCong = await como("authenticated", INTRUSO, () => falha("insert into socio_congelamentos (socio_id, mes_inicio, mes_fim) values (2, '2026-12', '2026-12')"));
+r.ok("Congelar: conta não-treinador não congela", !!erroIntrusoCong);
+const tokenCong = (await login("ana@teste.pt", "novapass")).token;
+const resumoCongelado = await como("anon", null, async () => (await q("select portal_resumo($1, '2026-09', '2026-09-10') as r", [tokenCong]))[0].r);
+r.ok("Congelar: portal mostra o congelamento no mês congelado", resumoCongelado.congelamento?.mes_fim === "2026-09" && resumoCongelado.congelamento?.motivo === "Férias");
+const resumoDepois = await como("anon", null, async () => (await q("select portal_resumo($1, '2026-10', '2026-10-10') as r", [tokenCong]))[0].r);
+r.ok("Congelar: no mês seguinte já não está congelado (volta sozinho)", resumoDepois.congelamento === null);
+
 // ---------------- EMERGÊNCIA ----------------
 await db.exec(sqlDe("99_emergencia_reverter_fase2.sql"));
 r.ok("Script de emergência corre sem erros", true);

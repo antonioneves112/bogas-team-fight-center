@@ -1035,6 +1035,56 @@
             </form>
         </div>
     </div>
+    <!-- ================= CONGELAR SÓCIO ================= -->
+    <div id="modalCongelar" class="modal-overlay hidden modal-z-index">
+        <div class="modal-content glass-panel">
+            <div class="modal-header">
+                <h3><i class='bx bx-pause-circle'></i> Congelar sócio</h3>
+                <button type="button" id="btnFecharCongelar" class="btn-fechar"><i class='bx bx-x'></i></button>
+            </div>
+
+            <p class="congelar-nome" id="congelarNome"></p>
+            <p class="congelar-explicacao">
+                Nos meses congelados o sócio não paga mensalidade e não aparece como pendente.
+                Volta a pagar sozinho no mês a seguir ao último mês congelado.
+            </p>
+
+            <h4 class="congelar-subtitulo">Congelamentos deste sócio</h4>
+            <ul id="listaCongelamentos" class="congelar-lista"></ul>
+
+            <form id="formCongelar" class="dash-form">
+                <h4 class="congelar-subtitulo">Novo congelamento</h4>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="congelarInicio">Primeiro mês congelado</label>
+                        <input type="month" id="congelarInicio" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="congelarFim">Último mês congelado</label>
+                        <input type="month" id="congelarFim" required>
+                    </div>
+                </div>
+                <p class="congelar-regresso" id="congelarRegresso"></p>
+                <div class="form-group">
+                    <label for="congelarMotivo">Motivo</label>
+                    <select id="congelarMotivo" required>
+                        <option value="Lesão">Lesão</option>
+                        <option value="Férias">Férias</option>
+                        <option value="Pausa">Pausa nos treinos</option>
+                        <option value="Outro">Outro</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="congelarNotas">Notas <span class="rotulo-opcional">(Opcional)</span></label>
+                    <input type="text" id="congelarNotas" maxlength="200" placeholder="Ex: rotura de ligamentos, regressa após fisioterapia">
+                </div>
+                <button type="submit" id="btnGuardarCongelar" class="btn-tatico btn-full-width">
+                    Congelar <i class='bx bx-pause-circle'></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- ================= MODAIS DE VENDAS E STOCK ================= -->
     <div id="modalNovaVenda" class="modal-overlay hidden modal-z-index">
         <div class="modal-content glass-panel modal-largo">

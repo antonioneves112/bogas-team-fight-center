@@ -99,6 +99,21 @@ Lê esta skill toda antes de alterar código. Quando perguntarem "o que fizemos?
   - card "Pagamentos Pendentes": o número e a lista ao clicar usam a mesma `state.guerreirosPendentes`;
   - portal: `portal_resumo.tem_aula_por_pagar` (migração `04_aulas_em_atraso.sql`).
 
+## 3.2.2 Congelar sócios (lesão, férias, pausa)
+
+- **Onde se faz:** botão ⏸ na linha do sócio (dashboard) abre o modal (`JS/congelamentos.js`). A tabela é a `socio_congelamentos` (migração `05_congelamentos.sql`).
+- **Por meses inteiros:** `mes_inicio`..`mes_fim` ('YYYY-MM', inclusive). Nesses meses não há mensalidade devida. O sócio **volta a pagar sozinho** no mês seguinte a `mes_fim`, sem tarefa automática: é só a comparação de datas.
+  - Um trigger na BD recusa congelamentos sobrepostos (`CONGELAMENTO_SOBREPOSTO`).
+  - Fica histórico de todos os congelamentos (motivo, notas, treinador).
+- **Ações no modal:**
+  - **Cancelar:** apaga um congelamento que ainda não começou ou que começa este mês.
+  - **Terminar:** para um congelamento já em curso, `mes_fim` passa a ser o mês anterior, por isso este mês já é pago.
+- **Efeitos:**
+  - dashboard: mostra "CONGELADO ATÉ <mês>", não conta como pendente e esconde os botões € e WhatsApp. Uma mensalidade pendente lançada à mão continua a contar;
+  - portal: `portal_resumo.congelamento` mostra "CONGELADO" e não abre o aviso de cobrança da mensalidade;
+  - estatísticas: congelados não entram na "mensalidade estimada" da previsão.
+- **Se a migração 05 não tiver corrido:** o dashboard e as estatísticas funcionam sem congelamentos.
+
 ## 3.3 Imagens e cache
 
 - **Fotos da equipa:** em `img/equipa/*.webp` (900 px de largura, qualidade 0,82). Passaram de 19,4 MB para cerca de 540 KB. Para otimizar outras imagens:

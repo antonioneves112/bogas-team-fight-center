@@ -2,7 +2,7 @@
 // 🥊 MOTOR DA APP (SERVICE WORKER) - BOGAS TEAM - V14
 // =========================================================================
 // Mudar a versão força todos os telemóveis a descarregar o código novo.
-const CACHE_NAME = "bogas-team-v112";
+const CACHE_NAME = "bogas-team-v113";
 
 // Ficheiros essenciais da app (o load3.png de 1,1 MB saiu: não era usado em nenhuma página).
 const ASSETS_TO_CACHE = [
@@ -29,6 +29,7 @@ const ASSETS_TO_CACHE = [
   "./JS/pdfManager.js",
   "./JS/vendas.js",
   "./JS/estatisticas.js",
+  "./JS/congelamentos.js",
   "./JS/estatisticas-calculos.js",
   "./CSS/estatisticas.css",
   "./CSS/vendas.css",

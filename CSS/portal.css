@@ -1646,3 +1646,13 @@ body.page-portal {
     font-size: 0.55rem !important;
   }
 }
+
+/* Sócio congelado (lesão, férias, pausa): não deve mensalidade este mês */
+.status-text h1.status-congelado {
+  color: #8cc4ff;
+  text-shadow: 0 0 20px rgba(140, 196, 255, 0.3);
+}
+
+.icon-congelado {
+  color: #8cc4ff;
+}

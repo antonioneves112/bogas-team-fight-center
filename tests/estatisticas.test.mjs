@@ -67,6 +67,12 @@ r.ok("Previsão: mensalidade média 37,50 € e estimado 2 × 37,50 = 75", p.men
 r.ok("Previsão: vendas ao ritmo atual até ao fim do mês (+55)", p.vendasPrevistas === 55, `vendasPrevistas=${p.vendasPrevistas}`);
 r.ok("Previsão: total = 105 + 50 + 75 + 55 = 285", p.total === 285);
 
+// Congelar o sócio 4 em fevereiro: deixa de contar como mensalidade estimada.
+const pCongelado = previsaoDoMes("2026-02", { ...dados, congelamentos: [{ socio_id: 4, mes_inicio: "2026-01", mes_fim: "2026-02" }] }, new Date(2026, 1, 14));
+r.ok("Previsão: sócio congelado no mês não entra no estimado (2 → 1 sócio, 75 → 37,50)", pCongelado.semFatura === 1 && pCongelado.estimado === 37.5, JSON.stringify(pCongelado));
+const pCongeladoAntes = previsaoDoMes("2026-02", { ...dados, congelamentos: [{ socio_id: 4, mes_inicio: "2025-11", mes_fim: "2026-01" }] }, new Date(2026, 1, 14));
+r.ok("Previsão: congelamento que acabou no mês anterior já não conta (volta a pagar)", pCongeladoAntes.semFatura === 2);
+
 const fechado = previsaoDoMes("2026-01", dados, new Date(2026, 1, 14));
 r.ok("Mês fechado: sem estimativas, só recebido e por receber", fechado.estado === "fechado" && fechado.estimado === 0 && fechado.vendasPrevistas === 0 && fechado.recebido === 83);
 r.ok("Mês futuro identificado", previsaoDoMes("2026-03", dados, new Date(2026, 1, 14)).estado === "futuro");

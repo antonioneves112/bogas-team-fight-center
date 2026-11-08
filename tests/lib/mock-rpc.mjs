@@ -37,6 +37,7 @@ export function rpcSimuladas() {
         faturas_mes: mock.tabelas.mensalidades.filter((m) => m.socio_id === id && m.mes_ano === p_mes).map(({ estado, tipo }) => ({ estado, tipo })),
         tem_aula_por_pagar: aulas.some((a) => a.estado === "Aceite" && !a.pago && a.data_aula < p_hoje),
         proxima_aula: aulas.filter((a) => a.data_aula >= p_hoje).sort((a, b) => a.data_aula.localeCompare(b.data_aula))[0] || null,
+        congelamento: (mock.tabelas.socio_congelamentos || []).find((c) => c.socio_id === id && c.mes_inicio <= p_mes && c.mes_fim >= p_mes) || null,
         notificacoes: mock.tabelas.notificacoes.filter((n) => n.socio_id === id),
       };
     },
