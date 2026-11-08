@@ -129,7 +129,8 @@ async function guardar(ev) {
     );
     mostrarAviso("Sócio congelado", `${socioAtual.nome}: volta a pagar em ${nomeMes(somarMeses(fim, 1))}.`, "sucesso");
     $("formCongelar").reset();
-    await carregarLista();
+    // Fecha a janela: o resultado vê-se logo na lista ("CONGELADO ATÉ ...").
+    mostrar($("modalCongelar"), false);
     carregarGuerreiros();
   } catch (err) {
     mostrarAviso(

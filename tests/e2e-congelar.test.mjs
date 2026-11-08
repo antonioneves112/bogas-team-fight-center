@@ -66,6 +66,9 @@ try {
       const tr = [...document.querySelectorAll("#tabelaSocios tr")].find((t) => t.innerText.toUpperCase().includes("LOPES"));
       return !tr.querySelector(".btn-faturar") && !tr.querySelector(".btn-whatsapp");
     }));
+    r.ok("Depois de congelar, a janela fecha sozinha", await p.evaluate(() => document.getElementById("modalCongelar").classList.contains("hidden")));
+    await clicar(p, '.btn-congelar[data-id="20"]');
+    await espera(600);
     r.ok("Lista do modal mostra o congelamento ativo com opção de cancelar", (await p.innerText("#listaCongelamentos")).includes("Congelado agora") && (await p.evaluate(() => !!document.querySelector(".btn-cancelar-congelamento"))));
 
     // Cancelar volta ao normal
