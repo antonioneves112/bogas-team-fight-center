@@ -392,3 +392,14 @@
   font-family: inherit;
   font-size: inherit;
 }
+
+/* Versão da app no fim do menu (só na app instalada; criado pelo menu.js) */
+.app-versao {
+  margin-top: auto;
+  padding-top: 20px;
+  text-align: center;
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.65rem;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.3);
+}

@@ -51,7 +51,7 @@ body {
       rgba(0, 0, 0, 0) 55%
     ),
     linear-gradient(rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0.9)),
-    url("../img/PRETO.jpg") no-repeat center/cover;
+    url("../img/PRETO.webp") no-repeat center/cover;
   background-attachment: fixed;
   color: var(--text);
   font-family: "Montserrat", sans-serif;

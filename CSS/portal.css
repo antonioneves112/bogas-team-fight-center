@@ -9,7 +9,7 @@
 body.page-portal {
   background:
     linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)),
-    url("../img/PRETO.jpg") center center / cover no-repeat;
+    url("../img/PRETO.webp") center center / cover no-repeat;
   background-color: #080808;
   color: #fff;
   font-family: "Montserrat", sans-serif;

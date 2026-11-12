@@ -37,62 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const WA_FALLBACK = prefix + numA + numB + numC;
   // ------------------------------------------------
 
-  const DATA = [
-    {
-      day: "Segunda-feira",
-      classes: [
-        { modality: "Boxe", time: "18:00 - 19:00", coach: "Francisco António" },
-        {
-          modality: "Kickboxing",
-          turma: "Turma A",
-          time: "19:15 - 20:30",
-          coach: "José 'Bogas' Oliveira",
-        },
-        {
-          modality: "Kickboxing",
-          turma: "Turma B",
-          time: "20:40 - 21:50",
-          coach: "António Neves",
-        },
-      ],
-    },
-    {
-      day: "Quarta-feira",
-      classes: [
-        { modality: "Boxe", time: "18:00 - 19:00", coach: "Francisco António" },
-        {
-          modality: "Kickboxing",
-          turma: "Turma A",
-          time: "19:15 - 20:30",
-          coach: "José 'Bogas' Oliveira",
-        },
-        {
-          modality: "Kickboxing",
-          turma: "Turma B",
-          time: "20:40 - 21:50",
-          coach: "António Neves",
-        },
-      ],
-    },
-    {
-      day: "Sexta-feira",
-      classes: [
-        { modality: "Boxe", time: "18:00 - 19:00", coach: "Francisco António" },
-        {
-          modality: "Kickboxing",
-          turma: "Turma A",
-          time: "19:15 - 20:30",
-          coach: "José 'Bogas' Oliveira",
-        },
-        {
-          modality: "Kickboxing",
-          turma: "Turma B",
-          time: "20:40 - 21:50",
-          coach: "António Neves",
-        },
-      ],
-    },
-  ];
+  const DATA = window.HORARIO_AULAS || []; // JS/horario-dados.js
 
   const state = { filter: null, selected: null };
 

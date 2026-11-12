@@ -123,6 +123,12 @@ Lê esta skill toda antes de alterar código. Quando perguntarem "o que fizemos?
   - Na conta Cloudflare, o "Browser Cache TTL" deve estar em **"Respect Existing Headers"**; com outro valor, sobrepõe-se ao `_headers`.
   - Sobe o `CACHE_NAME` do `sw.js` a cada publicação.
 
+## 3.4 Site público: menu, SEO e média (acrescentado em 2026-11-12)
+
+- **Menu = fonte única:** a lista `MENU` em `JS/menu.js`. Cada página pública só tem `<header class="site-header"></header>`, o overlay e `<script src="./JS/menu.js"></script>` **sem defer** logo a seguir (o menu é desenhado antes da primeira pintura, sem saltos). `data-instalar` no header (só na home) mostra o botão "Instalar App". O link ativo é detetado pelo nome do ficheiro.
+- **Google:** `JS/dados-estruturados.js` injeta o JSON-LD (ExerciseGym: morada, horário, Instagram) na home, contactos e horários. Não está num `<script>` no HTML por causa da regra 1. **O horário vem de `JS/horario-dados.js` (fonte única, também usado pela página de horários).** `robots.txt` esconde as páginas privadas; `sitemap.xml` lista as páginas públicas.
+- **Imagens:** as do site usam `.webp` (originais mantidos ao lado). **Vídeos:** `cd tests && node ferramentas/comprimir-videos.mjs [--sem-som] <videos>` (ffmpeg-static; H.264 CRF 28, máx. 720p, substitui no sítio só se ficar mais pequeno).
+
 ## 4. Ordem de publicação (não trocar!)
 
 1. SQL Editor: `00_diagnostico.sql` (só leitura). Confirmar que `auth.users` só tem treinadores.
@@ -152,7 +158,6 @@ npm test           # regras + SQL + browser
 
 - O webhook do Make continua visível no browser (`config.js`): qualquer pessoa o pode usar para enviar emails. Solução: passá-lo para uma Edge Function ou para um trigger com `pg_net`.
 - Confirmar que as Edge Functions `notificar-alvo` e `notificar-todos` usam a `service_role` (se usarem a chave do pedido, deixam de ler `push_subscriptions` depois da fase 2).
-- Comprimir os vídeos (`img/modal*.mp4`, `img/graduacoes*`) e as imagens PNG grandes (`equipa_*.png`, cerca de 6 MB cada; `equipa.html` pesa 20 MB).
-- `img/mauro.png` não existe (dá 404 em `treinadores.html`; o problema já existia antes).
+- Os ficheiros de `img/` que nenhuma página usava (147 MB, incl. as fotos originais `_DDV*` da graduação de março 2026) foram movidos em 2026-11-12 para `C:/VS PROJS/BOGAS-arquivo-media/` (fora do site, mesma estrutura de pastas). `img/PRETO.jpg` fica: é usado pelos emails do Make.
 - O CSS antigo continua desktop-first (`max-width`). O CSS novo deve ser mobile-first.
 - Ainda há `el.style.*` em JS para animações (opacidade, overflow). É JS a mexer em CSS, não HTML misturado; trocar por classes quando se mexer nesses ficheiros.

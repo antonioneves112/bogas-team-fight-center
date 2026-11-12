@@ -1,0 +1,13 @@
+# Bogas Team Fight Center
+# Páginas privadas (gestão e portal dos atletas) não interessam ao Google.
+# Nota: isto não é segurança; a proteção real está no Supabase (RLS + tokens).
+User-agent: *
+Disallow: /login.html
+Disallow: /dashboard.html
+Disallow: /portal.html
+Disallow: /gateway.html
+Disallow: /make/
+Disallow: /tests/
+Disallow: /supabase/
+
+Sitemap: https://www.bogasteamkickboxing.pt/sitemap.xml

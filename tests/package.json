@@ -9,6 +9,7 @@
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.4.6",
+    "ffmpeg-static": "^5.2.0",
     "playwright-core": "^1.48.2"
   }
 }

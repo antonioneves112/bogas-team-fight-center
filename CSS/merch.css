@@ -311,19 +311,30 @@
   font-size: 1rem;
 }
 
+/* Mobile-first: no telemóvel há 2 cartões por linha e "ENCOMENDAR" tem de caber */
 .page-merch .product-cta {
-  margin: 10px 16px 14px;
-  padding: 10px 12px;
+  margin: 10px 0 12px;
+  padding: 10px 4px;
   border-radius: 6px;
   font-family: "Orbitron", sans-serif;
-  letter-spacing: 0.7px;
+  letter-spacing: 0.2px;
   text-transform: uppercase;
-  font-size: 0.8rem;
+  font-size: 0.68rem;
+  white-space: nowrap;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.02);
   color: rgba(255, 255, 255, 0.7);
   transition: all 0.3s ease;
   text-align: center;
+}
+
+@media (min-width: 521px) {
+  .page-merch .product-cta {
+    margin: 10px 16px 14px;
+    padding: 10px 12px;
+    letter-spacing: 0.7px;
+    font-size: 0.8rem;
+  }
 }
 
 .page-merch .product-cta:hover {

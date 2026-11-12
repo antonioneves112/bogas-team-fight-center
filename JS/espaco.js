@@ -7,7 +7,7 @@ const imagesEspaco = [
     caption: "Sala De Treino",
   },
   { type: "img", src: "../img/escritorios.jpg", caption: "Escritório" },
-  { type: "img", src: "../img/vestiario.jpg", caption: "Vestiários" },
+  { type: "img", src: "../img/vestiario.webp", caption: "Vestiários" },
 ];
 
 const trigger = document.querySelector(".js-open-gallery");

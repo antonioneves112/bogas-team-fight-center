@@ -5,8 +5,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bogas Team - Convívios</title>
+  <link rel="icon" type="image/png" sizes="192x192" href="./img/icones/icon-192.png" />
+  <link rel="apple-touch-icon" href="./img/icones/apple-touch-icon.png" />
 
-  <link rel="icon" href="../img/favicon.ico" type="image/x-icon" />
   <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
@@ -18,40 +19,12 @@
 <body class="page-treinadores">
   <a class="skip-link" href="#conteudo">Saltar para o conteúdo</a>
 
-  <header class="site-header" role="banner">
-    <a href="./home.html" class="site-logo" aria-label="Bogas Team Fight Center — Home">
-      Bogas Team Fight Center
-    </a>
-
-    <button class="menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="site-nav">
-      <i class="bx bx-menu" aria-hidden="true"></i>
-    </button>
-
-    <nav class="site-nav" id="site-nav" aria-label="Navegação principal">
-      <a href="./home.html">Home</a>
-      <a href="./espaco.html">Espaço</a>
-      <a href="./horarios.html">Horários</a>
-
-      <div class="dropdown is-active">
-        <button class="dropdown-trigger" type="button" aria-haspopup="true" aria-expanded="false"
-          aria-controls="eventos-menu">
-          Eventos
-        </button>
-
-        <div class="dropdown-menu" id="eventos-menu" role="menu" aria-label="Submenu Eventos">
-          <a href="./graduacoes.html" role="menuitem">Graduações</a>
-          <a href="./combates.html" role="menuitem">Combates</a>
-          <a href="./treinadores.html#muaythai" role="menuitem" class="active" aria-current="page">Convívios</a>
-        </div>
-      </div>
-
-      <a href="./merchandising.html">Store</a>
-      <a href="./patrocinadores.html">Patrocinadores</a>
-      <a href="./contactos.html">Contactos</a>
-    </nav>
-  </header>
-
+  <!-- Menu: desenhado pelo JS/menu.js (fonte única para todas as páginas) -->
+  <header class="site-header"></header>
   <div class="site-nav-overlay" aria-hidden="true"></div>
+  <script src="./JS/menu.js"></script>
+
+
 
   <main class="main-content" id="conteudo">
     <section class="trainers-shell" aria-label="Convívios">
@@ -65,9 +38,9 @@
       <section class="modalidades" aria-label="Treinadores">
         <div class="imagens">
           <img src="../img/cara bogas.jpg" alt="Bogas" data-modalidade="bogas" />
-          <img src="../img/cara tone.png" alt="Tone" data-modalidade="tone" />
-          <img src="../img/paulinho.png" alt="Paulinho" data-modalidade="paulinho" />
-          <img src="../img/mauro.png" alt="Mauro" data-modalidade="mauro" />
+          <img src="../img/cara tone.webp" alt="Tone" data-modalidade="tone" />
+          <img src="../img/paulinho.webp" alt="Paulinho" data-modalidade="paulinho" />
+          <img src="./img/equipa/equipa_mauro.webp" alt="Mauro" data-modalidade="mauro" />
         </div>
       </section>
 
@@ -78,7 +51,6 @@
     </section>
   </main>
 
-  <script src="../JS/menu.js" defer></script>
   <script src="../JS/treinadores.js" defer></script>
 </body>
 

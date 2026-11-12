@@ -8,21 +8,21 @@ const graduacoesDB = {
     {
       id: "maio2024",
       date: "26/05/2024",
-      cover: "../img/graduacoes2024/grupo2024.jpg",
+      cover: "../img/graduacoes2024/grupo2024.webp",
       gallery: [
         {
           type: "img",
-          src: "../img/graduacoes2024/grupo2024.jpg",
+          src: "../img/graduacoes2024/grupo2024.webp",
           caption: "Exame Maio 2024",
         },
         {
           type: "img",
-          src: "../img/graduacoes2024/aquecimento.jpg",
+          src: "../img/graduacoes2024/aquecimento.webp",
           caption: "Aquecimento",
         },
         {
           type: "img",
-          src: "../img/graduacoes2024/alongamento.jpg",
+          src: "../img/graduacoes2024/alongamento.webp",
           caption: "Alongamento",
         },
       ],
@@ -32,16 +32,16 @@ const graduacoesDB = {
     {
       id: "janeiro2025",
       date: "26/01/2025",
-      cover: "../img/graduacoes2025Janeiro/graduacao2025.jpg",
+      cover: "../img/graduacoes2025Janeiro/graduacao2025.webp",
       gallery: [
         {
           type: "img",
-          src: "../img/graduacoes2025Janeiro/graduacao2025.jpg",
+          src: "../img/graduacoes2025Janeiro/graduacao2025.webp",
           caption: "Exame Janeiro 2025",
         },
         {
           type: "img",
-          src: "../img/graduacoes2025Janeiro/treinadores.jpg",
+          src: "../img/graduacoes2025Janeiro/treinadores.webp",
           caption: "Treinadores",
         },
         {
@@ -109,16 +109,16 @@ const graduacoesDB = {
     {
       id: "setembro2025",
       date: "28/09/2025",
-      cover: "../img/graduacoes2025Setembro/principal.jpeg",
+      cover: "../img/graduacoes2025Setembro/principal.webp",
       gallery: [
         {
           type: "img",
-          src: "../img/graduacoes2025Setembro/principal.jpeg",
+          src: "../img/graduacoes2025Setembro/principal.webp",
           caption: "Exame Setembro 2025",
         },
         {
           type: "img",
-          src: "../img/graduacoes2025Setembro/mestre.jpeg",
+          src: "../img/graduacoes2025Setembro/mestre.webp",
           caption: "Mestre",
         },
         {
@@ -168,22 +168,22 @@ const graduacoesDB = {
         },
         {
           type: "img",
-          src: "../img/graduacoes2025Setembro/amarelas.jpeg",
+          src: "../img/graduacoes2025Setembro/amarelas.webp",
           caption: "Entregas Faixas Amarelas",
         },
         {
           type: "img",
-          src: "../img/graduacoes2025Setembro/laranja.jpeg",
+          src: "../img/graduacoes2025Setembro/laranja.webp",
           caption: "Entregas Faixas Laranjas",
         },
         {
           type: "img",
-          src: "../img/graduacoes2025Setembro/verdes.jpeg",
+          src: "../img/graduacoes2025Setembro/verdes.webp",
           caption: "Entregas Faixas Verdes",
         },
         {
           type: "img",
-          src: "../img/graduacoes2025Setembro/azuis.jpeg",
+          src: "../img/graduacoes2025Setembro/azuis.webp",
           caption: "Entregas Faixas Azuis",
         },
       ],
@@ -193,31 +193,31 @@ const graduacoesDB = {
     {
       id: "marco2026",
       date: "28/03/2026",
-      cover: "../img/graduacoes2026marco/grupo.jpg",
+      cover: "../img/graduacoes2026marco/grupo.webp",
       gallery: [
         {
           type: "img",
-          src: "../img/graduacoes2026marco/grupo.jpg",
+          src: "../img/graduacoes2026marco/grupo.webp",
           caption: "Exame Março 2026",
         },
         {
           type: "img",
-          src: "../img/graduacoes2026marco/amarelas.jpg",
+          src: "../img/graduacoes2026marco/amarelas.webp",
           caption: "Faixas Amarelas",
         },
         {
           type: "img",
-          src: "../img/graduacoes2026marco/laranjas.jpg",
+          src: "../img/graduacoes2026marco/laranjas.webp",
           caption: "Faixas Laranjas",
         },
         {
           type: "img",
-          src: "../img/graduacoes2026marco/verdes.jpg",
+          src: "../img/graduacoes2026marco/verdes.webp",
           caption: "Faixas Verdes",
         },
         {
           type: "img",
-          src: "../img/graduacoes2026marco/azuis.jpg",
+          src: "../img/graduacoes2026marco/azuis.webp",
           caption: "Faixas Azuis",
         },
       ],
@@ -225,36 +225,36 @@ const graduacoesDB = {
     {
       id: "outubro2026",
       date: "04/10/2026",
-      cover: "../img/graduacoes_2026_outubro/GRUPO.jpeg",
+      cover: "../img/graduacoes_2026_outubro/GRUPO.webp",
       gallery: [
         {
           type: "img",
-          src: "../img/graduacoes_2026_outubro/GRUPO.jpeg",
+          src: "../img/graduacoes_2026_outubro/GRUPO.webp",
           caption: "Exame Outubro 2026",
         },
         {
           type: "img",
-          src: "../img/graduacoes_2026_outubro/AMARELAS.jpeg",
+          src: "../img/graduacoes_2026_outubro/AMARELAS.webp",
           caption: "Faixas Amarelas",
         },
         {
           type: "img",
-          src: "../img/graduacoes_2026_outubro/LARANJAS.jpeg",
+          src: "../img/graduacoes_2026_outubro/LARANJAS.webp",
           caption: "Faixas Laranjas",
         },
         {
           type: "img",
-          src: "../img/graduacoes_2026_outubro/VERDES.jpeg",
+          src: "../img/graduacoes_2026_outubro/VERDES.webp",
           caption: "Faixas Verdes",
         },
         {
           type: "img",
-          src: "../img/graduacoes_2026_outubro/AZUL.jpeg",
+          src: "../img/graduacoes_2026_outubro/AZUL.webp",
           caption: "Faixas Azuis",
         },
         {
           type: "img",
-          src: "../img/graduacoes_2026_outubro/TREINADORES.jpeg",
+          src: "../img/graduacoes_2026_outubro/TREINADORES.webp",
           caption: "Treinadores",
         },
         {

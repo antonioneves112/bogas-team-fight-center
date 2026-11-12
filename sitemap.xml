@@ -1,53 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Páginas públicas. Atualiza o <lastmod> da página quando o conteúdo dela mudar. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-
   <url>
     <loc>https://www.bogasteamkickboxing.pt/</loc>
-    <lastmod>2026-04-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
+    <lastmod>2026-11-12</lastmod>
   </url>
-
   <url>
     <loc>https://www.bogasteamkickboxing.pt/espaco.html</loc>
-    <lastmod>2026-04-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <lastmod>2026-11-12</lastmod>
   </url>
-
+  <url>
+    <loc>https://www.bogasteamkickboxing.pt/equipa.html</loc>
+    <lastmod>2026-11-12</lastmod>
+  </url>
   <url>
     <loc>https://www.bogasteamkickboxing.pt/horarios.html</loc>
-    <lastmod>2026-04-04</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <lastmod>2026-11-12</lastmod>
   </url>
-
   <url>
     <loc>https://www.bogasteamkickboxing.pt/graduacoes.html</loc>
-    <lastmod>2026-04-04</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <lastmod>2026-11-12</lastmod>
   </url>
-
   <url>
     <loc>https://www.bogasteamkickboxing.pt/merchandising.html</loc>
-    <lastmod>2026-04-04</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <lastmod>2026-11-12</lastmod>
   </url>
-
   <url>
     <loc>https://www.bogasteamkickboxing.pt/patrocinadores.html</loc>
-    <lastmod>2026-04-04</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <lastmod>2026-11-12</lastmod>
   </url>
-
   <url>
     <loc>https://www.bogasteamkickboxing.pt/contactos.html</loc>
-    <lastmod>2026-04-04</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.5</priority>
+    <lastmod>2026-11-12</lastmod>
   </url>
-
 </urlset>
