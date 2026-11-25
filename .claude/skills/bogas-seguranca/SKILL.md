@@ -80,7 +80,9 @@ Lê esta skill toda antes de alterar código. Quando perguntarem "o que fizemos?
   - `JS/estatisticas.js`: lê a BD e desenha os gráficos em SVG, sem bibliotecas;
   - `CSS/estatisticas.css`: cores, mobile-first.
 - **Regras dos números** (iguais às do PDF):
-  - receita = mensalidades e aulas **pagas** + vendas **pagas**;
+  - receita = mensalidades e aulas **pagas** + **lucro** das vendas **pagas**;
+  - **gráficos** "Receita por mês" e "Lucro do material": as vendas entram só pelo **lucro** (venda − custo), nunca pelo valor total vendido (pedido do dono, 2026-11-25). O mesmo vale para o indicador "Recebido" e para a previsão (recebido, por receber e vendas previstas: tudo em lucro). O PDF não mudou;
+  - o eixo dos gráficos mostra sempre os 12 meses (no telemóvel com letra mais pequena, `.est-eixo-estreito`);
   - resultado = mensalidades pagas + lucro das vendas pagas − despesas;
   - entradas = inscrições + reentradas; saídas = `data_inativo` no mês.
 - **Previsão do mês** = recebido + por receber + estimado + vendas previstas:

@@ -138,7 +138,8 @@ function desenharColunas(contentor, { meses, series, modo, formatar, formatarEix
 
   const banda = larguraPlot / meses.length;
   const larguraBarra = Math.min(24, banda * 0.62);
-  const mostrarTodos = banda >= 30;
+  // Todos os meses têm rótulo; em ecrãs estreitos a letra fica mais pequena para caber.
+  const classeMes = banda >= 30 ? "est-eixo" : "est-eixo est-eixo-estreito";
 
   meses.forEach((mes, i) => {
     const xCentro = m.esquerda + banda * (i + 0.5);
@@ -176,12 +177,9 @@ function desenharColunas(contentor, { meses, series, modo, formatar, formatarEix
         el("path", { d: caminhoBarra(x, larguraBarra, yBase, yFim), class: `est-barra ${s.classeNeg || s.classe}` }, grupo);
       });
 
-    // Mês no eixo X
-    // Em ecrãs estreitos, meses alternados — contados a partir do último, que aparece sempre.
-    if (mostrarTodos || (meses.length - 1 - i) % 2 === 0) {
-      const t = el("text", { x: xCentro, y: altura - 8, class: "est-eixo", "text-anchor": "middle" }, svg);
-      t.textContent = mesCurto(mes);
-    }
+    // Mês no eixo X (sempre todos)
+    const t = el("text", { x: xCentro, y: altura - 8, class: classeMes, "text-anchor": "middle" }, svg);
+    t.textContent = mesCurto(mes);
 
     // Área de toque/foco: a banda inteira (muito maior do que a barra)
     const alvo = el(
@@ -293,7 +291,7 @@ function desenharPrevisao(mes, p) {
     { nome: "Recebido", valor: p.recebido, classe: "est-cor-1" },
     { nome: "Por receber", valor: p.porReceber, classe: "est-cor-2" },
     { nome: "Estimado (sem mensalidade lançada)", valor: p.estimado, classe: "est-cor-3" },
-    { nome: "Vendas previstas até ao fim do mês", valor: p.vendasPrevistas, classe: "est-cor-4" },
+    { nome: "Lucro de vendas previsto até ao fim do mês", valor: p.vendasPrevistas, classe: "est-cor-4" },
   ];
   const barra = $("estPrevisaoBarra");
   barra.replaceChildren();
@@ -356,8 +354,9 @@ function desenhar() {
   $("tituloEstatisticas").textContent = `Estatísticas — ${MESES_PT[Number(mes.slice(5)) - 1]}`;
   desenharPrevisao(mes, previsaoDoMes(mes, linhas));
 
-  const recebidoAtual = atual.mensalidades + atual.vendas;
-  const recebidoAnterior = anterior.mensalidades + anterior.vendas;
+  // Vendas de material só pelo lucro (venda − custo).
+  const recebidoAtual = atual.mensalidades + atual.lucroVendas;
+  const recebidoAnterior = anterior.mensalidades + anterior.lucroVendas;
   $("estKpiRecebido").textContent = euros(recebidoAtual);
   definirDelta("estKpiRecebidoDelta", variacao(recebidoAtual, recebidoAnterior), true);
   $("estKpiDespesas").textContent = euros(atual.despesas);
@@ -374,25 +373,26 @@ function desenhar() {
     `+${plural(atual.entradas, "entrada", "entradas")} · −${plural(atual.saidas, "saída", "saídas")} no mês`,
   );
 
-  // 1. Receita por mês (pilha: mensalidades + vendas)
+  // 1. Receita por mês (pilha: mensalidades + LUCRO do material; o valor de venda não conta)
+  const receitaMes = (x) => x.mensalidades + x.lucroVendas;
   desenharColunas($("estGraficoReceita"), {
     meses,
     modo: "pilha",
     series: [
       { nome: "Mensalidades e aulas", classe: "est-cor-1", valores: s.map((x) => x.mensalidades) },
-      { nome: "Vendas de material", classe: "est-cor-2", valores: s.map((x) => x.vendas) },
+      { nome: "Lucro do material", classe: "est-cor-2", valores: s.map((x) => x.lucroVendas) },
     ],
     formatar: euros,
     formatarEixo: eurosEixo,
-    rotuloFinal: (i) => euros(s[i].mensalidades + s[i].vendas),
+    rotuloFinal: (i) => euros(receitaMes(s[i])),
     linhasTooltip: (i) => [
-      { nome: "Total", valor: euros(s[i].mensalidades + s[i].vendas) },
+      { nome: "Total", valor: euros(receitaMes(s[i])) },
       { nome: "Mensalidades e aulas", valor: euros(s[i].mensalidades), classe: "est-cor-1" },
-      { nome: "Vendas de material", valor: euros(s[i].vendas), classe: "est-cor-2" },
+      { nome: "Lucro do material", valor: euros(s[i].lucroVendas), classe: "est-cor-2" },
     ],
   });
-  desenharTabela($("estTabelaReceita"), ["Mês", "Mensalidades e aulas", "Vendas", "Total"],
-    s.map((x) => [nomeMes(x.mes), euros(x.mensalidades), euros(x.vendas), euros(x.mensalidades + x.vendas)]));
+  desenharTabela($("estTabelaReceita"), ["Mês", "Mensalidades e aulas", "Lucro do material", "Total"],
+    s.map((x) => [nomeMes(x.mes), euros(x.mensalidades), euros(x.lucroVendas), euros(receitaMes(x))]));
 
   // 2. Resultado líquido (divergente: lucro para cima, prejuízo para baixo)
   desenharColunas($("estGraficoResultado"), {
@@ -431,21 +431,18 @@ function desenhar() {
   desenharTabela($("estTabelaSocios"), ["Mês", "Entradas", "Saídas", "Saldo"],
     s.map((x) => [nomeMes(x.mes), String(x.entradas), String(x.saidas), String(x.entradas - x.saidas)]));
 
-  // 4. Vendas de material (uma série)
+  // 4. Lucro do material (uma série: venda paga − custo de compra)
   desenharColunas($("estGraficoVendas"), {
     meses,
     modo: "pilha",
-    series: [{ nome: "Vendas de material", classe: "est-cor-2", valores: s.map((x) => x.vendas) }],
+    series: [{ nome: "Lucro do material", classe: "est-cor-2", valores: s.map((x) => x.lucroVendas) }],
     formatar: euros,
     formatarEixo: eurosEixo,
-    rotuloFinal: (i) => euros(s[i].vendas),
-    linhasTooltip: (i) => [
-      { nome: "Vendido (pago)", valor: euros(s[i].vendas), classe: "est-cor-2" },
-      { nome: "Lucro", valor: euros(s[i].lucroVendas) },
-    ],
+    rotuloFinal: (i) => euros(s[i].lucroVendas),
+    linhasTooltip: (i) => [{ nome: "Lucro do material", valor: euros(s[i].lucroVendas), classe: "est-cor-2" }],
   });
-  desenharTabela($("estTabelaVendas"), ["Mês", "Vendido (pago)", "Lucro"],
-    s.map((x) => [nomeMes(x.mes), euros(x.vendas), euros(x.lucroVendas)]));
+  desenharTabela($("estTabelaVendas"), ["Mês", "Lucro do material"],
+    s.map((x) => [nomeMes(x.mes), euros(x.lucroVendas)]));
 }
 
 export async function carregarEstatisticas() {

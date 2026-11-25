@@ -32,6 +32,8 @@ export function diasNoMes(mes) {
 }
 
 const mesDe = (data) => (data ? String(data).slice(0, 7) : null);
+// Nas estatísticas as vendas de material contam só pelo LUCRO (venda − custo), nunca pelo valor vendido.
+const lucroDe = (v) => paraNumero(v.total) - paraNumero(v.custo_total);
 const ehMensalidade = (tipo) => !tipo || tipo === "Mensalidade" || tipo === "Rendimento";
 const ehSoAulasParticulares = (modalidade) => modalidade === "Aulas Particulares" || modalidade === "Aula Particular";
 
@@ -56,7 +58,7 @@ export function seriesMensais(meses, { mensalidades = [], vendas = [], despesas 
     const linha = linhas.get(mesDe(v.data));
     if (linha && v.estado === "Paga") {
       linha.vendas += paraNumero(v.total);
-      linha.lucroVendas += paraNumero(v.total) - paraNumero(v.custo_total);
+      linha.lucroVendas += lucroDe(v);
     }
   }
   for (const d of despesas) {
@@ -82,12 +84,12 @@ export function seriesMensais(meses, { mensalidades = [], vendas = [], despesas 
 }
 
 /**
- * Previsão de receita de um mês.
- *  - recebido: mensalidades/aulas pagas + vendas pagas
- *  - porReceber: mensalidades/aulas pendentes + vendas pendentes
+ * Previsão de receita de um mês (as vendas contam só pelo lucro).
+ *  - recebido: mensalidades/aulas pagas + lucro das vendas pagas
+ *  - porReceber: mensalidades/aulas pendentes + lucro das vendas pendentes
  *  - estimado: sócios ativos SEM mensalidade lançada no mês × mensalidade média
  *              (média das mensalidades dos últimos 3 meses + este)
- *  - vendasPrevistas: (só no mês corrente) vendas ao ritmo atual até ao fim do mês
+ *  - vendasPrevistas: (só no mês corrente) lucro das vendas ao ritmo atual até ao fim do mês
  * @param hoje Date usada para saber se o mês é o corrente (injetável nos testes)
  */
 export function previsaoDoMes(mes, { mensalidades = [], vendas = [], socios = [], congelamentos = [] }, hoje = new Date()) {
@@ -99,10 +101,10 @@ export function previsaoDoMes(mes, { mensalidades = [], vendas = [], socios = []
 
   const recebido =
     doMes.filter((m) => m.estado === "Pago").reduce((s, m) => s + paraNumero(m.valor), 0) +
-    vendasDoMes.filter((v) => v.estado === "Paga").reduce((s, v) => s + paraNumero(v.total), 0);
+    vendasDoMes.filter((v) => v.estado === "Paga").reduce((s, v) => s + lucroDe(v), 0);
   const porReceber =
     doMes.filter((m) => m.estado === "Pendente").reduce((s, m) => s + paraNumero(m.valor), 0) +
-    vendasDoMes.filter((v) => v.estado === "Pendente").reduce((s, v) => s + paraNumero(v.total), 0);
+    vendasDoMes.filter((v) => v.estado === "Pendente").reduce((s, v) => s + lucroDe(v), 0);
 
   // Mensalidade média: mensalidades (não aulas) dos últimos 3 meses + este, com valor > 0.
   const janela = new Set(ultimosMeses(mes, 4));
@@ -135,9 +137,9 @@ export function previsaoDoMes(mes, { mensalidades = [], vendas = [], socios = []
     if (estado === "corrente") {
       const dia = hoje.getDate();
       const total = diasNoMes(mes);
-      const vendidoAteHoje = vendasDoMes.reduce((s, v) => s + paraNumero(v.total), 0);
-      if (dia < total && vendidoAteHoje > 0) {
-        vendasPrevistas = (vendidoAteHoje / dia) * total - vendidoAteHoje;
+      const lucroAteHoje = vendasDoMes.reduce((s, v) => s + lucroDe(v), 0);
+      if (dia < total && lucroAteHoje > 0) {
+        vendasPrevistas = (lucroAteHoje / dia) * total - lucroAteHoje;
       }
     }
   }

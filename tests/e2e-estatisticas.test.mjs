@@ -67,7 +67,7 @@ try {
     const previsao = await texto(p, "estPrevisaoValor");
     r.ok("Previsão = 35 + 40 + 1 × 36,25 = 111,25 €", previsao === "111,25 €", previsao);
     r.ok("Nota explica o sócio sem mensalidade e a média", (await texto(p, "estPrevisaoNota")).includes("1 sócio ativo") && (await texto(p, "estPrevisaoNota")).includes("36,25"));
-    r.ok("Indicador 'Recebido no mês' = 35,00 € e desceu vs mês anterior (115 €)", (await texto(p, "estKpiRecebido")) === "35,00 €" && (await texto(p, "estKpiRecebidoDelta")).includes("▼"));
+    r.ok("Indicador 'Recebido no mês' = 35,00 € e desceu vs mês anterior (70 + lucro 25 = 95 €)", (await texto(p, "estKpiRecebido")) === "35,00 €" && (await texto(p, "estKpiRecebidoDelta")).includes("▼"));
     r.ok("Sócios ativos = 3 com 1 entrada e 1 saída no mês", (await texto(p, "estKpiAtivos")) === "3" && (await texto(p, "estKpiAtivosDelta")).includes("+1 entrada") && (await texto(p, "estKpiAtivosDelta")).includes("−1 saída"));
 
     const barras = await p.evaluate(() => document.querySelectorAll("#estGraficoReceita .est-barra").length);
@@ -80,7 +80,8 @@ try {
     await p.touchscreen.tap(b.x + b.width / 2, b.y + b.height / 2);
     await espera(300);
     const tt = await p.evaluate(() => ({ visivel: !document.getElementById("estTooltip").classList.contains("hidden"), texto: document.getElementById("estTooltip").innerText }));
-    r.ok("Tocar num mês mostra a dica com o total e as séries (mês anterior: 115 €)", tt.visivel && tt.texto.includes("115,00 €") && tt.texto.includes("Vendas de material"), JSON.stringify(tt));
+    r.ok("Tocar num mês mostra a dica com o total e o lucro do material (mês anterior: 70 + lucro 25 = 95 €)", tt.visivel && tt.texto.includes("95,00 €") && tt.texto.includes("Lucro do material") && !tt.texto.includes("115,00 €"), JSON.stringify(tt));
+    r.ok("Todos os 12 meses têm rótulo no eixo (também no telemóvel)", await p.evaluate(() => [...document.querySelectorAll(".est-grafico svg")].every((svg) => [...svg.querySelectorAll("text.est-eixo")].filter((t) => /^[A-Z][a-z]{2}$/.test(t.textContent)).length === 12)));
 
     await p.evaluate(() => document.querySelector("#estGraficoResultado").closest("article").querySelector("details").open = true);
     const tabela = await p.evaluate(() => document.getElementById("estTabelaResultado").innerText);
@@ -95,7 +96,7 @@ try {
       f.dispatchEvent(new Event("change"));
     }, mesAnterior);
     await espera(1000);
-    r.ok("Mudar o mês para o anterior mostra 'mês fechado' com 70 + venda 45 = 115 €", (await texto(p, "estPrevisaoTitulo")).includes("mês fechado") && (await texto(p, "estPrevisaoValor")) === "115,00 €");
+    r.ok("Mudar o mês para o anterior mostra 'mês fechado' com 70 + lucro da venda 25 = 95 €", (await texto(p, "estPrevisaoTitulo")).includes("mês fechado") && (await texto(p, "estPrevisaoValor")) === "95,00 €");
 
     r.ok("Sem erros de JavaScript", registo.erros.length === 0, registo.erros.join(" | "));
     await contexto.close();

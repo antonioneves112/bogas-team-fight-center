@@ -57,15 +57,15 @@ r.ok("Fevereiro: 2 entradas (sócios 3 e 4) e 1 saída (sócio 5)", fev.entradas
 
 // Previsão: fevereiro visto a 14 de fevereiro (mês corrente)
 const p = previsaoDoMes("2026-02", dados, new Date(2026, 1, 14));
-r.ok("Previsão: recebido = 35 + 25 (aulas) + 45 (venda paga) = 105", p.recebido === 105, JSON.stringify(p));
-r.ok("Previsão: por receber = 40 (mensalidade) + 10 (venda pendente) = 50", p.porReceber === 50);
+r.ok("Previsão: recebido = 35 + 25 (aulas) + 25 (lucro da venda paga 45 − 20) = 85", p.recebido === 85, JSON.stringify(p));
+r.ok("Previsão: por receber = 40 (mensalidade) + 6 (lucro da venda pendente 10 − 4) = 46", p.porReceber === 46);
 // Sem mensalidade em fevereiro: sócio 4 e 6 (ativos, não só-PT, inscritos até fim de fev). Sócio 7 inscreve-se em março.
 r.ok("Previsão: 2 sócios ativos sem mensalidade lançada (PT-only e futuros excluídos)", p.semFatura === 2, `semFatura=${p.semFatura}`);
 // Média das mensalidades (jan 35, 40; fev 35, 40) = 37.5
 r.ok("Previsão: mensalidade média 37,50 € e estimado 2 × 37,50 = 75", p.mensalidadeMedia === 37.5 && p.estimado === 75);
-// Vendas não anuladas até dia 14: 45 + 10 = 55 -> ritmo 55/14 × 28 = 110 -> faltam 55
-r.ok("Previsão: vendas ao ritmo atual até ao fim do mês (+55)", p.vendasPrevistas === 55, `vendasPrevistas=${p.vendasPrevistas}`);
-r.ok("Previsão: total = 105 + 50 + 75 + 55 = 285", p.total === 285);
+// Lucro das vendas não anuladas até dia 14: 25 + 6 = 31 -> ritmo 31/14 × 28 = 62 -> faltam 31
+r.ok("Previsão: lucro das vendas ao ritmo atual até ao fim do mês (+31)", p.vendasPrevistas === 31, `vendasPrevistas=${p.vendasPrevistas}`);
+r.ok("Previsão: total = 85 + 46 + 75 + 31 = 237", p.total === 237);
 
 // Congelar o sócio 4 em fevereiro: deixa de contar como mensalidade estimada.
 const pCongelado = previsaoDoMes("2026-02", { ...dados, congelamentos: [{ socio_id: 4, mes_inicio: "2026-01", mes_fim: "2026-02" }] }, new Date(2026, 1, 14));
@@ -74,7 +74,7 @@ const pCongeladoAntes = previsaoDoMes("2026-02", { ...dados, congelamentos: [{ s
 r.ok("Previsão: congelamento que acabou no mês anterior já não conta (volta a pagar)", pCongeladoAntes.semFatura === 2);
 
 const fechado = previsaoDoMes("2026-01", dados, new Date(2026, 1, 14));
-r.ok("Mês fechado: sem estimativas, só recebido e por receber", fechado.estado === "fechado" && fechado.estimado === 0 && fechado.vendasPrevistas === 0 && fechado.recebido === 83);
+r.ok("Mês fechado: sem estimativas, só recebido e por receber", fechado.estado === "fechado" && fechado.estimado === 0 && fechado.vendasPrevistas === 0 && fechado.recebido === 80);
 r.ok("Mês futuro identificado", previsaoDoMes("2026-03", dados, new Date(2026, 1, 14)).estado === "futuro");
 
 r.ok("Variação percentual (+20%, -50%, sem base -> null)", variacao(120, 100) === 20 && variacao(50, 100) === -50 && variacao(10, 0) === null);

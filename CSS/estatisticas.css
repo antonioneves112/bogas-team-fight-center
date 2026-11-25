@@ -243,6 +243,11 @@
   font-variant-numeric: tabular-nums;
 }
 
+.est-eixo.est-eixo-estreito {
+  font-size: 9px;
+  letter-spacing: -0.2px;
+}
+
 .est-rotulo-valor {
   fill: var(--est-tinta);
   font-size: 11px;
